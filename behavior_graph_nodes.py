@@ -350,7 +350,7 @@ all_classes = [
 
 hardcoded_nodes = {node.node_type for node in all_classes if hasattr(node,"node_type") }
 
-socket_type_mapping = {
+type_to_socket = {
     "float": "NodeSocketFloat",
     "integer": "NodeSocketInt",
     "boolean": "NodeSocketBool",
@@ -359,6 +359,18 @@ socket_type_mapping = {
     "string": "NodeSocketString",
     "vec3": "NodeSocketVectorXYZ",
     "euler": "NodeSocketVectorEuler",
+}
+
+socket_to_type = {
+    "NodeSocketFloat": "float",
+    "NodeSocketInt": "integer",
+    "NodeSocketBool": "boolean",
+    "BGHubsEntitySocket": "entity",
+    "BGFlowSocket": "flow",
+    "NodeSocketString": "string",
+    "NodeSocketVector": "vec3",
+    "NodeSocketVectorXYZ": "vec3",
+    "NodeSocketVectorEuler": "euler",
 }
 
 category_colors = {
@@ -389,7 +401,7 @@ def create_node_class(node_data):
                 self.color = category_colors["None"]
 
             for input_data in node_data["inputs"]:
-                socket_type = socket_type_mapping[input_data["valueType"]]
+                socket_type = type_to_socket[input_data["valueType"]]
                 sock = self.inputs.new(socket_type, input_data["name"])
                 if (input_data["valueType"] != 'vec3' and input_data["valueType"] != "euler") and "defaultValue" in input_data:
                     sock.default_value = input_data["defaultValue"]
@@ -397,7 +409,7 @@ def create_node_class(node_data):
                     sock.description = input_data["description"]
 
             for output_data in node_data["outputs"]:
-                socket_type = socket_type_mapping[output_data["valueType"]]
+                socket_type = type_to_socket[output_data["valueType"]]
                 sock = self.outputs.new(socket_type, output_data["name"])
                 if (output_data["valueType"] != 'vec3' and output_data["valueType"] != "euler") and "defaultValue" in output_data:
                     sock.default_value = output_data["defaultValue"]
@@ -449,15 +461,15 @@ def extract_behavior_graph_data(node_tree, export_settings):
     }
 
     for i, socket in enumerate(node_tree.inputs):
-        type = socket.bl_socket_idname.replace("NodeSocket", "").lower()
-        value = socket.default_value
-        print(socket.name, type, value)
-        if type == "vector":
-            value = { "x": value[0], "y": value[1], "z": value[2]}
+        socket_type = socket_to_type[socket.bl_socket_idname]
+        value = gather_property(export_settings, socket, socket, "default_value")
+        if socket_type == "vec3":
+            value = {"x": value[0], "y": value[1], "z": value[2]}
+        print(socket.name, socket_type, value)
         data["variables"].append({
             "name": socket.name,
             "id": i,
-            "valueTypeName": type,
+            "valueTypeName": socket_type,
             "initialValue": value
         })
 
