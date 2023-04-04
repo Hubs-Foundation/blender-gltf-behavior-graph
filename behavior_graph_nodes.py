@@ -297,7 +297,7 @@ behavior_graph_node_categories = {
     ],
     "Variables": [
         NodeItem("BGNode_variable_get"),
-        NodeItem("BGNode_variable_get"),
+        NodeItem("BGNode_variable_set"),
     ],
 }
 
