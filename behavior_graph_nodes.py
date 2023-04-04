@@ -1,12 +1,13 @@
 import bpy
+import os
 from bpy.props import StringProperty, PointerProperty
-from bpy.types import GeometryNode, Node, NodeTree, NodeSocket, NodeSocketStandard, ShaderNode, TextureNode, Operator, NodeGroupInput, NodeReroute, NodeSocketString
+from bpy.types import GeometryNode, Node, NodeTree, NodeSocket, NodeSocketStandard, ShaderNode, TextureNode, Operator, NodeGroupInput, NodeReroute, NodeSocketString, NodeSocketBool, NodeSocketFloat
 from bpy.utils import register_class, unregister_class
 from nodeitems_utils import NodeCategory, NodeItem, register_node_categories, unregister_node_categories
 
 auto_casts = {
-    ("BGHubsEntitySocket", "NodeSocketString"): "BGHubsEntityToStringNode",
-    ("NodeSocketFloat", "NodeSocketString"): "BGToStringFloatNode"
+    ("BGHubsEntitySocket", "NodeSocketString"): "BGNode_hubs_entity_toString",
+    ("NodeSocketFloat", "NodeSocketString"): "BGNode_math_toFloat_string"
 }
 
 class BGTree(NodeTree):
@@ -47,10 +48,6 @@ class BGTree(NodeTree):
                     node.select = True
                 else:
                     self.links.remove(link)
-        # bpy.app.timers.register(self.mark_invalid_links)
-
-    # def update(self):
-    #     print("TREE UPDATE")
 
 class BGFlowSocket(NodeSocketStandard):
     bl_label = "Behavior Graph Flow Socket"
@@ -66,9 +63,9 @@ class BGFlowSocket(NodeSocketStandard):
         if text == "flow":
             layout.label(text="▶")
         elif self.is_output:
-            layout.label(text= text + " ▶")
+            layout.label(text = text + " ▶")
         else:
-            layout.label("▶ " + text)
+            layout.label(text = "▶ " + text)
 
     def draw_color(self, context, node):
         return (1.0, 1.0, 1.0, 1.0)
@@ -116,76 +113,6 @@ class BGActionNode():
         self.inputs.new("BGFlowSocket", "flow")
         self.outputs.new("BGFlowSocket", "flow")
 
-class BGQueryNode():
-    def init(self, context):
-        super().init(context)
-        self.color = (0.2, 0.6, 0.2)
-
-class BGUtilNode(BGNode, Node):
-    def init(self, context):
-        super().init(context)
-        self.color = (0.6, 0.6, 0.2)
-
-class BGFlowNode():
-    def init(self, context):
-        super().init(context)
-        self.color = (0.2, 0.2, 0.2)
-
-class BGBranchNode(BGFlowNode, BGNode, Node):
-    bl_label = "Branch"
-    node_type = "flow/branch"
-
-    def init(self, context):
-        super().init(context)
-        self.inputs.new("BGFlowSocket", "flow")
-        self.inputs.new("NodeSocketBool", "condition")
-        self.outputs.new("BGFlowSocket", "true")
-        self.outputs.new("BGFlowSocket", "false")
-
-
-
-class BGLifecycleOnStartNode(BGEventNode, BGNode, Node):
-    bl_label = "On Start"
-    node_type = "lifecycle/onStart"
-
-class BGDebugLogNode(BGActionNode, BGNode, Node):
-    bl_label = "Debug Log"
-    node_type = "debug/log"
-
-    def init(self, context):
-        super().init(context)
-        self.inputs.new("NodeSocketString", "text")
-
-
-class BGOnTickNode(BGEventNode, BGNode, Node):
-    bl_label = "On Tick"
-    node_type = "lifecycle/onTick"
-
-    def init(self, context):
-        super().init(context)
-        self.outputs.new("NodeSocketFloat", "deltaSeconds")
-
-
-# from io_hubs_addon.components.utils import has_component
-
-# def filter_on_component(self, ob):
-#     return has_component(ob, dep_name)
-#
-#
-#
-
-class BGHubsGetEntityProperties(BGQueryNode, BGNode, Node):
-    bl_label = "Get Entity Properties"
-    node_type = "hubs/entity/properties"
-
-    def init(self, context):
-        super().init(context)
-        self.inputs.new("BGHubsEntitySocket", "entity")
-        self.outputs.new("BGHubsEntitySocket", "entity")
-        self.outputs.new("NodeSocketString", "name")
-        self.outputs.new("NodeSocketBool", "visible")
-        self.outputs.new("NodeSocketVectorXYZ", "position")
-
 socket_type_for_property = {
     "visible": "NodeSocketBool",
     "position": "NodeSocketVectorXYZ",
@@ -222,7 +149,7 @@ class BGHubsSetEntityProperty(BGActionNode, BGNode, Node):
         layout.prop(self, "targetProperty")
 
 
-class BGHubsOnInteract(BGEventNode, BGNode, Node):
+class BGNode_hubs_onInteract(BGEventNode, BGNode, Node):
     bl_label = "On Interact"
     node_type = "hubs/onInteract"
 
@@ -240,7 +167,7 @@ class BGHubsOnInteract(BGEventNode, BGNode, Node):
         layout.prop(self, "target")
 
 
-class BGHubsOnCollisionEnter(BGEventNode, BGNode, Node):
+class BGNode_hubs_onCollisionEnter(BGEventNode, BGNode, Node):
     bl_label = "On Collision Enter"
     node_type = "hubs/onCollisionEnter"
 
@@ -258,7 +185,7 @@ class BGHubsOnCollisionEnter(BGEventNode, BGNode, Node):
         layout.prop(self, "target")
 
 
-class BGHubsOnCollisionExit(BGEventNode, BGNode, Node):
+class BGNode_hubs_onCollisionExit(BGEventNode, BGNode, Node):
     bl_label = "On Collision Exit"
     node_type = "hubs/onCollisionExit"
 
@@ -314,7 +241,7 @@ def update_selected_variable_output(self, context):
 
     return None
 
-class BGGetVariableNode(BGNode, Node):
+class BGNode_variable_get(BGNode, Node):
     bl_label = "Get Variable"
     node_type = "variable/get"
 
@@ -334,7 +261,7 @@ class BGGetVariableNode(BGNode, Node):
         layout.prop(self, "variableId")
 
 
-class BGSetVariableNode(BGActionNode, BGNode, Node):
+class BGNode_variable_set(BGActionNode, BGNode, Node):
     bl_label = "Set Variable"
     node_type = "variable/set"
 
@@ -353,186 +280,120 @@ class BGSetVariableNode(BGActionNode, BGNode, Node):
     def draw_buttons(self, context, layout):
         layout.prop(self, "variableId")
 
-class BGHubsEntityHasComponent(BGUtilNode, BGNode, Node):
-    bl_label = "Entity Has Component"
-    node_type = "hubs/entity/hasComponent"
-
-    def init(self, context):
-        super().init(context)
-        self.inputs.new("BGHubsEntitySocket", "entity")
-        self.inputs.new("NodeSocketString", "name")
-        self.inputs.new("NodeSocketBool", "includeAncestors")
-        self.outputs.new("NodeSocketBool", "result")
-        self.inputs["includeAncestors"].default_value = True
-
-class BGAddFloatNode(BGUtilNode, BGNode, Node):
-    bl_label = "Add Float"
-    node_type = "math/add/float"
-
-    def init(self, context):
-        super().init(context)
-        self.inputs.new("NodeSocketFloat", "a")
-        self.inputs.new("NodeSocketFloat", "b")
-        self.outputs.new("NodeSocketFloat", "result")
-
-class BGToStringFloatNode(BGUtilNode, BGNode, Node):
-    bl_label = "To String Float"
-    node_type = "math/toString/float"
-
-    def init(self, context):
-        super().init(context)
-        self.inputs.new("NodeSocketFloat", "a")
-        self.outputs.new("NodeSocketString", "result")
-
-class BGStringEqualsNode(BGUtilNode, BGNode, Node):
-    bl_label = "String Equals"
-    node_type = "math/equal/string"
-
-    def init(self, context):
-        super().init(context)
-        self.inputs.new("NodeSocketString", "a")
-        self.inputs.new("NodeSocketString", "b")
-        self.outputs.new("NodeSocketBool", "result")
-
-class BGStringIncludesNode(BGUtilNode, BGNode, Node):
-    bl_label = "String Includes"
-    node_type = "logic/includes/string"
-
-    def init(self, context):
-        super().init(context)
-        self.inputs.new("NodeSocketString", "a")
-        self.inputs.new("NodeSocketString", "b")
-        self.outputs.new("NodeSocketBool", "result")
-
-class BGHubsEntityToStringNode(BGUtilNode, BGNode, Node):
-    bl_label = "To String Entity"
-    node_type = "hubs/entity/toString"
-
-    def init(self, context):
-        super().init(context)
-        self.inputs.new("BGHubsEntitySocket", "entity")
-        self.outputs.new("NodeSocketString", "result")
-
-class BGConcatStringNode(BGUtilNode, BGNode, Node):
-    bl_label = "Concat String"
-    node_type = "logic/concat/string"
-
-    def init(self, context):
-        super().init(context)
-        self.inputs.new("NodeSocketString", "a")
-        self.inputs.new("NodeSocketString", "b")
-        self.outputs.new("NodeSocketString", "result")
-
-class BGMathNegateBoolean(BGUtilNode, BGNode, Node):
-    bl_label = "Boolean Not"
-    node_type = "math/negate/boolean"
-
-    def init(self, context):
-        super().init(context)
-        self.label = "NOT"
-        self.hide = True
-        self.width = 0
-        self.inputs.new("NodeSocketBool", "a")
-        self.outputs.new("NodeSocketBool", "result")
-
-class BGMathVec3Separate(BGUtilNode, BGNode, Node):
-    bl_label = "Separate Vec3"
-    node_type = "math/vec3/separate"
-
-    def init(self, context):
-        super().init(context)
-        self.inputs.new("NodeSocketVectorXYZ", "v")
-        self.outputs.new("NodeSocketFloat", "x")
-        self.outputs.new("NodeSocketFloat", "y")
-        self.outputs.new("NodeSocketFloat", "z")
-
-class BGMathVec3Combine(BGUtilNode, BGNode, Node):
-    bl_label = "Combine Vec3"
-    node_type = "math/vec3/combine"
-
-    def init(self, context):
-        super().init(context)
-        self.inputs.new("NodeSocketFloat", "x")
-        self.inputs.new("NodeSocketFloat", "y")
-        self.inputs.new("NodeSocketFloat", "z")
-        self.outputs.new("NodeSocketVectorXYZ", "v")
-
 class BGCategory(NodeCategory):
     @classmethod
     def poll(cls, context):
         # return True
         return context.space_data.tree_type == "BGTree"
 
-behavior_graph_node_categories = [
-    BGCategory("BEHAVIOR_GRAPH_EVENTS", "Events", items=[
-        NodeItem("BGLifecycleOnStartNode"),
-        NodeItem("BGOnTickNode"),
-        NodeItem("BGHubsOnInteract"),
-        NodeItem("BGHubsOnCollisionEnter"),
-        NodeItem("BGHubsOnCollisionExit"),
-    ]),
-    BGCategory("BEHAVIOR_GRAPH_ENTITY", "Entity", items=[
-        NodeItem("BGHubsGetEntityProperties"),
+behavior_graph_node_categories = {
+    "Events": [
+        NodeItem("BGNode_hubs_onInteract"),
+        NodeItem("BGNode_hubs_onCollisionEnter"),
+        NodeItem("BGNode_hubs_onCollisionExit"),
+    ],
+   "Entity": [
         NodeItem("BGHubsSetEntityProperty"),
-        NodeItem("BGHubsEntityToStringNode"),
-        NodeItem("BGHubsEntityHasComponent"),
-    ]),
-    BGCategory("BEHAVIOR_GRAPH_ACTIONS", "Actions", items=[
-        NodeItem("BGDebugLogNode"),
-    ]),
-    BGCategory("BEHAVIOR_GRAPH_FLOW", "Flow", items=[
-        NodeItem("BGBranchNode"),
-    ]),
-    BGCategory("BEHAVIOR_GRAPH_MATH", "Math", items=[
-        NodeItem("BGAddFloatNode"),
-        NodeItem("BGMathNegateBoolean"),
-        NodeItem("BGToStringFloatNode"),
-        NodeItem("BGMathVec3Combine"),
-        NodeItem("BGMathVec3Separate"),
-    ]),
-    BGCategory("BEHAVIOR_GRAPH_DATA", "Data", items=[
-        NodeItem("BGGetVariableNode"),
-        NodeItem("BGSetVariableNode"),
-        NodeItem("BGConcatStringNode"),
-        NodeItem("BGStringEqualsNode"),
-        NodeItem("BGStringIncludesNode"),
-        # NodeItem("ShaderNodeMath"),
-    ]),
-]
+    ],
+    "Variables": [
+        NodeItem("BGNode_variable_get"),
+        NodeItem("BGNode_variable_get"),
+    ],
+}
 
 all_classes = [
     BGTree,
     BGFlowSocket,
     BGHubsEntitySocket,
 
-    BGLifecycleOnStartNode,
-    BGDebugLogNode,
+    BGNode_variable_get,
+    BGNode_variable_set,
 
-    BGBranchNode,
+    BGNode_hubs_onInteract,
+    BGNode_hubs_onCollisionEnter,
+    BGNode_hubs_onCollisionExit,
 
-    BGOnTickNode,
-    BGHubsOnInteract,
-    BGHubsOnCollisionEnter,
-    BGHubsOnCollisionExit,
-
-    BGGetVariableNode,
-    BGSetVariableNode,
-
-    BGAddFloatNode,
-    BGMathNegateBoolean,
-    BGMathVec3Combine,
-    BGMathVec3Separate,
-    BGToStringFloatNode,
-    BGConcatStringNode,
-    BGStringEqualsNode,
-    BGStringIncludesNode,
-
-    BGHubsGetEntityProperties,
     BGHubsSetEntityProperty,
-
-    BGHubsEntityToStringNode,
-    BGHubsEntityHasComponent,
 ]
+
+hardcoded_nodes = {node.node_type for node in all_classes if hasattr(node,"node_type") }
+
+socket_type_mapping = {
+    "float": "NodeSocketFloat",
+    "integer": "NodeSocketInt",
+    "boolean": "NodeSocketBool",
+    "entity": "BGHubsEntitySocket",
+    "flow": "BGFlowSocket",
+    "string": "NodeSocketString",
+    "vec3": "NodeSocketVectorXYZ",
+}
+
+category_colors = {
+    "Event":  (0.6, 0.2, 0.2),
+    "Flow":  (0.2, 0.2, 0.2),
+    "Time":  (0.3, 0.3, 0.3),
+    "Action":  (0.2, 0.2, 0.6),
+    "None": (0.6, 0.6, 0.2)
+}
+
+def create_node_class(node_data):
+    label = node_data["type"]
+    if "label" in node_data:
+        # label = "%s (%s)" % (node_data["label"], node_data["type"])
+        label = node_data["label"]
+
+    class CustomNode(BGNode, Node):
+        bl_label = label
+
+        node_type = node_data["type"]
+
+        def init(self, context):
+            super().init(context)
+
+            if node_data["category"] in category_colors:
+                self.color = category_colors[node_data["category"]]
+            else:
+                self.color = category_colors["None"]
+
+            for input_data in node_data["inputs"]:
+                socket_type = socket_type_mapping[input_data["valueType"]]
+                sock = self.inputs.new(socket_type, input_data["name"])
+                if input_data["valueType"] != 'vec3' and "defaultValue" in input_data:
+                    sock.default_value = input_data["defaultValue"]
+                if "description" in input_data:
+                    sock.description = input_data["description"]
+
+            for output_data in node_data["outputs"]:
+                socket_type = socket_type_mapping[output_data["valueType"]]
+                sock = self.outputs.new(socket_type, output_data["name"])
+                if output_data["valueType"] != 'vec3' and "defaultValue" in output_data:
+                    sock.default_value = input_data["defaultValue"]
+                if "description" in output_data:
+                    sock.description = output_data["description"]
+
+    CustomNode.__name__ = "BGNode_" + node_data['type'].replace("/", "_")
+    print(CustomNode.__name__)
+
+    return CustomNode
+
+import json
+def read_nodespec(filename):
+    with open(filename, "r") as file:
+        nodes = json.load(file)
+        for node_spec in nodes:
+            if node_spec["type"] in hardcoded_nodes:
+                print("SKIP", node_spec["type"])
+                continue
+            category = node_spec["category"]
+            if not category in behavior_graph_node_categories:
+                behavior_graph_node_categories[category] = []
+            node_class = create_node_class(node_spec)
+            all_classes.append(node_class)
+            behavior_graph_node_categories[category].append(NodeItem(node_class.__name__))
+            # bpy.utils.register_class(node_class)
+        # print(test_classes)
+        #
+
 
 
 from io_hubs_addon.io.utils import gather_property
@@ -599,7 +460,7 @@ def extract_behavior_graph_data(node_tree, export_settings):
                     node_data["parameters"][input_socket.identifier] = { "value": gather_property(export_settings, input_socket, input_socket, "target") }
                 else:
                     node_data["parameters"][input_socket.identifier] = { "value": gather_property(export_settings, input_socket, input_socket, "default_value") }
-        if isinstance(node, BGGetVariableNode) or isinstance(node, BGSetVariableNode):
+        if isinstance(node, BGNode_variable_get) or isinstance(node, BGNode_variable_set):
             node_data["configuration"]["variableId"] = node_tree.inputs.find(getattr(node, 'variableName'))
         elif hasattr(node, "__annotations__"):
             for key in node.__annotations__.keys():
@@ -639,10 +500,15 @@ class glTF2ExportUserExtension:
 
 
 def register():
+    read_nodespec(os.path.join(os.path.dirname(os.path.abspath(__file__)), "nodespec.json"))
+
     for cls in all_classes:
         register_class(cls)
 
-    register_node_categories("BEHAVIOR_GRAPH_NODES", behavior_graph_node_categories)
+    print(behavior_graph_node_categories)
+    categories = [BGCategory("BEHAVIOR_GRAPH_" + category.replace(" ", "_"), category, items=items) for category, items in behavior_graph_node_categories.items()]
+    print(categories)
+    register_node_categories("BEHAVIOR_GRAPH_NODES", categories)
 
 def unregister():
     unregister_node_categories("BEHAVIOR_GRAPH_NODES")
