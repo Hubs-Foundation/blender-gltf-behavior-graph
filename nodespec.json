@@ -690,7 +690,7 @@
   },
   {
     "type": "math/float",
-    "category": "Flaot Math",
+    "category": "Float Math",
     "label": "Float",
     "inputs": [
       {
@@ -709,7 +709,7 @@
   },
   {
     "type": "math/add/float",
-    "category": "Flaot Math",
+    "category": "Float Math",
     "label": "+",
     "inputs": [
       {
@@ -733,7 +733,7 @@
   },
   {
     "type": "math/subtract/float",
-    "category": "Flaot Math",
+    "category": "Float Math",
     "label": "Subtract",
     "inputs": [
       {
@@ -757,7 +757,7 @@
   },
   {
     "type": "math/negate/float",
-    "category": "Flaot Math",
+    "category": "Float Math",
     "label": "Negate",
     "inputs": [
       {
@@ -776,7 +776,7 @@
   },
   {
     "type": "math/multiply/float",
-    "category": "Flaot Math",
+    "category": "Float Math",
     "label": "×",
     "inputs": [
       {
@@ -800,7 +800,7 @@
   },
   {
     "type": "math/divide/float",
-    "category": "Flaot Math",
+    "category": "Float Math",
     "label": "÷",
     "inputs": [
       {
@@ -824,7 +824,7 @@
   },
   {
     "type": "math/modulus/float",
-    "category": "Flaot Math",
+    "category": "Float Math",
     "label": "MOD",
     "inputs": [
       {
@@ -848,7 +848,7 @@
   },
   {
     "type": "math/pow/float",
-    "category": "Flaot Math",
+    "category": "Float Math",
     "label": "POW",
     "inputs": [
       {
@@ -872,7 +872,7 @@
   },
   {
     "type": "math/sqrt/float",
-    "category": "Flaot Math",
+    "category": "Float Math",
     "label": "√",
     "inputs": [
       {
@@ -891,7 +891,7 @@
   },
   {
     "type": "math/e/float",
-    "category": "Flaot Math",
+    "category": "Float Math",
     "label": "𝑒",
     "inputs": [],
     "outputs": [
@@ -904,7 +904,7 @@
   },
   {
     "type": "math/exp/float",
-    "category": "Flaot Math",
+    "category": "Float Math",
     "label": "EXP",
     "inputs": [
       {
@@ -923,7 +923,7 @@
   },
   {
     "type": "math/ln/float",
-    "category": "Flaot Math",
+    "category": "Float Math",
     "label": "LN",
     "inputs": [
       {
@@ -942,7 +942,7 @@
   },
   {
     "type": "math/log2/float",
-    "category": "Flaot Math",
+    "category": "Float Math",
     "label": "LOG2",
     "inputs": [
       {
@@ -961,7 +961,7 @@
   },
   {
     "type": "math/log10/float",
-    "category": "Flaot Math",
+    "category": "Float Math",
     "label": "LOG10",
     "inputs": [
       {
@@ -980,7 +980,7 @@
   },
   {
     "type": "math/pi/float",
-    "category": "Flaot Math",
+    "category": "Float Math",
     "label": "π",
     "inputs": [],
     "outputs": [
@@ -993,7 +993,7 @@
   },
   {
     "type": "math/sin/float",
-    "category": "Flaot Math",
+    "category": "Float Math",
     "label": "SIN",
     "inputs": [
       {
@@ -1012,7 +1012,7 @@
   },
   {
     "type": "math/asin/float",
-    "category": "Flaot Math",
+    "category": "Float Math",
     "label": "ASIN",
     "inputs": [
       {
@@ -1031,7 +1031,7 @@
   },
   {
     "type": "math/cos/float",
-    "category": "Flaot Math",
+    "category": "Float Math",
     "label": "COS",
     "inputs": [
       {
@@ -1050,7 +1050,7 @@
   },
   {
     "type": "math/acos/float",
-    "category": "Flaot Math",
+    "category": "Float Math",
     "label": "ACOS",
     "inputs": [
       {
@@ -1069,7 +1069,7 @@
   },
   {
     "type": "math/tan/float",
-    "category": "Flaot Math",
+    "category": "Float Math",
     "label": "TAN",
     "inputs": [
       {
@@ -1088,7 +1088,7 @@
   },
   {
     "type": "math/radiansToDegrees/float",
-    "category": "Flaot Math",
+    "category": "Float Math",
     "label": "To Degrees",
     "inputs": [
       {
@@ -1107,7 +1107,7 @@
   },
   {
     "type": "math/degreesToRadians/float",
-    "category": "Flaot Math",
+    "category": "Float Math",
     "label": "To Radians",
     "inputs": [
       {
@@ -1126,7 +1126,7 @@
   },
   {
     "type": "math/atan/float",
-    "category": "Flaot Math",
+    "category": "Float Math",
     "label": "ATAN",
     "inputs": [
       {
@@ -1145,7 +1145,7 @@
   },
   {
     "type": "math/mix/float",
-    "category": "Flaot Math",
+    "category": "Float Math",
     "label": "MIX",
     "inputs": [
       {
@@ -1174,7 +1174,7 @@
   },
   {
     "type": "math/toFloat/float",
-    "category": "Flaot Math",
+    "category": "Float Math",
     "label": "To Float",
     "inputs": [
       {
@@ -1193,7 +1193,7 @@
   },
   {
     "type": "math/min/float",
-    "category": "Flaot Math",
+    "category": "Float Math",
     "label": "MIN",
     "inputs": [
       {
@@ -1217,7 +1217,7 @@
   },
   {
     "type": "math/max/float",
-    "category": "Flaot Math",
+    "category": "Float Math",
     "label": "MAX",
     "inputs": [
       {
@@ -1241,7 +1241,7 @@
   },
   {
     "type": "math/clamp/float",
-    "category": "Flaot Math",
+    "category": "Float Math",
     "label": "CLAMP",
     "inputs": [
       {
@@ -1270,7 +1270,7 @@
   },
   {
     "type": "math/abs/float",
-    "category": "Flaot Math",
+    "category": "Float Math",
     "label": "ABS",
     "inputs": [
       {
@@ -1289,7 +1289,7 @@
   },
   {
     "type": "math/sign/float",
-    "category": "Flaot Math",
+    "category": "Float Math",
     "label": "SIGN",
     "inputs": [
       {
@@ -1308,7 +1308,7 @@
   },
   {
     "type": "math/floor/float",
-    "category": "Flaot Math",
+    "category": "Float Math",
     "label": "FLOOR",
     "inputs": [
       {
@@ -1327,7 +1327,7 @@
   },
   {
     "type": "math/ceil/float",
-    "category": "Flaot Math",
+    "category": "Float Math",
     "label": "CEIL",
     "inputs": [
       {
@@ -1346,7 +1346,7 @@
   },
   {
     "type": "math/round/float",
-    "category": "Flaot Math",
+    "category": "Float Math",
     "label": "ROUND",
     "inputs": [
       {
@@ -1365,7 +1365,7 @@
   },
   {
     "type": "math/trunc/float",
-    "category": "Flaot Math",
+    "category": "Float Math",
     "label": "TRUNC",
     "inputs": [
       {
@@ -1384,7 +1384,7 @@
   },
   {
     "type": "math/random/float",
-    "category": "Flaot Math",
+    "category": "Float Math",
     "label": "RANDOM",
     "inputs": [],
     "outputs": [
@@ -1397,7 +1397,7 @@
   },
   {
     "type": "math/equal/float",
-    "category": "Flaot Math",
+    "category": "Float Math",
     "label": "=",
     "inputs": [
       {
@@ -1421,7 +1421,7 @@
   },
   {
     "type": "math/equalTolerance/float",
-    "category": "Flaot Math",
+    "category": "Float Math",
     "label": "=",
     "inputs": [
       {
@@ -1450,7 +1450,7 @@
   },
   {
     "type": "math/greaterThan/float",
-    "category": "Flaot Math",
+    "category": "Float Math",
     "label": ">",
     "inputs": [
       {
@@ -1474,7 +1474,7 @@
   },
   {
     "type": "math/greaterThanOrEqual/float",
-    "category": "Flaot Math",
+    "category": "Float Math",
     "label": "≥",
     "inputs": [
       {
@@ -1498,7 +1498,7 @@
   },
   {
     "type": "math/lessThan/float",
-    "category": "Flaot Math",
+    "category": "Float Math",
     "label": "<",
     "inputs": [
       {
@@ -1522,7 +1522,7 @@
   },
   {
     "type": "math/lessThanOrEqual/float",
-    "category": "Flaot Math",
+    "category": "Float Math",
     "label": "≤",
     "inputs": [
       {
@@ -1546,7 +1546,7 @@
   },
   {
     "type": "math/isNaN/float",
-    "category": "Flaot Math",
+    "category": "Float Math",
     "label": "isNaN",
     "inputs": [
       {
@@ -1565,7 +1565,7 @@
   },
   {
     "type": "math/isInf/float",
-    "category": "Flaot Math",
+    "category": "Float Math",
     "label": "isInf",
     "inputs": [
       {
@@ -2103,7 +2103,7 @@
   },
   {
     "type": "math/toString/float",
-    "category": "Flaot Math",
+    "category": "Float Math",
     "label": "To String",
     "inputs": [
       {
@@ -2284,6 +2284,14 @@
       {
         "name": "position",
         "valueType": "vec3"
+      },
+      {
+        "name": "rotation",
+        "valueType": "euler"
+      },
+      {
+        "name": "scale",
+        "valueType": "vec3"
       }
     ],
     "configuration": []
@@ -2291,7 +2299,7 @@
   {
     "type": "math/vec3/combine",
     "category": "Vec3 Math",
-    "label": "Combine XYZ",
+    "label": "Combine Vec3",
     "inputs": [
       {
         "name": "x",
@@ -2344,6 +2352,112 @@
       {
         "name": "z",
         "valueType": "float"
+      }
+    ],
+    "configuration": []
+  },
+  {
+    "type": "math/vec3/toEuler",
+    "category": "Vec3 Math",
+    "label": "to Euler",
+    "inputs": [
+      {
+        "name": "v",
+        "valueType": "vec3",
+        "defaultValue": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        }
+      }
+    ],
+    "outputs": [
+      {
+        "name": "v",
+        "valueType": "euler"
+      }
+    ],
+    "configuration": []
+  },
+  {
+    "type": "math/euler/combine",
+    "category": "Eueler Math",
+    "label": "Combine Euler",
+    "inputs": [
+      {
+        "name": "x",
+        "valueType": "float",
+        "defaultValue": 0
+      },
+      {
+        "name": "y",
+        "valueType": "float",
+        "defaultValue": 0
+      },
+      {
+        "name": "z",
+        "valueType": "float",
+        "defaultValue": 0
+      }
+    ],
+    "outputs": [
+      {
+        "name": "v",
+        "valueType": "euler"
+      }
+    ],
+    "configuration": []
+  },
+  {
+    "type": "math/euler/separate",
+    "category": "Eueler Math",
+    "label": "Separate Eueler",
+    "inputs": [
+      {
+        "name": "v",
+        "valueType": "euler",
+        "defaultValue": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        }
+      }
+    ],
+    "outputs": [
+      {
+        "name": "x",
+        "valueType": "float"
+      },
+      {
+        "name": "y",
+        "valueType": "float"
+      },
+      {
+        "name": "z",
+        "valueType": "float"
+      }
+    ],
+    "configuration": []
+  },
+  {
+    "type": "math/euler/toVec3",
+    "category": "Eueler Math",
+    "label": "to Vec3",
+    "inputs": [
+      {
+        "name": "v",
+        "valueType": "euler",
+        "defaultValue": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        }
+      }
+    ],
+    "outputs": [
+      {
+        "name": "v",
+        "valueType": "vec3"
       }
     ],
     "configuration": []

@@ -7,7 +7,24 @@ from nodeitems_utils import NodeCategory, NodeItem, register_node_categories, un
 
 auto_casts = {
     ("BGHubsEntitySocket", "NodeSocketString"): "BGNode_hubs_entity_toString",
-    ("NodeSocketFloat", "NodeSocketString"): "BGNode_math_toFloat_string"
+
+    ("NodeSocketFloat", "NodeSocketString"): "BGNode_math_toString_float",
+    ("NodeSocketBool", "NodeSocketString"): "BGNode_math_toString_boolean",
+    ("NodeSocketInt", "NodeSocketString"): "BGNode_math_toString_integer",
+
+    ("NodeSocketString", "NodeSocketFloat"): "BGNode_math_toFloat_string",
+    ("NodeSocketBool", "NodeSocketFloat"): "BGNode_math_toFloat_boolean",
+    ("NodeSocketInt", "NodeSocketFloat"): "BGNode_math_toFloat_integer",
+
+    ("NodeSocketFloat", "NodeSocketInt"): "BGNode_math_toInteger_float",
+    ("NodeSocketString", "NodeSocketInt"): "BGNode_math_toInteger_string",
+    ("NodeSocketBool", "NodeSocketInt"): "BGNode_math_toInteger_boolean",
+
+    ("NodeSocketString", "NodeSocketBool"): "BGNode_math_toBoolean_string",
+    ("NodeSocketInt", "NodeSocketBool"): "BGNode_math_toBoolean_integer",
+
+    ("NodeSocketVectorXYZ", "NodeSocketVectorEuler"): "BGNode_math_vec3_toEuler",
+    ("NodeSocketVectorEuler", "NodeSocketVectorXYZ"): "BGNode_math_euler_toVec3"
 }
 
 class BGTree(NodeTree):
@@ -28,6 +45,8 @@ class BGTree(NodeTree):
         for link in self.links:
             if type(link.from_socket) != type(link.to_socket):
                 cast_key = (link.from_socket.bl_idname, link.to_socket.bl_idname)
+                # if link.from_socket.bl_idname.startswith("NodeSocketVector") and link.to_socket.bl_idname.startswith("NodeSocketVector"):
+                #     continue
                 if isinstance(link.from_socket.node, NodeReroute):
                     from_node = link.from_socket.node
                     from_node.outputs.clear()
@@ -39,13 +58,16 @@ class BGTree(NodeTree):
                     to_node.inputs.new(link.from_socket.bl_idname, "Input")
                     self.links.new(link.from_socket, to_node.inputs["Input"])
                 elif cast_key in auto_casts:
-                    node = self.nodes.new(auto_casts[cast_key])
-                    node.location = [link.from_node.location[0] + abs(link.from_node.location[0] - link.to_node.location[0])/2, link.from_node.location[1]]
-                    self.links.new(link.from_socket, node.inputs[0])
-                    self.links.new(node.outputs[0], link.to_socket)
-                    node.hide = True
-                    link.from_node.select = False
-                    node.select = True
+                    try:
+                        node = self.nodes.new(auto_casts[cast_key])
+                        node.location = [link.from_node.location[0] + abs(link.from_node.location[0] - link.to_node.location[0])/2, link.from_node.location[1]]
+                        self.links.new(link.from_socket, node.inputs[0])
+                        self.links.new(node.outputs[0], link.to_socket)
+                        node.hide = True
+                        link.from_node.select = False
+                        node.select = True
+                    except:
+                        self.links.remove(link)
                 else:
                     self.links.remove(link)
 
@@ -113,16 +135,20 @@ class BGActionNode():
         self.inputs.new("BGFlowSocket", "flow")
         self.outputs.new("BGFlowSocket", "flow")
 
-socket_type_for_property = {
-    "visible": "NodeSocketBool",
-    "position": "NodeSocketVectorXYZ",
+entity_property_settings = {
+    "visible": ("NodeSocketBool", False),
+    "position": ("NodeSocketVectorXYZ", [0.0,0.0,0.0]),
+    "rotation": ("NodeSocketVectorEuler", [0.0,0.0,0.0]),
+    "scale": ("NodeSocketVectorXYZ", [1.0,1.0,1.0]),
 }
 
 def update_target_property(self, context):
     if self.inputs and len(self.inputs) > 2:
         self.outputs.remove(self.inputs[2])
     setattr(self, "node_type",  "hubs/entity/set/" + self.targetProperty)
-    self.inputs.new(socket_type_for_property[self.targetProperty], self.targetProperty)
+    (socket_type, default_value) = entity_property_settings[self.targetProperty]
+    sock = self.inputs.new(socket_type, self.targetProperty)
+    sock.default_value = default_value
 
 class BGHubsSetEntityProperty(BGActionNode, BGNode, Node):
     bl_label = "Set Entity Property"
@@ -133,7 +159,9 @@ class BGHubsSetEntityProperty(BGActionNode, BGNode, Node):
         name="",
         items=[
             ("visible", "visible", ""),
-            ("position", "position", "")
+            ("position", "position", ""),
+            ("rotation", "rotation", ""),
+            ("scale", "scale", "")
         ],
         default="visible",
         update=update_target_property
@@ -220,6 +248,8 @@ def update_selected_variable_input(self, context):
     if tree is not None:
         selected_socket = tree.inputs[self.variableId]
         socket_type = selected_socket.bl_socket_idname
+        if socket_type == "NodeSocketVector":
+            socket_type = "NodeSocketVectorXYZ"
         self.inputs.new(socket_type, "value")
         self.variableName = self.variableId
 
@@ -236,6 +266,8 @@ def update_selected_variable_output(self, context):
         print(self.variableId)
         selected_socket = tree.inputs[self.variableId]
         socket_type = selected_socket.bl_socket_idname
+        if socket_type == "NodeSocketVector":
+            socket_type = "NodeSocketVectorXYZ"
         self.outputs.new(socket_type, "value")
         self.variableName = self.variableId
 
@@ -326,6 +358,7 @@ socket_type_mapping = {
     "flow": "BGFlowSocket",
     "string": "NodeSocketString",
     "vec3": "NodeSocketVectorXYZ",
+    "euler": "NodeSocketVectorEuler",
 }
 
 category_colors = {
@@ -358,7 +391,7 @@ def create_node_class(node_data):
             for input_data in node_data["inputs"]:
                 socket_type = socket_type_mapping[input_data["valueType"]]
                 sock = self.inputs.new(socket_type, input_data["name"])
-                if input_data["valueType"] != 'vec3' and "defaultValue" in input_data:
+                if (input_data["valueType"] != 'vec3' and input_data["valueType"] != "euler") and "defaultValue" in input_data:
                     sock.default_value = input_data["defaultValue"]
                 if "description" in input_data:
                     sock.description = input_data["description"]
@@ -366,8 +399,8 @@ def create_node_class(node_data):
             for output_data in node_data["outputs"]:
                 socket_type = socket_type_mapping[output_data["valueType"]]
                 sock = self.outputs.new(socket_type, output_data["name"])
-                if output_data["valueType"] != 'vec3' and "defaultValue" in output_data:
-                    sock.default_value = input_data["defaultValue"]
+                if (output_data["valueType"] != 'vec3' and output_data["valueType"] != "euler") and "defaultValue" in output_data:
+                    sock.default_value = output_data["defaultValue"]
                 if "description" in output_data:
                     sock.description = output_data["description"]
 
@@ -416,11 +449,16 @@ def extract_behavior_graph_data(node_tree, export_settings):
     }
 
     for i, socket in enumerate(node_tree.inputs):
+        type = socket.bl_socket_idname.replace("NodeSocket", "").lower()
+        value = socket.default_value
+        print(socket.name, type, value)
+        if type == "vector":
+            value = { "x": value[0], "y": value[1], "z": value[2]}
         data["variables"].append({
             "name": socket.name,
             "id": i,
-            "valueTypeName": socket.bl_socket_idname.replace("NodeSocket", "").lower(),
-            "initialValue": socket.default_value
+            "valueTypeName": type,
+            "initialValue": value
         })
 
     for node in node_tree.nodes:
