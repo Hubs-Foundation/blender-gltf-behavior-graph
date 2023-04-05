@@ -2297,89 +2297,6 @@
     "configuration": []
   },
   {
-    "type": "math/vec3/combine",
-    "category": "Vec3 Math",
-    "label": "Combine Vec3",
-    "inputs": [
-      {
-        "name": "x",
-        "valueType": "float",
-        "defaultValue": 0
-      },
-      {
-        "name": "y",
-        "valueType": "float",
-        "defaultValue": 0
-      },
-      {
-        "name": "z",
-        "valueType": "float",
-        "defaultValue": 0
-      }
-    ],
-    "outputs": [
-      {
-        "name": "v",
-        "valueType": "vec3"
-      }
-    ],
-    "configuration": []
-  },
-  {
-    "type": "math/vec3/separate",
-    "category": "Vec3 Math",
-    "label": "Separate Vec3",
-    "inputs": [
-      {
-        "name": "v",
-        "valueType": "vec3",
-        "defaultValue": {
-          "x": 0,
-          "y": 0,
-          "z": 0
-        }
-      }
-    ],
-    "outputs": [
-      {
-        "name": "x",
-        "valueType": "float"
-      },
-      {
-        "name": "y",
-        "valueType": "float"
-      },
-      {
-        "name": "z",
-        "valueType": "float"
-      }
-    ],
-    "configuration": []
-  },
-  {
-    "type": "math/vec3/toEuler",
-    "category": "Vec3 Math",
-    "label": "to Euler",
-    "inputs": [
-      {
-        "name": "v",
-        "valueType": "vec3",
-        "defaultValue": {
-          "x": 0,
-          "y": 0,
-          "z": 0
-        }
-      }
-    ],
-    "outputs": [
-      {
-        "name": "v",
-        "valueType": "euler"
-      }
-    ],
-    "configuration": []
-  },
-  {
     "type": "math/euler/combine",
     "category": "Eueler Math",
     "label": "Combine Euler",
@@ -2463,6 +2380,89 @@
     "configuration": []
   },
   {
+    "type": "math/vec3/combine",
+    "category": "Vec3 Math",
+    "label": "Combine Vec3",
+    "inputs": [
+      {
+        "name": "x",
+        "valueType": "float",
+        "defaultValue": 0
+      },
+      {
+        "name": "y",
+        "valueType": "float",
+        "defaultValue": 0
+      },
+      {
+        "name": "z",
+        "valueType": "float",
+        "defaultValue": 0
+      }
+    ],
+    "outputs": [
+      {
+        "name": "v",
+        "valueType": "vec3"
+      }
+    ],
+    "configuration": []
+  },
+  {
+    "type": "math/vec3/separate",
+    "category": "Vec3 Math",
+    "label": "Separate Vec3",
+    "inputs": [
+      {
+        "name": "v",
+        "valueType": "vec3",
+        "defaultValue": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        }
+      }
+    ],
+    "outputs": [
+      {
+        "name": "x",
+        "valueType": "float"
+      },
+      {
+        "name": "y",
+        "valueType": "float"
+      },
+      {
+        "name": "z",
+        "valueType": "float"
+      }
+    ],
+    "configuration": []
+  },
+  {
+    "type": "math/vec3/toEuler",
+    "category": "Vec3 Math",
+    "label": "To Euler",
+    "inputs": [
+      {
+        "name": "v",
+        "valueType": "vec3",
+        "defaultValue": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        }
+      }
+    ],
+    "outputs": [
+      {
+        "name": "v",
+        "valueType": "euler"
+      }
+    ],
+    "configuration": []
+  },
+  {
     "type": "math/vec3",
     "category": "Vec3 Math",
     "label": "Vec3",
@@ -2487,8 +2487,8 @@
   },
   {
     "type": "math/toVec3/float",
-    "category": "Vec3 Math",
-    "label": "Float to Vec3",
+    "category": "Float Math",
+    "label": "to Vec3",
     "inputs": [
       {
         "name": "x",
@@ -2517,7 +2517,7 @@
   {
     "type": "math/toFloat/vec3",
     "category": "Vec3 Math",
-    "label": "Vec3 To Float",
+    "label": "To Float",
     "inputs": [
       {
         "name": "a",
