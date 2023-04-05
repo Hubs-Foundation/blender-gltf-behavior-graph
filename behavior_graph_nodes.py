@@ -235,7 +235,7 @@ class BGNode_hubs_onCollisionExit(BGEventNode, BGNode, Node):
 
 
 def get_available_input_sockets(self, context):
-    tree = context.space_data.edit_tree
+    tree = self.id_data
     if tree is not None:
         return [(socket.name, socket.name, socket.name) for socket in tree.inputs]
     else:
@@ -247,14 +247,13 @@ def update_selected_variable_input(self, context):
         self.inputs.remove(self.inputs[1])
 
     # Create a new socket based on the selected variable type
-    tree = context.space_data.edit_tree
+    tree = self.id_data
     if tree is not None:
         selected_socket = tree.inputs[self.variableId]
         socket_type = selected_socket.bl_socket_idname
         if socket_type == "NodeSocketVector":
             socket_type = "NodeSocketVectorXYZ"
         self.inputs.new(socket_type, "value")
-        self.variableName = self.variableId
 
     return None
 
@@ -264,7 +263,7 @@ def update_selected_variable_output(self, context):
         self.outputs.remove(self.outputs[0])
 
     # Create a new socket based on the selected variable type
-    tree = context.space_data.edit_tree
+    tree = self.id_data
     if tree is not None:
         print(self.variableId)
         selected_socket = tree.inputs[self.variableId]
@@ -272,7 +271,6 @@ def update_selected_variable_output(self, context):
         if socket_type == "NodeSocketVector":
             socket_type = "NodeSocketVectorXYZ"
         self.outputs.new(socket_type, "value")
-        self.variableName = self.variableId
 
     return None
 
@@ -286,11 +284,11 @@ class BGNode_variable_get(BGNode, Node):
         items=get_available_input_sockets,
         update=update_selected_variable_output,
     )
-    variableName: bpy.props.StringProperty()
 
     def init(self, context):
         super().init(context)
         self.color = (0.2, 0.6, 0.2)
+        update_selected_variable_output(self, context)
 
     def draw_buttons(self, context, layout):
         layout.prop(self, "variableId")
@@ -306,11 +304,11 @@ class BGNode_variable_set(BGActionNode, BGNode, Node):
         items=get_available_input_sockets,
         update=update_selected_variable_input
     )
-    variableName: bpy.props.StringProperty()
 
     def init(self, context):
         super().init(context)
         self.color = (0.2, 0.6, 0.2)
+        update_selected_variable_input(self, context)
 
     def draw_buttons(self, context, layout):
         layout.prop(self, "variableId")
@@ -514,7 +512,8 @@ def extract_behavior_graph_data(node_tree, export_settings):
                 else:
                     node_data["parameters"][input_socket.identifier] = { "value": gather_property(export_settings, input_socket, input_socket, "default_value") }
         if isinstance(node, BGNode_variable_get) or isinstance(node, BGNode_variable_set):
-            node_data["configuration"]["variableId"] = node_tree.inputs.find(getattr(node, 'variableName'))
+            print("VAR NODE", node.variableId, node_tree.inputs.find(node.variableId))
+            node_data["configuration"]["variableId"] = node_tree.inputs.find(node.variableId)
         elif hasattr(node, "__annotations__"):
             for key in node.__annotations__.keys():
                 node_data["configuration"][key] = gather_property(export_settings, node, node, key)
