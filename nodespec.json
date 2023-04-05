@@ -2397,6 +2397,26 @@
         "name": "loop",
         "valueType": "boolean",
         "defaultValue": true
+      },
+      {
+        "name": "clampWhenFinished",
+        "valueType": "boolean",
+        "defaultValue": false
+      },
+      {
+        "name": "weight",
+        "valueType": "float",
+        "defaultValue": 1
+      },
+      {
+        "name": "timeScale",
+        "valueType": "float",
+        "defaultValue": 1
+      },
+      {
+        "name": "additiveBlending",
+        "valueType": "boolean",
+        "defaultValue": false
       }
     ],
     "outputs": [
