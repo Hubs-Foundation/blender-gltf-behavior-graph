@@ -1,7 +1,7 @@
 import bpy
 import os
 from bpy.props import StringProperty, PointerProperty
-from bpy.types import GeometryNode, Node, NodeTree, NodeSocket, NodeSocketStandard, ShaderNode, TextureNode, Operator, NodeGroupInput, NodeReroute, NodeSocketString, NodeSocketBool, NodeSocketFloat
+from bpy.types import GeometryNode, Node, NodeTree, NodeSocket, NodeSocketStandard,NodeSocketInterface, ShaderNode, TextureNode, Operator, NodeGroupInput, NodeReroute, NodeSocketString, NodeSocketBool, NodeSocketFloat
 from bpy.utils import register_class, unregister_class
 from nodeitems_utils import NodeCategory, NodeItem, register_node_categories, unregister_node_categories
 
@@ -75,7 +75,7 @@ class BGTree(NodeTree):
                     self.links.remove(link)
 
 class BGFlowSocket(NodeSocketStandard):
-    bl_label = "Behavior Graph Flow Socket"
+    bl_label = "Behavior Graph Flow"
 
     def __init__(self):
         self.display_shape = "DIAMOND"
@@ -96,7 +96,7 @@ class BGFlowSocket(NodeSocketStandard):
         return (1.0, 1.0, 1.0, 1.0)
 
 class BGHubsEntitySocket(NodeSocketStandard):
-    bl_label = "Behavior Graph Entity Socket"
+    bl_label = "Hubs Entity"
 
     target: PointerProperty(
         name="Target",
@@ -112,6 +112,25 @@ class BGHubsEntitySocket(NodeSocketStandard):
 
     def draw_color(self, context, node):
         return (0.2, 1.0, 0.2, 1.0)
+
+class BGHubsAnimationActionSocketInterface(NodeSocketInterface):
+    bl_idname = "BGHubsAnimationActionSocketInterface"
+    bl_socket_idname = "BGHubsAnimationActionSocket"
+
+    def draw(self, context, layout):
+        pass
+
+    def draw_color(self, context):
+        return (0.2, 1.0, 1.0, 1.0)
+
+class BGHubsAnimationActionSocket(NodeSocketStandard):
+    bl_label = "Hubs AnimationAction"
+
+    def draw(self, context, layout, node, text):
+        layout.label(text=text)
+
+    def draw_color(self, context, node):
+        return (0.2, 1.0, 1.0, 1.0)
 
 class BGNode():
     bl_label = "Behavior Graph Node"
@@ -338,6 +357,8 @@ all_classes = [
     BGTree,
     BGFlowSocket,
     BGHubsEntitySocket,
+    BGHubsAnimationActionSocket,
+    BGHubsAnimationActionSocketInterface,
 
     BGNode_variable_get,
     BGNode_variable_set,
@@ -360,6 +381,7 @@ type_to_socket = {
     "string": "NodeSocketString",
     "vec3": "NodeSocketVectorXYZ",
     "euler": "NodeSocketVectorEuler",
+    "animationAction": "BGHubsAnimationActionSocket",
 }
 
 socket_to_type = {
@@ -372,6 +394,7 @@ socket_to_type = {
     "NodeSocketVector": "vec3",
     "NodeSocketVectorXYZ": "vec3",
     "NodeSocketVectorEuler": "euler",
+     "BGHubsAnimationActionSocket": "animationAction",
 }
 
 category_colors = {
@@ -463,7 +486,9 @@ def extract_behavior_graph_data(node_tree, export_settings):
 
     for i, socket in enumerate(node_tree.inputs):
         socket_type = socket_to_type[socket.bl_socket_idname]
-        value = gather_property(export_settings, socket, socket, "default_value")
+        value = None
+        if hasattr(socket, "default_value"):
+            value = gather_property(export_settings, socket, socket, "default_value")
         if socket_type == "vec3":
             value = {"x": value[0], "y": value[1], "z": value[2]}
         print(socket.name, socket_type, value)

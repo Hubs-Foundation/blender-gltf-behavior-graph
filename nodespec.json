@@ -2380,6 +2380,146 @@
     "configuration": []
   },
   {
+    "type": "animation/createAnimationAction",
+    "category": "Animation",
+    "label": "Create AnimationAction",
+    "inputs": [
+      {
+        "name": "flow",
+        "valueType": "flow"
+      },
+      {
+        "name": "clipName",
+        "valueType": "string",
+        "defaultValue": ""
+      },
+      {
+        "name": "loop",
+        "valueType": "boolean",
+        "defaultValue": true
+      }
+    ],
+    "outputs": [
+      {
+        "name": "flow",
+        "valueType": "flow"
+      },
+      {
+        "name": "action",
+        "valueType": "animationAction"
+      }
+    ],
+    "configuration": []
+  },
+  {
+    "type": "animation/play",
+    "category": "Animation",
+    "label": "Play Animation",
+    "inputs": [
+      {
+        "name": "flow",
+        "valueType": "flow"
+      },
+      {
+        "name": "action",
+        "valueType": "animationAction",
+        "defaultValue": null
+      },
+      {
+        "name": "reset",
+        "valueType": "boolean",
+        "defaultValue": true
+      }
+    ],
+    "outputs": [
+      {
+        "name": "flow",
+        "valueType": "flow"
+      }
+    ],
+    "configuration": []
+  },
+  {
+    "type": "animation/stop",
+    "category": "Animation",
+    "label": "Stop Animation",
+    "inputs": [
+      {
+        "name": "flow",
+        "valueType": "flow"
+      },
+      {
+        "name": "action",
+        "valueType": "animationAction",
+        "defaultValue": null
+      }
+    ],
+    "outputs": [
+      {
+        "name": "flow",
+        "valueType": "flow"
+      }
+    ],
+    "configuration": []
+  },
+  {
+    "type": "animation/crossfadeTo",
+    "category": "Animation",
+    "label": "Crossfade To Animation",
+    "inputs": [
+      {
+        "name": "flow",
+        "valueType": "flow"
+      },
+      {
+        "name": "action",
+        "valueType": "animationAction",
+        "defaultValue": null
+      },
+      {
+        "name": "toAction",
+        "valueType": "animationAction",
+        "defaultValue": null
+      },
+      {
+        "name": "duration",
+        "valueType": "float",
+        "defaultValue": 0
+      },
+      {
+        "name": "warp",
+        "valueType": "boolean",
+        "defaultValue": false
+      }
+    ],
+    "outputs": [
+      {
+        "name": "flow",
+        "valueType": "flow"
+      }
+    ],
+    "configuration": []
+  },
+  {
+    "type": "animation/isRunning",
+    "category": "Animation",
+    "label": "Is Animation Running?",
+    "inputs": [
+      {
+        "name": "action",
+        "valueType": "animationAction",
+        "defaultValue": null
+      }
+    ],
+    "outputs": [
+      {
+        "name": "result",
+        "valueType": "boolean"
+      }
+    ],
+    "configuration": []
+  },
+  {
     "type": "math/vec3/combine",
     "category": "Vec3 Math",
     "label": "Combine Vec3",
