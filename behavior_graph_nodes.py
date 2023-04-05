@@ -24,7 +24,10 @@ auto_casts = {
     ("NodeSocketInt", "NodeSocketBool"): "BGNode_math_toBoolean_integer",
 
     ("NodeSocketVectorXYZ", "NodeSocketVectorEuler"): "BGNode_math_vec3_toEuler",
-    ("NodeSocketVectorEuler", "NodeSocketVectorXYZ"): "BGNode_math_euler_toVec3"
+    ("NodeSocketVectorEuler", "NodeSocketVectorXYZ"): "BGNode_math_euler_toVec3",
+
+    ("NodeSocketVectorXYZ", "NodeSocketFloat"): "BGNode_math_toFloat_vec3",
+    ("NodeSocketFloat", "NodeSocketVectorXYZ"): "BGNode_math_toVec3_float",
 }
 
 class BGTree(NodeTree):
@@ -63,7 +66,7 @@ class BGTree(NodeTree):
                         node.location = [link.from_node.location[0] + abs(link.from_node.location[0] - link.to_node.location[0])/2, link.from_node.location[1]]
                         self.links.new(link.from_socket, node.inputs[0])
                         self.links.new(node.outputs[0], link.to_socket)
-                        node.hide = True
+                        node.hide = len(node.inputs) <= 1 and len(node.outputs) <= 1
                         link.from_node.select = False
                         node.select = True
                     except:
@@ -319,7 +322,7 @@ class BGCategory(NodeCategory):
         return context.space_data.tree_type == "BGTree"
 
 behavior_graph_node_categories = {
-    "Events": [
+    "Event": [
         NodeItem("BGNode_hubs_onInteract"),
         NodeItem("BGNode_hubs_onCollisionEnter"),
         NodeItem("BGNode_hubs_onCollisionExit"),

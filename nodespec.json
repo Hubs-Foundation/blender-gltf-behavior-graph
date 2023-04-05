@@ -1624,7 +1624,7 @@
   },
   {
     "type": "debug/log",
-    "category": "Action",
+    "category": "Debug",
     "label": "Debug Log",
     "inputs": [
       {
@@ -2458,6 +2458,388 @@
       {
         "name": "v",
         "valueType": "vec3"
+      }
+    ],
+    "configuration": []
+  },
+  {
+    "type": "math/vec3",
+    "category": "Vec3 Math",
+    "label": "Vec3",
+    "inputs": [
+      {
+        "name": "a",
+        "valueType": "vec3",
+        "defaultValue": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        }
+      }
+    ],
+    "outputs": [
+      {
+        "name": "result",
+        "valueType": "vec3"
+      }
+    ],
+    "configuration": []
+  },
+  {
+    "type": "math/toVec3/float",
+    "category": "Vec3 Math",
+    "label": "Float to Vec3",
+    "inputs": [
+      {
+        "name": "x",
+        "valueType": "float",
+        "defaultValue": 0
+      },
+      {
+        "name": "y",
+        "valueType": "float",
+        "defaultValue": 0
+      },
+      {
+        "name": "z",
+        "valueType": "float",
+        "defaultValue": 0
+      }
+    ],
+    "outputs": [
+      {
+        "name": "result",
+        "valueType": "vec3"
+      }
+    ],
+    "configuration": []
+  },
+  {
+    "type": "math/toFloat/vec3",
+    "category": "Vec3 Math",
+    "label": "Vec3 To Float",
+    "inputs": [
+      {
+        "name": "a",
+        "valueType": "vec3",
+        "defaultValue": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        }
+      }
+    ],
+    "outputs": [
+      {
+        "name": "x",
+        "valueType": "float"
+      },
+      {
+        "name": "y",
+        "valueType": "float"
+      },
+      {
+        "name": "z",
+        "valueType": "float"
+      }
+    ],
+    "configuration": []
+  },
+  {
+    "type": "math/add/vec3",
+    "category": "Vec3 Math",
+    "label": "+",
+    "inputs": [
+      {
+        "name": "a",
+        "valueType": "vec3",
+        "defaultValue": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        }
+      },
+      {
+        "name": "b",
+        "valueType": "vec3",
+        "defaultValue": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        }
+      }
+    ],
+    "outputs": [
+      {
+        "name": "result",
+        "valueType": "vec3"
+      }
+    ],
+    "configuration": []
+  },
+  {
+    "type": "math/subtract/vec3",
+    "category": "Vec3 Math",
+    "label": "Subtract",
+    "inputs": [
+      {
+        "name": "a",
+        "valueType": "vec3",
+        "defaultValue": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        }
+      },
+      {
+        "name": "b",
+        "valueType": "vec3",
+        "defaultValue": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        }
+      }
+    ],
+    "outputs": [
+      {
+        "name": "result",
+        "valueType": "vec3"
+      }
+    ],
+    "configuration": []
+  },
+  {
+    "type": "math/negate/vec3",
+    "category": "Vec3 Math",
+    "label": "Negate",
+    "inputs": [
+      {
+        "name": "a",
+        "valueType": "vec3",
+        "defaultValue": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        }
+      }
+    ],
+    "outputs": [
+      {
+        "name": "result",
+        "valueType": "vec3"
+      }
+    ],
+    "configuration": []
+  },
+  {
+    "type": "math/scale/vec3",
+    "category": "Vec3 Math",
+    "label": "×",
+    "inputs": [
+      {
+        "name": "a",
+        "valueType": "vec3",
+        "defaultValue": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        }
+      },
+      {
+        "name": "b",
+        "valueType": "float",
+        "defaultValue": 0
+      }
+    ],
+    "outputs": [
+      {
+        "name": "result",
+        "valueType": "vec3"
+      }
+    ],
+    "configuration": []
+  },
+  {
+    "type": "math/length/vec3",
+    "category": "Vec3 Math",
+    "label": "Length",
+    "inputs": [
+      {
+        "name": "a",
+        "valueType": "vec3",
+        "defaultValue": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        }
+      }
+    ],
+    "outputs": [
+      {
+        "name": "result",
+        "valueType": "float"
+      }
+    ],
+    "configuration": []
+  },
+  {
+    "type": "math/normalize/vec3",
+    "category": "Vec3 Math",
+    "label": "Normalize",
+    "inputs": [
+      {
+        "name": "a",
+        "valueType": "vec3",
+        "defaultValue": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        }
+      }
+    ],
+    "outputs": [
+      {
+        "name": "result",
+        "valueType": "vec3"
+      }
+    ],
+    "configuration": []
+  },
+  {
+    "type": "math/cross/vec3",
+    "category": "Vec3 Math",
+    "label": "Cross",
+    "inputs": [
+      {
+        "name": "a",
+        "valueType": "vec3",
+        "defaultValue": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        }
+      },
+      {
+        "name": "b",
+        "valueType": "vec3",
+        "defaultValue": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        }
+      }
+    ],
+    "outputs": [
+      {
+        "name": "result",
+        "valueType": "vec3"
+      }
+    ],
+    "configuration": []
+  },
+  {
+    "type": "math/dot/vec3",
+    "category": "Vec3 Math",
+    "label": "Dot",
+    "inputs": [
+      {
+        "name": "a",
+        "valueType": "vec3",
+        "defaultValue": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        }
+      },
+      {
+        "name": "b",
+        "valueType": "vec3",
+        "defaultValue": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        }
+      }
+    ],
+    "outputs": [
+      {
+        "name": "result",
+        "valueType": "float"
+      }
+    ],
+    "configuration": []
+  },
+  {
+    "type": "math/mix/vec3",
+    "category": "Vec3 Math",
+    "label": "÷",
+    "inputs": [
+      {
+        "name": "a",
+        "valueType": "vec3",
+        "defaultValue": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        }
+      },
+      {
+        "name": "b",
+        "valueType": "vec3",
+        "defaultValue": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        }
+      },
+      {
+        "name": "t",
+        "valueType": "float",
+        "defaultValue": 0
+      }
+    ],
+    "outputs": [
+      {
+        "name": "result",
+        "valueType": "vec3"
+      }
+    ],
+    "configuration": []
+  },
+  {
+    "type": "math/equal/vec3",
+    "category": "Vec3 Math",
+    "label": "=",
+    "inputs": [
+      {
+        "name": "a",
+        "valueType": "vec3",
+        "defaultValue": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        }
+      },
+      {
+        "name": "b",
+        "valueType": "vec3",
+        "defaultValue": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        }
+      },
+      {
+        "name": "tolerance",
+        "valueType": "float",
+        "defaultValue": 0
+      }
+    ],
+    "outputs": [
+      {
+        "name": "result",
+        "valueType": "boolean"
       }
     ],
     "configuration": []
