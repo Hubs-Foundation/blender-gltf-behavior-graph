@@ -2455,6 +2455,18 @@
       {
         "name": "flow",
         "valueType": "flow"
+      },
+      {
+        "name": "finished",
+        "valueType": "flow"
+      },
+      {
+        "name": "loop",
+        "valueType": "flow"
+      },
+      {
+        "name": "stopped",
+        "valueType": "flow"
       }
     ],
     "configuration": []
@@ -2510,6 +2522,34 @@
         "name": "warp",
         "valueType": "boolean",
         "defaultValue": false
+      }
+    ],
+    "outputs": [
+      {
+        "name": "flow",
+        "valueType": "flow"
+      }
+    ],
+    "configuration": []
+  },
+  {
+    "type": "three/animation/setTimescale",
+    "category": "Animation",
+    "label": "Set timeScale",
+    "inputs": [
+      {
+        "name": "flow",
+        "valueType": "flow"
+      },
+      {
+        "name": "action",
+        "valueType": "animationAction",
+        "defaultValue": null
+      },
+      {
+        "name": "timeScale",
+        "valueType": "float",
+        "defaultValue": 0
       }
     ],
     "outputs": [
