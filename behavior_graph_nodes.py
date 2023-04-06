@@ -511,6 +511,21 @@ def resolve_output_link(output_socket: bpy.types.NodeSocket) -> bpy.types.NodeLi
         output_socket = output_socket.links[0].to_node.outputs[0]
     return output_socket.links[0]
 
+def get_socket_value(export_settings, socket : NodeSocket):
+    if hasattr(socket, "bl_socket_idname"):
+        socket_type = socket_to_type[socket.bl_socket_idname]
+    else:
+        socket_type = socket_to_type[socket.bl_idname]
+
+    if socket_type == "entity":
+        return gather_property(export_settings, socket, socket, "target")
+    elif socket_type == "vec3": # TODO hubs addon ends up not knowing what to do with this and falls trough to an array
+        a = gather_property(export_settings, socket, socket, "default_value")
+        return {"x": a[0], "y": a[1], "z": a[2]}
+    elif hasattr(socket, "default_value"):
+        return gather_property(export_settings, socket, socket, "default_value")
+    else:
+        return None
 
 def extract_behavior_graph_data(node_tree, export_settings):
     data = {
@@ -520,11 +535,7 @@ def extract_behavior_graph_data(node_tree, export_settings):
 
     for i, socket in enumerate(node_tree.inputs):
         socket_type = socket_to_type[socket.bl_socket_idname]
-        value = None
-        if hasattr(socket, "default_value"):
-            value = gather_property(export_settings, socket, socket, "default_value")
-        if socket_type == "vec3":
-            value = {"x": value[0], "y": value[1], "z": value[2]}
+        value = get_socket_value(export_settings, socket)
         print(socket.name, socket_type, value)
         data["variables"].append({
             "name": socket.name,
@@ -569,7 +580,9 @@ def extract_behavior_graph_data(node_tree, export_settings):
                 elif isinstance(input_socket, BGHubsEntitySocket):
                     node_data["parameters"][input_socket.identifier] = { "value": gather_property(export_settings, input_socket, input_socket, "target") }
                 else:
-                    node_data["parameters"][input_socket.identifier] = { "value": gather_property(export_settings, input_socket, input_socket, "default_value") }
+                    value = get_socket_value(export_settings, input_socket)
+                    node_data["parameters"][input_socket.identifier] = { "value": value }
+
         if isinstance(node, BGNode_variable_get) or isinstance(node, BGNode_variable_set):
             print("VAR NODE", node.variableId, node_tree.inputs.find(node.variableId))
             node_data["configuration"]["variableId"] = node_tree.inputs.find(node.variableId)
