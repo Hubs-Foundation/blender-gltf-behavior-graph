@@ -252,6 +252,36 @@ class BGNode_hubs_onCollisionExit(BGEventNode, BGNode, Node):
     def draw_buttons(self, context, layout):
         layout.prop(self, "target")
 
+def update_output_sockets(self, context):
+    existing_outputs = len(self.outputs)
+    print("existing", existing_outputs, "desired", self.numOutputs)
+    if(existing_outputs < self.numOutputs):
+        for i in range(existing_outputs, self.numOutputs):
+            self.outputs.new("BGFlowSocket", f"{i+1}")
+    elif existing_outputs > self.numOutputs:
+        for i in range(self.numOutputs, existing_outputs):
+            self.outputs.remove(self.outputs[f"{i+1}"])
+
+class BGNode_flow_sequence(BGNode, Node):
+    bl_label = "Sequence"
+    node_type = "flow/sequence"
+
+    numOutputs: bpy.props.IntProperty(
+        name="Outputs",
+        default=2,
+        min=1,
+        update=update_output_sockets
+    )
+
+    def init(self, context):
+        super().init(context)
+        self.color = (0.2, 0.2, 0.2)
+        self.inputs.new("BGFlowSocket", "flow")
+        update_output_sockets(self, context)
+
+    def draw_buttons(self, context, layout):
+        layout.prop(self, "numOutputs")
+
 
 def get_available_input_sockets(self, context):
     tree = self.id_data
@@ -351,6 +381,9 @@ behavior_graph_node_categories = {
         NodeItem("BGNode_variable_get"),
         NodeItem("BGNode_variable_set"),
     ],
+   "Flow": [
+        NodeItem("BGNode_flow_sequence"),
+    ],
 }
 
 all_classes = [
@@ -362,6 +395,7 @@ all_classes = [
 
     BGNode_variable_get,
     BGNode_variable_set,
+    BGNode_flow_sequence,
 
     BGNode_hubs_onInteract,
     BGNode_hubs_onCollisionEnter,
