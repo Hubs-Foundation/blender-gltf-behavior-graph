@@ -2380,6 +2380,29 @@
     "configuration": []
   },
   {
+    "type": "hubs/displayMessage",
+    "category": "Misc",
+    "label": "Display Notification Message",
+    "inputs": [
+      {
+        "name": "flow",
+        "valueType": "flow"
+      },
+      {
+        "name": "text",
+        "valueType": "string",
+        "defaultValue": ""
+      }
+    ],
+    "outputs": [
+      {
+        "name": "flow",
+        "valueType": "flow"
+      }
+    ],
+    "configuration": []
+  },
+  {
     "type": "animation/createAnimationAction",
     "category": "Animation",
     "label": "Create AnimationAction",
