@@ -310,7 +310,7 @@ class BGNode_hubs_onPlayerCollisionEnter(BGEventNode, BGNode, Node):
 
     def init(self, context):
         super().init(context)
-        self.outputs.new("BGHubsEntitySocket", "entity")
+        self.outputs.new("BGHubsPlayerSocket", "player")
 
     def draw_buttons(self, context, layout):
         layout.prop(self, "target")
@@ -328,7 +328,7 @@ class BGNode_hubs_onPlayerCollisionExit(BGEventNode, BGNode, Node):
 
     def init(self, context):
         super().init(context)
-        self.outputs.new("BGHubsEntitySocket", "player")
+        self.outputs.new("BGHubsPlayerSocket", "player")
 
     def draw_buttons(self, context, layout):
         layout.prop(self, "target")
