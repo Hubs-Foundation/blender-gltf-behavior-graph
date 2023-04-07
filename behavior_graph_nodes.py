@@ -113,6 +113,33 @@ class BGHubsEntitySocket(NodeSocketStandard):
     def draw_color(self, context, node):
         return (0.2, 1.0, 0.2, 1.0)
 
+
+def get_choices(self, context):
+    return [(choice.value, choice.text, "") for choice in self.choices]
+
+class BGEnumSocketChoice(bpy.types.PropertyGroup):
+    text: StringProperty()
+    value: StringProperty()
+
+class BGEnumSocket(NodeSocketStandard):
+    bl_label = "String Choice"
+
+    default_value: bpy.props.EnumProperty(
+        name="",
+        items=get_choices
+    )
+
+    choices: bpy.props.CollectionProperty(type=BGEnumSocketChoice)
+
+    def draw(self, context, layout, node, text):
+        if self.is_linked:
+            layout.label(text=text)
+        else:
+            layout.prop(self, "default_value", text=text)
+
+    def draw_color(self, context, node):
+        return (0.4, 0.7, 1.0, 1.0)
+
 class BGHubsAnimationActionSocketInterface(NodeSocketInterface):
     bl_idname = "BGHubsAnimationActionSocketInterface"
     bl_socket_idname = "BGHubsAnimationActionSocket"
@@ -393,6 +420,9 @@ all_classes = [
     BGHubsAnimationActionSocket,
     BGHubsAnimationActionSocketInterface,
 
+    BGEnumSocketChoice,
+    BGEnumSocket,
+
     BGNode_variable_get,
     BGNode_variable_set,
     BGNode_flow_sequence,
@@ -428,7 +458,8 @@ socket_to_type = {
     "NodeSocketVector": "vec3",
     "NodeSocketVectorXYZ": "vec3",
     "NodeSocketVectorEuler": "euler",
-     "BGHubsAnimationActionSocket": "animationAction",
+    "BGHubsAnimationActionSocket": "animationAction",
+    "BGEnumSocket": "string",
 }
 
 category_colors = {
@@ -459,8 +490,17 @@ def create_node_class(node_data):
                 self.color = category_colors["None"]
 
             for input_data in node_data["inputs"]:
-                socket_type = type_to_socket[input_data["valueType"]]
-                sock = self.inputs.new(socket_type, input_data["name"])
+
+                if "choices" in input_data:
+                    sock = self.inputs.new("BGEnumSocket", input_data["name"])
+                    for choice_data in input_data["choices"]:
+                        choice = sock.choices.add()
+                        choice.text = choice_data["text"]
+                        choice.value = choice_data["value"]
+                else:
+                    socket_type = type_to_socket[input_data["valueType"]]
+                    sock = self.inputs.new(socket_type, input_data["name"])
+
                 if (input_data["valueType"] != 'vec3' and input_data["valueType"] != "euler") and "defaultValue" in input_data:
                     sock.default_value = input_data["defaultValue"]
                 if "description" in input_data:
@@ -513,10 +553,14 @@ def resolve_output_link(output_socket: bpy.types.NodeSocket) -> bpy.types.NodeLi
 
 def get_socket_value(export_settings, socket : NodeSocket):
     if hasattr(socket, "bl_socket_idname"):
-        socket_type = socket_to_type[socket.bl_socket_idname]
+        socket_idname = socket.bl_socket_idname
     else:
-        socket_type = socket_to_type[socket.bl_idname]
+        socket_idname = socket.bl_idname
 
+    socket_type = socket_to_type[socket_idname]
+
+    if socket_idname == "BGEnumSocket":
+        return socket.default_value
     if socket_type == "entity":
         return gather_property(export_settings, socket, socket, "target")
     elif socket_type == "vec3": # TODO hubs addon ends up not knowing what to do with this and falls trough to an array
