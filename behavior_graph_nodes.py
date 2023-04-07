@@ -159,6 +159,25 @@ class BGHubsAnimationActionSocket(NodeSocketStandard):
     def draw_color(self, context, node):
         return (0.2, 1.0, 1.0, 1.0)
 
+class BGHubsPlayerSocketInterface(NodeSocketInterface):
+    bl_idname = "BGHubsPlayerSocketInterface"
+    bl_socket_idname = "BGHubsPlayerSocket"
+
+    def draw(self, context, layout):
+        pass
+
+    def draw_color(self, context):
+        return (1.00, 0.91, 0.34, 1.0)
+
+class BGHubsPlayerSocket(NodeSocketStandard):
+    bl_label = "Hubs Player"
+
+    def draw(self, context, layout, node, text):
+        layout.label(text=text)
+
+    def draw_color(self, context, node):
+        return (1.00, 0.91, 0.34, 1.0)
+
 class BGNode():
     bl_label = "Behavior Graph Node"
     bl_icon = "NODE"
@@ -278,6 +297,42 @@ class BGNode_hubs_onCollisionExit(BGEventNode, BGNode, Node):
 
     def draw_buttons(self, context, layout):
         layout.prop(self, "target")
+
+class BGNode_hubs_onPlayerCollisionEnter(BGEventNode, BGNode, Node):
+    bl_label = "On Player Collision Enter"
+    node_type = "hubs/onPlayerCollisionEnter"
+
+    target: PointerProperty(
+        name="Target",
+        type=bpy.types.Object,
+        # poll=filter_on_component
+    )
+
+    def init(self, context):
+        super().init(context)
+        self.outputs.new("BGHubsEntitySocket", "entity")
+
+    def draw_buttons(self, context, layout):
+        layout.prop(self, "target")
+
+
+class BGNode_hubs_onPlayerCollisionExit(BGEventNode, BGNode, Node):
+    bl_label = "On Player Collision Exit"
+    node_type = "hubs/onPlayerCollisionExit"
+
+    target: PointerProperty(
+        name="Target",
+        type=bpy.types.Object,
+        # poll=filter_on_component
+    )
+
+    def init(self, context):
+        super().init(context)
+        self.outputs.new("BGHubsEntitySocket", "player")
+
+    def draw_buttons(self, context, layout):
+        layout.prop(self, "target")
+
 
 def update_output_sockets(self, context):
     existing_outputs = len(self.outputs)
@@ -400,6 +455,8 @@ behavior_graph_node_categories = {
         NodeItem("BGNode_hubs_onInteract"),
         NodeItem("BGNode_hubs_onCollisionEnter"),
         NodeItem("BGNode_hubs_onCollisionExit"),
+        NodeItem("BGNode_hubs_onPlayerCollisionEnter"),
+        NodeItem("BGNode_hubs_onPlayerCollisionExit"),
     ],
    "Entity": [
         NodeItem("BGHubsSetEntityProperty"),
@@ -419,6 +476,8 @@ all_classes = [
     BGHubsEntitySocket,
     BGHubsAnimationActionSocket,
     BGHubsAnimationActionSocketInterface,
+    BGHubsPlayerSocket,
+    BGHubsPlayerSocketInterface,
 
     BGEnumSocketChoice,
     BGEnumSocket,
@@ -430,6 +489,8 @@ all_classes = [
     BGNode_hubs_onInteract,
     BGNode_hubs_onCollisionEnter,
     BGNode_hubs_onCollisionExit,
+    BGNode_hubs_onPlayerCollisionEnter,
+    BGNode_hubs_onPlayerCollisionExit,
 
     BGHubsSetEntityProperty,
 ]
@@ -446,6 +507,7 @@ type_to_socket = {
     "vec3": "NodeSocketVectorXYZ",
     "euler": "NodeSocketVectorEuler",
     "animationAction": "BGHubsAnimationActionSocket",
+    "player": "BGHubsPlayerSocket"
 }
 
 socket_to_type = {
@@ -460,6 +522,7 @@ socket_to_type = {
     "NodeSocketVectorEuler": "euler",
     "BGHubsAnimationActionSocket": "animationAction",
     "BGEnumSocket": "string",
+    "BGHubsPlayerSocket": "player"
 }
 
 category_colors = {
@@ -563,8 +626,8 @@ def get_socket_value(export_settings, socket : NodeSocket):
         return socket.default_value
     if socket_type == "entity":
         return gather_property(export_settings, socket, socket, "target")
-    elif socket_type == "vec3": # TODO hubs addon ends up not knowing what to do with this and falls trough to an array
-        a = gather_property(export_settings, socket, socket, "default_value")
+    elif socket_type == "vec3": # TODO gather_property seems to not handle this correctly
+        a = socket.default_value
         return {"x": a[0], "y": a[1], "z": a[2]}
     elif hasattr(socket, "default_value"):
         return gather_property(export_settings, socket, socket, "default_value")
