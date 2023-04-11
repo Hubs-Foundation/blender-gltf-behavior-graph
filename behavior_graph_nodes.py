@@ -5,6 +5,9 @@ from bpy.types import GeometryNode, Node, NodeTree, NodeSocket, NodeSocketStanda
 from bpy.utils import register_class, unregister_class
 from nodeitems_utils import NodeCategory, NodeItem, register_node_categories, unregister_node_categories
 
+from io_hubs_addon.io.utils import gather_property
+from io_hubs_addon.components.utils import has_component
+
 auto_casts = {
     ("BGHubsEntitySocket", "NodeSocketString"): "BGNode_hubs_entity_toString",
 
@@ -262,16 +265,14 @@ class BGNode_hubs_onInteract(BGEventNode, BGNode, Node):
     def draw_buttons(self, context, layout):
         layout.prop(self, "target")
 
+def has_collider(self, ob):
+    return has_component(ob, "physics-shape")
 
 class BGNode_hubs_onCollisionEnter(BGEventNode, BGNode, Node):
     bl_label = "On Collision Enter"
     node_type = "hubs/onCollisionEnter"
 
-    target: PointerProperty(
-        name="Target",
-        type=bpy.types.Object,
-        # poll=filter_on_component
-    )
+    target: PointerProperty(name="Target", type=bpy.types.Object, poll=has_collider)
 
     def init(self, context):
         super().init(context)
@@ -285,11 +286,7 @@ class BGNode_hubs_onCollisionExit(BGEventNode, BGNode, Node):
     bl_label = "On Collision Exit"
     node_type = "hubs/onCollisionExit"
 
-    target: PointerProperty(
-        name="Target",
-        type=bpy.types.Object,
-        # poll=filter_on_component
-    )
+    target: PointerProperty(name="Target", type=bpy.types.Object, poll=has_collider)
 
     def init(self, context):
         super().init(context)
@@ -302,11 +299,7 @@ class BGNode_hubs_onPlayerCollisionEnter(BGEventNode, BGNode, Node):
     bl_label = "On Player Collision Enter"
     node_type = "hubs/onPlayerCollisionEnter"
 
-    target: PointerProperty(
-        name="Target",
-        type=bpy.types.Object,
-        # poll=filter_on_component
-    )
+    target: PointerProperty(name="Target", type=bpy.types.Object, poll=has_collider)
 
     def init(self, context):
         super().init(context)
@@ -320,11 +313,7 @@ class BGNode_hubs_onPlayerCollisionExit(BGEventNode, BGNode, Node):
     bl_label = "On Player Collision Exit"
     node_type = "hubs/onPlayerCollisionExit"
 
-    target: PointerProperty(
-        name="Target",
-        type=bpy.types.Object,
-        # poll=filter_on_component
-    )
+    target: PointerProperty(name="Target", type=bpy.types.Object, poll=has_collider)
 
     def init(self, context):
         super().init(context)
@@ -599,10 +588,6 @@ def read_nodespec(filename):
             # bpy.utils.register_class(node_class)
         # print(test_classes)
         #
-
-
-
-from io_hubs_addon.io.utils import gather_property
 
 def resolve_input_link(input_socket: bpy.types.NodeSocket) -> bpy.types.NodeLink:
     while isinstance(input_socket.links[0].from_node, bpy.types.NodeReroute):

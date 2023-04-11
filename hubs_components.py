@@ -88,12 +88,19 @@ class RigidBody(HubsComponent):
         layout.prop(self, "type")
         layout.prop(self, "mass")
         layout.prop(self, "gravity")
+
         layout.prop(self, "disableCollision")
         layout.prop(self, "collisionGroup")
+        if (self.disableCollision  and self.collisionGroup != "triggers") or (self.collisionGroup == "triggers" and not self.disableCollision):
+            col = layout.column()
+            # col.alert = True
+            col.label(text="When making triggers you likely want 'Is Trigger' checked and collision group set to 'Triggers'", icon='INFO')
+
         layout.label(text="Collision Mask:")
         col = layout.column(align=True)
         for i, (_value, label, _desc) in enumerate(collision_masks):
             col.prop(self, "collisionMask", text=label, index=i, toggle=True)
+
 
 
 class PhysicsShape(HubsComponent):
@@ -173,6 +180,11 @@ class PhysicsShape(HubsComponent):
                 layout.prop(self, "maxHalfExtent")
             layout.prop(self, "includeInvisible")
         layout.prop(self, "offset")
+
+        if self.fit == "manual" and (self.type == "mesh" or self.type == "hull"):
+            col = layout.column()
+            col.alert = True
+            col.label(text="'Hull' and 'Mesh' do not support 'manual' fit mode", icon='ERROR')
 
 def do_register(ComponentClass):
     register_component(ComponentClass)
