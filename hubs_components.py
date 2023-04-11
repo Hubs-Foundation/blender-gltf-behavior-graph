@@ -48,16 +48,6 @@ class RigidBody(HubsComponent):
                ("kinematic", "Kinematic", "Not effected by gravity or collisions, but can be moved.")],
         default="dynamic")
 
-    mass: FloatProperty(
-        name="Mass",
-        description="Object's Mass",
-        default=1)
-
-    gravity: FloatVectorProperty(
-        name="Gravity", description="Object's Gravity",
-        unit="ACCELERATION",
-        subtype="ACCELERATION",
-        default=(0.0, -9.8, 0.0))
 
     disableCollision: BoolProperty(
         name="Is Trigger",
@@ -78,6 +68,59 @@ class RigidBody(HubsComponent):
         options={'ANIMATABLE'},
         default=[value in ["objects", "triggers", "environment"] for (value, _label, _desc) in collision_masks])
 
+    mass: FloatProperty(
+        name="Mass",
+        description="Object's Mass",
+        default=1)
+
+    linearDamping: FloatProperty(
+        name="Linear Damping",
+        description="Amount of linear damping",
+        default=0,
+        min=0.0,
+        soft_max=1.0,
+    )
+
+    angularDamping: FloatProperty(
+        name="Angular Damping",
+        description="Amount of angular damping",
+        default=0,
+        min=0.0,
+        soft_max=1.0,
+    )
+
+    linearSleepingThreshold: FloatProperty(
+        name="Linear Sleeping Threshold",
+        description="Linear velocity threshold below which the object starts to sleep",
+        default=0.8,
+        min=0.0,
+        soft_max=10.0,
+    )
+
+    angularSleepingThreshold: FloatProperty(
+        name="Angular Sleeping Threshold",
+        description="Angular velocity threshold below which the object starts to sleep",
+        default=1.0,
+        min=0.0,
+        soft_max=10.0,
+    )
+
+    angularFactor: FloatVectorProperty(
+        name="Angular Factor",
+        description="Influence of the object's rotation along the X, Y, and Z axes",
+        size=3,
+        subtype="XYZ",
+        default=(1.0, 1.0, 1.0),
+        min=0.0,
+        soft_max=10.0,
+    )
+
+    gravity: FloatVectorProperty(
+        name="Gravity", description="Object's Gravity",
+        unit="ACCELERATION",
+        subtype="ACCELERATION",
+        default=(0.0, -9.8, 0.0))
+
     def gather(self, export_settings, object):
         props = super().gather(export_settings, object)
         props['collisionMask'] = [value for i, (value, _label, _desc) in enumerate(collision_masks) if self.collisionMask[i]]
@@ -86,20 +129,25 @@ class RigidBody(HubsComponent):
 
     def draw(self, context, layout, panel):
         layout.prop(self, "type")
-        layout.prop(self, "mass")
-        layout.prop(self, "gravity")
 
-        layout.prop(self, "disableCollision")
-        layout.prop(self, "collisionGroup")
         if (self.disableCollision  and self.collisionGroup != "triggers") or (self.collisionGroup == "triggers" and not self.disableCollision):
             col = layout.column()
             # col.alert = True
             col.label(text="When making triggers you likely want 'Is Trigger' checked and collision group set to 'Triggers'", icon='INFO')
-
+        layout.prop(self, "collisionGroup")
         layout.label(text="Collision Mask:")
         col = layout.column(align=True)
         for i, (_value, label, _desc) in enumerate(collision_masks):
             col.prop(self, "collisionMask", text=label, index=i, toggle=True)
+        layout.prop(self, "disableCollision")
+
+        layout.prop(self, "mass")
+        layout.prop(self, "linearDamping")
+        layout.prop(self, "angularDamping")
+        layout.prop(self, "linearSleepingThreshold")
+        layout.prop(self, "angularSleepingThreshold")
+        layout.prop(self, "angularFactor")
+        layout.prop(self, "gravity")
 
 
 
