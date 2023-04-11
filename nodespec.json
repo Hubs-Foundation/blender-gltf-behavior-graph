@@ -2331,6 +2331,30 @@
     "configuration": []
   },
   {
+    "type": "hubs/entity/equal",
+    "category": "Entity",
+    "label": "=",
+    "inputs": [
+      {
+        "name": "a",
+        "valueType": "entity",
+        "defaultValue": 0
+      },
+      {
+        "name": "b",
+        "valueType": "entity",
+        "defaultValue": 0
+      }
+    ],
+    "outputs": [
+      {
+        "name": "result",
+        "valueType": "boolean"
+      }
+    ],
+    "configuration": []
+  },
+  {
     "type": "math/vec3/combine",
     "category": "Vec3 Math",
     "label": "Combine Vec3",
@@ -3261,7 +3285,7 @@
     "outputs": [
       {
         "name": "result",
-        "valueType": "player"
+        "valueType": "boolean"
       }
     ],
     "configuration": []

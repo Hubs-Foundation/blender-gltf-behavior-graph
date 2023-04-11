@@ -721,8 +721,8 @@ class glTF2ExportUserExtension:
         print("GATHERING BG")
         behaviors = [extract_behavior_graph_data(node_group, export_settings) for node_group in bpy.data.node_groups if node_group.bl_idname == "BGTree"]
         if behaviors:
-            gltf2_object.extensions["KHR_behavior"] = self.Extension(
-                name="KHR_behavior",
+            gltf2_object.extensions["MOZ_behavior"] = self.Extension(
+                name="MOZ_behavior",
                 extension={
                     "behaviors": behaviors
                 },

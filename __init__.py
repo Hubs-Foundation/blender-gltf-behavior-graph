@@ -10,16 +10,17 @@ bl_info = {
 
 # import bpy
 from . import behavior_graph_nodes
+from . import hubs_components
 
 glTF2ExportUserExtension = behavior_graph_nodes.glTF2ExportUserExtension
 
 def register():
     behavior_graph_nodes.register()
-    # behavior_graph_exporter.register()
+    hubs_components.register()
 
 def unregister():
     behavior_graph_nodes.unregister()
-    # behavior_graph_exporter.unregister()
+    hubs_components.unregister()
 
 if __name__ == "__main__":
     register()
