@@ -124,7 +124,9 @@ class RigidBody(HubsComponent):
     def gather(self, export_settings, object):
         props = super().gather(export_settings, object)
         props['collisionMask'] = [value for i, (value, _label, _desc) in enumerate(collision_masks) if self.collisionMask[i]]
-        props['gravity'] = [v for v in self.gravity] # prefer to store as an array for new components
+        # prefer to store as an array for new components
+        props['gravity'] = [v for v in self.gravity]
+        props['angularFactor'] = [v for v in self.angularFactor]
         return props
 
     def draw(self, context, layout, panel):
