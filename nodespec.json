@@ -2193,6 +2193,23 @@
     "configuration": []
   },
   {
+    "type": "hubs/onCollisionStay",
+    "category": "Event",
+    "label": "On Collision Stay",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "flow",
+        "valueType": "flow"
+      },
+      {
+        "name": "entity",
+        "valueType": "entity"
+      }
+    ],
+    "configuration": []
+  },
+  {
     "type": "hubs/onCollisionExit",
     "category": "Event",
     "label": "On Collision Exit",
@@ -2213,6 +2230,23 @@
     "type": "hubs/onPlayerCollisionEnter",
     "category": "Event",
     "label": "On Player Collision Enter",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "flow",
+        "valueType": "flow"
+      },
+      {
+        "name": "player",
+        "valueType": "player"
+      }
+    ],
+    "configuration": []
+  },
+  {
+    "type": "hubs/onPlayerCollisionStay",
+    "category": "Event",
+    "label": "On Player Collision Stay",
     "inputs": [],
     "outputs": [
       {
@@ -2350,6 +2384,90 @@
       {
         "name": "result",
         "valueType": "boolean"
+      }
+    ],
+    "configuration": []
+  },
+  {
+    "type": "hubs/components/text/setText",
+    "category": "Components",
+    "label": "Text: Set Text",
+    "inputs": [
+      {
+        "name": "flow",
+        "valueType": "flow"
+      },
+      {
+        "name": "entity",
+        "valueType": "entity",
+        "defaultValue": 0
+      },
+      {
+        "name": "text",
+        "valueType": "string",
+        "defaultValue": ""
+      }
+    ],
+    "outputs": [
+      {
+        "name": "flow",
+        "valueType": "flow"
+      }
+    ],
+    "configuration": []
+  },
+  {
+    "type": "hubs/entity/localToWorld/vec3",
+    "category": "Vec3 Math",
+    "label": "Local to World",
+    "inputs": [
+      {
+        "name": "position",
+        "valueType": "vec3",
+        "defaultValue": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        }
+      },
+      {
+        "name": "entity",
+        "valueType": "entity",
+        "defaultValue": 0
+      }
+    ],
+    "outputs": [
+      {
+        "name": "result",
+        "valueType": "vec3"
+      }
+    ],
+    "configuration": []
+  },
+  {
+    "type": "hubs/entity/localToWorld/euler",
+    "category": "Euler Math",
+    "label": "Local to World",
+    "inputs": [
+      {
+        "name": "rotation",
+        "valueType": "euler",
+        "defaultValue": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        }
+      },
+      {
+        "name": "entity",
+        "valueType": "entity",
+        "defaultValue": 0
+      }
+    ],
+    "outputs": [
+      {
+        "name": "result",
+        "valueType": "euler"
       }
     ],
     "configuration": []
@@ -2516,6 +2634,29 @@
       {
         "name": "z",
         "valueType": "float"
+      }
+    ],
+    "configuration": []
+  },
+  {
+    "type": "math/toString/vec3",
+    "category": "Vec3 Math",
+    "label": "To String",
+    "inputs": [
+      {
+        "name": "a",
+        "valueType": "vec3",
+        "defaultValue": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        }
+      }
+    ],
+    "outputs": [
+      {
+        "name": "result",
+        "valueType": "string"
       }
     ],
     "configuration": []
@@ -2821,7 +2962,7 @@
   },
   {
     "type": "math/euler/combine",
-    "category": "Eueler Math",
+    "category": "Euler Math",
     "label": "Combine Euler",
     "inputs": [
       {
@@ -2850,8 +2991,8 @@
   },
   {
     "type": "math/euler/separate",
-    "category": "Eueler Math",
-    "label": "Separate Eueler",
+    "category": "Euler Math",
+    "label": "Separate Euler",
     "inputs": [
       {
         "name": "v",
@@ -2881,7 +3022,7 @@
   },
   {
     "type": "math/euler/toVec3",
-    "category": "Eueler Math",
+    "category": "Euler Math",
     "label": "to Vec3",
     "inputs": [
       {
@@ -3361,6 +3502,87 @@
       {
         "name": "flow",
         "valueType": "flow"
+      }
+    ],
+    "configuration": []
+  },
+  {
+    "type": "hubs/player/getTransform",
+    "category": "Player",
+    "label": "Get Transform",
+    "inputs": [
+      {
+        "name": "player",
+        "valueType": "player",
+        "defaultValue": null
+      }
+    ],
+    "outputs": [
+      {
+        "name": "position",
+        "valueType": "vec3"
+      },
+      {
+        "name": "rotation",
+        "valueType": "euler"
+      },
+      {
+        "name": "scale",
+        "valueType": "vec3"
+      }
+    ],
+    "configuration": []
+  },
+  {
+    "type": "hubs/player/getHeadTransform",
+    "category": "Player",
+    "label": "Get Head Transform",
+    "inputs": [
+      {
+        "name": "player",
+        "valueType": "player",
+        "defaultValue": null
+      }
+    ],
+    "outputs": [
+      {
+        "name": "position",
+        "valueType": "vec3"
+      },
+      {
+        "name": "rotation",
+        "valueType": "euler"
+      },
+      {
+        "name": "scale",
+        "valueType": "vec3"
+      }
+    ],
+    "configuration": []
+  },
+  {
+    "type": "hubs/player/getWorldHeadTransform",
+    "category": "Player",
+    "label": "Get World Head Transform",
+    "inputs": [
+      {
+        "name": "player",
+        "valueType": "player",
+        "defaultValue": null
+      }
+    ],
+    "outputs": [
+      {
+        "name": "position",
+        "valueType": "vec3"
+      },
+      {
+        "name": "rotation",
+        "valueType": "euler"
+      },
+      {
+        "name": "scale",
+        "valueType": "vec3"
       }
     ],
     "configuration": []

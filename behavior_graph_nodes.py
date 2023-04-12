@@ -14,6 +14,7 @@ auto_casts = {
     ("NodeSocketFloat", "NodeSocketString"): "BGNode_math_toString_float",
     ("NodeSocketBool", "NodeSocketString"): "BGNode_math_toString_boolean",
     ("NodeSocketInt", "NodeSocketString"): "BGNode_math_toString_integer",
+    ("NodeSocketVectorXYZ", "NodeSocketString"): "BGNode_math_toString_vec3",
 
     ("NodeSocketString", "NodeSocketFloat"): "BGNode_math_toFloat_string",
     ("NodeSocketBool", "NodeSocketFloat"): "BGNode_math_toFloat_boolean",
@@ -281,6 +282,18 @@ class BGNode_hubs_onCollisionEnter(BGEventNode, BGNode, Node):
     def draw_buttons(self, context, layout):
         layout.prop(self, "target")
 
+class BGNode_hubs_onCollisionStay(BGEventNode, BGNode, Node):
+    bl_label = "On Collision Stay"
+    node_type = "hubs/onCollisionStay"
+
+    target: PointerProperty(name="Target", type=bpy.types.Object, poll=has_collider)
+
+    def init(self, context):
+        super().init(context)
+        self.outputs.new("BGHubsEntitySocket", "entity")
+
+    def draw_buttons(self, context, layout):
+        layout.prop(self, "target")
 
 class BGNode_hubs_onCollisionExit(BGEventNode, BGNode, Node):
     bl_label = "On Collision Exit"
@@ -308,6 +321,18 @@ class BGNode_hubs_onPlayerCollisionEnter(BGEventNode, BGNode, Node):
     def draw_buttons(self, context, layout):
         layout.prop(self, "target")
 
+class BGNode_hubs_onPlayerCollisionStay(BGEventNode, BGNode, Node):
+    bl_label = "On Player Collision Stay"
+    node_type = "hubs/onPlayerCollisionStay"
+
+    target: PointerProperty(name="Target", type=bpy.types.Object, poll=has_collider)
+
+    def init(self, context):
+        super().init(context)
+        self.outputs.new("BGHubsPlayerSocket", "player")
+
+    def draw_buttons(self, context, layout):
+        layout.prop(self, "target")
 
 class BGNode_hubs_onPlayerCollisionExit(BGEventNode, BGNode, Node):
     bl_label = "On Player Collision Exit"
@@ -443,8 +468,10 @@ behavior_graph_node_categories = {
     "Event": [
         NodeItem("BGNode_hubs_onInteract"),
         NodeItem("BGNode_hubs_onCollisionEnter"),
+        NodeItem("BGNode_hubs_onCollisionStay"),
         NodeItem("BGNode_hubs_onCollisionExit"),
         NodeItem("BGNode_hubs_onPlayerCollisionEnter"),
+        NodeItem("BGNode_hubs_onPlayerCollisionStay"),
         NodeItem("BGNode_hubs_onPlayerCollisionExit"),
     ],
    "Entity": [
@@ -477,8 +504,10 @@ all_classes = [
 
     BGNode_hubs_onInteract,
     BGNode_hubs_onCollisionEnter,
+    BGNode_hubs_onCollisionStay,
     BGNode_hubs_onCollisionExit,
     BGNode_hubs_onPlayerCollisionEnter,
+    BGNode_hubs_onPlayerCollisionStay,
     BGNode_hubs_onPlayerCollisionExit,
 
     BGHubsSetEntityProperty,
