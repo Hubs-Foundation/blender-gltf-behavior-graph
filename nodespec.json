@@ -2473,7 +2473,7 @@
     "configuration": []
   },
   {
-    "type": "hubs/entity/components/custom-tags/hasTag",
+    "type": "hubs/entity/components/custom_tags/hasTag",
     "category": "Components",
     "label": "CustomTags: Has Tag?",
     "inputs": [
@@ -2497,7 +2497,7 @@
     "configuration": []
   },
   {
-    "type": "hubs/entity/components/custom-tags/addTag",
+    "type": "hubs/entity/components/custom_tags/addTag",
     "category": "Components",
     "label": "CustomTags: Add Tag",
     "inputs": [
@@ -2525,7 +2525,7 @@
     "configuration": []
   },
   {
-    "type": "hubs/entity/components/custom-tags/removeTag",
+    "type": "hubs/entity/components/custom_tags/removeTag",
     "category": "Components",
     "label": "CustomTags: Remove Tag",
     "inputs": [
