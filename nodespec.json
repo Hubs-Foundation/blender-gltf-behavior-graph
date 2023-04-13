@@ -2473,6 +2473,86 @@
     "configuration": []
   },
   {
+    "type": "hubs/entity/components/custom-tags/hasTag",
+    "category": "Components",
+    "label": "CustomTags: Has Tag?",
+    "inputs": [
+      {
+        "name": "entity",
+        "valueType": "entity",
+        "defaultValue": 0
+      },
+      {
+        "name": "tag",
+        "valueType": "string",
+        "defaultValue": ""
+      }
+    ],
+    "outputs": [
+      {
+        "name": "result",
+        "valueType": "boolean"
+      }
+    ],
+    "configuration": []
+  },
+  {
+    "type": "hubs/entity/components/custom-tags/addTag",
+    "category": "Components",
+    "label": "CustomTags: Add Tag",
+    "inputs": [
+      {
+        "name": "flow",
+        "valueType": "flow"
+      },
+      {
+        "name": "entity",
+        "valueType": "entity",
+        "defaultValue": 0
+      },
+      {
+        "name": "tag",
+        "valueType": "string",
+        "defaultValue": ""
+      }
+    ],
+    "outputs": [
+      {
+        "name": "flow",
+        "valueType": "flow"
+      }
+    ],
+    "configuration": []
+  },
+  {
+    "type": "hubs/entity/components/custom-tags/removeTag",
+    "category": "Components",
+    "label": "CustomTags: Remove Tag",
+    "inputs": [
+      {
+        "name": "flow",
+        "valueType": "flow"
+      },
+      {
+        "name": "entity",
+        "valueType": "entity",
+        "defaultValue": 0
+      },
+      {
+        "name": "tag",
+        "valueType": "string",
+        "defaultValue": ""
+      }
+    ],
+    "outputs": [
+      {
+        "name": "flow",
+        "valueType": "flow"
+      }
+    ],
+    "configuration": []
+  },
+  {
     "type": "math/vec3/combine",
     "category": "Vec3 Math",
     "label": "Combine Vec3",
