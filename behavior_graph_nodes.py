@@ -5,7 +5,7 @@ from bpy.types import GeometryNode, Node, NodeTree, NodeSocket, NodeSocketStanda
 from bpy.utils import register_class, unregister_class
 from nodeitems_utils import NodeCategory, NodeItem, register_node_categories, unregister_node_categories
 
-from io_hubs_addon.io.utils import gather_property
+from io_hubs_addon.io.utils import gather_property, gather_image
 from io_hubs_addon.components.utils import has_component
 
 auto_casts = {
@@ -527,6 +527,7 @@ type_to_socket = {
     "animationAction": "BGHubsAnimationActionSocket",
     "player": "BGHubsPlayerSocket",
     "material": "NodeSocketMaterial",
+    "texture": "NodeSocketTexture",
     "color": "NodeSocketColor",
 }
 
@@ -540,6 +541,7 @@ socket_to_type = {
     "NodeSocketVector": "vec3",
     "NodeSocketVectorXYZ": "vec3",
     "NodeSocketMaterial": "material",
+    "NodeSocketTexture": "texture",
     "NodeSocketColor": "color",
     "NodeSocketVectorEuler": "euler",
     "BGHubsAnimationActionSocket": "animationAction",
@@ -633,6 +635,8 @@ def resolve_output_link(output_socket: bpy.types.NodeSocket) -> bpy.types.NodeLi
     return output_socket.links[0]
 
 from io_scene_gltf2.blender.exp import gltf2_blender_gather_materials
+from io_scene_gltf2.io.com import gltf2_io
+from io_scene_gltf2.io.com.gltf2_io_constants import TextureFilter, TextureWrap
 
 def gather_material_property(export_settings, blender_object, target, property_name):
     blender_material = getattr(target, property_name)
@@ -641,6 +645,71 @@ def gather_material_property(export_settings, blender_object, target, property_n
         return {
             "__mhc_link_type": "material",
             "index": material
+        }
+    else:
+        return None
+
+def __gather_mag_filter(blender_shader_node, export_settings):
+    if blender_shader_node.use_interpolation:
+        return TextureFilter.Linear
+    return TextureFilter.Nearest
+
+def __gather_min_filter(blender_shader_node, export_settings):
+    if blender_shader_node.use_interpolation:
+        if blender_shader_node.use_mipmap:
+            return TextureFilter.LinearMipmapLinear
+        else:
+            return TextureFilter.Linear
+    if blender_shader_node.use_mipmap:
+        return TextureFilter.NearestMipmapNearest
+    else:
+        return TextureFilter.Nearest
+
+def __gather_wrap(blender_shader_node, export_settings):
+    # First gather from the Texture node
+    if blender_shader_node.extension == 'EXTEND':
+        wrap_s = TextureWrap.ClampToEdge
+    elif blender_shader_node.extension == 'CLIP':
+        # Not possible in glTF, but ClampToEdge is closest
+        wrap_s = TextureWrap.ClampToEdge
+    elif blender_shader_node.extension == 'MIRROR':
+        wrap_s = TextureWrap.MirroredRepeat
+    else:
+        wrap_s = TextureWrap.Repeat
+    wrap_t = wrap_s
+
+    # Omit if both are repeat
+    if (wrap_s, wrap_t) == (TextureWrap.Repeat, TextureWrap.Repeat):
+        wrap_s, wrap_t = None, None
+
+    return wrap_s, wrap_t
+
+
+def gather_texture_property(export_settings, blender_object, target, property_name):
+    blender_texture = getattr(target, property_name)
+
+    wrap_s, wrap_t = __gather_wrap(blender_texture, export_settings)
+    sampler = gltf2_io.Sampler(
+        extensions=None,
+        extras=None,
+        mag_filter=__gather_mag_filter(blender_texture, export_settings),
+        min_filter=__gather_min_filter(blender_texture, export_settings),
+        name=None,
+        wrap_s=wrap_s,
+        wrap_t=wrap_t,
+    )
+
+    if blender_texture:
+        texture = gltf2_io.Texture(
+            extensions=None,
+            extras=None,
+            name=blender_texture.name,
+            sampler=sampler,
+            source=gather_image(blender_texture.image, export_settings)
+        )
+        return {
+            "__mhc_link_type": "texture",
+            "index": texture
         }
     else:
         return None
@@ -659,6 +728,8 @@ def get_socket_value(export_settings, socket : NodeSocket):
         return gather_property(export_settings, socket, socket, "target")
     elif socket_type == "material":
         return gather_material_property(export_settings, socket, socket, "default_value")
+    elif socket_type == "texture":
+            return gather_texture_property(export_settings, socket, socket, "default_value")
     elif socket_type == "color":
         a = socket.default_value
         return [a[0], a[1], a[2]]
