@@ -2553,6 +2553,25 @@
     "configuration": []
   },
   {
+    "type": "hubs/entity/unwrapMedia",
+    "category": "Entity",
+    "label": "Unwrap Media",
+    "inputs": [
+      {
+        "name": "entity",
+        "valueType": "entity",
+        "defaultValue": 0
+      }
+    ],
+    "outputs": [
+      {
+        "name": "result",
+        "valueType": "entity"
+      }
+    ],
+    "configuration": []
+  },
+  {
     "type": "math/vec3/combine",
     "category": "Vec3 Math",
     "label": "Combine Vec3",
