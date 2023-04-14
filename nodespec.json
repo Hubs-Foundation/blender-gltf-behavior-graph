@@ -2572,6 +2572,53 @@
     "configuration": []
   },
   {
+    "type": "hubs/material/get",
+    "category": "Materials",
+    "label": "Get Material",
+    "inputs": [
+      {
+        "name": "entity",
+        "valueType": "entity",
+        "defaultValue": 0
+      }
+    ],
+    "outputs": [
+      {
+        "name": "result",
+        "valueType": "material"
+      }
+    ],
+    "configuration": []
+  },
+  {
+    "type": "hubs/material/set",
+    "category": "Materials",
+    "label": "Set Material",
+    "inputs": [
+      {
+        "name": "flow",
+        "valueType": "flow"
+      },
+      {
+        "name": "entity",
+        "valueType": "entity",
+        "defaultValue": 0
+      },
+      {
+        "name": "material",
+        "valueType": "material",
+        "defaultValue": null
+      }
+    ],
+    "outputs": [
+      {
+        "name": "flow",
+        "valueType": "flow"
+      }
+    ],
+    "configuration": []
+  },
+  {
     "type": "math/vec3/combine",
     "category": "Vec3 Math",
     "label": "Combine Vec3",

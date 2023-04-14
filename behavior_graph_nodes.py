@@ -525,7 +525,8 @@ type_to_socket = {
     "vec3": "NodeSocketVectorXYZ",
     "euler": "NodeSocketVectorEuler",
     "animationAction": "BGHubsAnimationActionSocket",
-    "player": "BGHubsPlayerSocket"
+    "player": "BGHubsPlayerSocket",
+    "material": "NodeSocketMaterial",
 }
 
 socket_to_type = {
@@ -537,6 +538,7 @@ socket_to_type = {
     "NodeSocketString": "string",
     "NodeSocketVector": "vec3",
     "NodeSocketVectorXYZ": "vec3",
+    "NodeSocketMaterial": "material",
     "NodeSocketVectorEuler": "euler",
     "BGHubsAnimationActionSocket": "animationAction",
     "BGEnumSocket": "string",
@@ -628,6 +630,19 @@ def resolve_output_link(output_socket: bpy.types.NodeSocket) -> bpy.types.NodeLi
         output_socket = output_socket.links[0].to_node.outputs[0]
     return output_socket.links[0]
 
+from io_scene_gltf2.blender.exp import gltf2_blender_gather_materials
+
+def gather_material_property(export_settings, blender_object, target, property_name):
+    blender_material = getattr(target, property_name)
+    if blender_material:
+        material = gltf2_blender_gather_materials.gather_material(blender_material, -1, export_settings)
+        return {
+            "__mhc_link_type": "material",
+            "index": material
+        }
+    else:
+        return None
+
 def get_socket_value(export_settings, socket : NodeSocket):
     if hasattr(socket, "bl_socket_idname"):
         socket_idname = socket.bl_socket_idname
@@ -640,6 +655,8 @@ def get_socket_value(export_settings, socket : NodeSocket):
         return socket.default_value
     if socket_type == "entity":
         return gather_property(export_settings, socket, socket, "target")
+    elif socket_type == "material":
+        return gather_material_property(export_settings, socket, socket, "default_value")
     elif socket_type == "vec3": # TODO gather_property seems to not handle this correctly
         a = socket.default_value
         return {"x": a[0], "y": a[1], "z": a[2]}
