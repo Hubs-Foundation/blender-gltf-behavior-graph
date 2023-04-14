@@ -2619,6 +2619,627 @@
     "configuration": []
   },
   {
+    "type": "hubs/material/getOpacity",
+    "category": "Materials",
+    "label": "Get Material Opacity",
+    "inputs": [
+      {
+        "name": "material",
+        "valueType": "material",
+        "defaultValue": null
+      }
+    ],
+    "outputs": [
+      {
+        "name": "result",
+        "valueType": "float"
+      }
+    ],
+    "configuration": []
+  },
+  {
+    "type": "hubs/material/setOpacity",
+    "category": "Materials",
+    "label": "Set Material Opacity",
+    "inputs": [
+      {
+        "name": "flow",
+        "valueType": "flow"
+      },
+      {
+        "name": "material",
+        "valueType": "material",
+        "defaultValue": null
+      },
+      {
+        "name": "opacity",
+        "valueType": "float",
+        "defaultValue": 0
+      }
+    ],
+    "outputs": [
+      {
+        "name": "flow",
+        "valueType": "flow"
+      }
+    ],
+    "configuration": []
+  },
+  {
+    "type": "hubs/material/getTransparent",
+    "category": "Materials",
+    "label": "Get Material Is Transparent",
+    "inputs": [
+      {
+        "name": "material",
+        "valueType": "material",
+        "defaultValue": null
+      }
+    ],
+    "outputs": [
+      {
+        "name": "result",
+        "valueType": "boolean"
+      }
+    ],
+    "configuration": []
+  },
+  {
+    "type": "hubs/material/setTransparent",
+    "category": "Materials",
+    "label": "Set Material Is Transparent",
+    "inputs": [
+      {
+        "name": "flow",
+        "valueType": "flow"
+      },
+      {
+        "name": "material",
+        "valueType": "material",
+        "defaultValue": null
+      },
+      {
+        "name": "transparent",
+        "valueType": "boolean",
+        "defaultValue": false
+      }
+    ],
+    "outputs": [
+      {
+        "name": "flow",
+        "valueType": "flow"
+      }
+    ],
+    "configuration": []
+  },
+  {
+    "type": "hubs/material/getToneMapped",
+    "category": "Materials",
+    "label": "Get Material Is Tone Mapped",
+    "inputs": [
+      {
+        "name": "material",
+        "valueType": "material",
+        "defaultValue": null
+      }
+    ],
+    "outputs": [
+      {
+        "name": "result",
+        "valueType": "boolean"
+      }
+    ],
+    "configuration": []
+  },
+  {
+    "type": "hubs/material/setToneMapped",
+    "category": "Materials",
+    "label": "Set Material Is Tone Mapped",
+    "inputs": [
+      {
+        "name": "flow",
+        "valueType": "flow"
+      },
+      {
+        "name": "material",
+        "valueType": "material",
+        "defaultValue": null
+      },
+      {
+        "name": "toneMapped",
+        "valueType": "boolean",
+        "defaultValue": false
+      }
+    ],
+    "outputs": [
+      {
+        "name": "flow",
+        "valueType": "flow"
+      }
+    ],
+    "configuration": []
+  },
+  {
+    "type": "hubs/material/getFlatShading",
+    "category": "Materials",
+    "label": "Get Material Is Flat Shaded",
+    "inputs": [
+      {
+        "name": "material",
+        "valueType": "material",
+        "defaultValue": null
+      }
+    ],
+    "outputs": [
+      {
+        "name": "result",
+        "valueType": "boolean"
+      }
+    ],
+    "configuration": []
+  },
+  {
+    "type": "hubs/material/setFlatShading",
+    "category": "Materials",
+    "label": "Set Material Is Flat Shaded",
+    "inputs": [
+      {
+        "name": "flow",
+        "valueType": "flow"
+      },
+      {
+        "name": "material",
+        "valueType": "material",
+        "defaultValue": null
+      },
+      {
+        "name": "flatShading",
+        "valueType": "boolean",
+        "defaultValue": false
+      }
+    ],
+    "outputs": [
+      {
+        "name": "flow",
+        "valueType": "flow"
+      }
+    ],
+    "configuration": []
+  },
+  {
+    "type": "hubs/material/getWireframe",
+    "category": "Materials",
+    "label": "Get Material Is Wireframe",
+    "inputs": [
+      {
+        "name": "material",
+        "valueType": "material",
+        "defaultValue": null
+      }
+    ],
+    "outputs": [
+      {
+        "name": "result",
+        "valueType": "boolean"
+      }
+    ],
+    "configuration": []
+  },
+  {
+    "type": "hubs/material/setWireframe",
+    "category": "Materials",
+    "label": "Set Material Is Wireframe",
+    "inputs": [
+      {
+        "name": "flow",
+        "valueType": "flow"
+      },
+      {
+        "name": "material",
+        "valueType": "material",
+        "defaultValue": null
+      },
+      {
+        "name": "wireframe",
+        "valueType": "boolean",
+        "defaultValue": false
+      }
+    ],
+    "outputs": [
+      {
+        "name": "flow",
+        "valueType": "flow"
+      }
+    ],
+    "configuration": []
+  },
+  {
+    "type": "hubs/material/getFog",
+    "category": "Materials",
+    "label": "Get Material Is Effected By Fog",
+    "inputs": [
+      {
+        "name": "material",
+        "valueType": "material",
+        "defaultValue": null
+      }
+    ],
+    "outputs": [
+      {
+        "name": "result",
+        "valueType": "boolean"
+      }
+    ],
+    "configuration": []
+  },
+  {
+    "type": "hubs/material/setFog",
+    "category": "Materials",
+    "label": "Set Material Is Effected By Fog",
+    "inputs": [
+      {
+        "name": "flow",
+        "valueType": "flow"
+      },
+      {
+        "name": "material",
+        "valueType": "material",
+        "defaultValue": null
+      },
+      {
+        "name": "fog",
+        "valueType": "boolean",
+        "defaultValue": false
+      }
+    ],
+    "outputs": [
+      {
+        "name": "flow",
+        "valueType": "flow"
+      }
+    ],
+    "configuration": []
+  },
+  {
+    "type": "hubs/material/getColor",
+    "category": "Materials",
+    "label": "Get Material Color",
+    "inputs": [
+      {
+        "name": "material",
+        "valueType": "material",
+        "defaultValue": null
+      }
+    ],
+    "outputs": [
+      {
+        "name": "result",
+        "valueType": "color"
+      }
+    ],
+    "configuration": []
+  },
+  {
+    "type": "hubs/material/setColor",
+    "category": "Materials",
+    "label": "Set Material Color",
+    "inputs": [
+      {
+        "name": "flow",
+        "valueType": "flow"
+      },
+      {
+        "name": "material",
+        "valueType": "material",
+        "defaultValue": null
+      },
+      {
+        "name": "color",
+        "valueType": "color",
+        "defaultValue": [
+          1,
+          1,
+          1,
+          1
+        ]
+      }
+    ],
+    "outputs": [
+      {
+        "name": "flow",
+        "valueType": "flow"
+      }
+    ],
+    "configuration": []
+  },
+  {
+    "type": "hubs/material/getEmissive",
+    "category": "Materials",
+    "label": "Get Material Emissive Color",
+    "inputs": [
+      {
+        "name": "material",
+        "valueType": "material",
+        "defaultValue": null
+      }
+    ],
+    "outputs": [
+      {
+        "name": "result",
+        "valueType": "color"
+      }
+    ],
+    "configuration": []
+  },
+  {
+    "type": "hubs/material/setEmissive",
+    "category": "Materials",
+    "label": "Set Material Emissive Color",
+    "inputs": [
+      {
+        "name": "flow",
+        "valueType": "flow"
+      },
+      {
+        "name": "material",
+        "valueType": "material",
+        "defaultValue": null
+      },
+      {
+        "name": "color",
+        "valueType": "color",
+        "defaultValue": [
+          1,
+          1,
+          1,
+          1
+        ]
+      }
+    ],
+    "outputs": [
+      {
+        "name": "flow",
+        "valueType": "flow"
+      }
+    ],
+    "configuration": []
+  },
+  {
+    "type": "hubs/material/getRoughness",
+    "category": "Materials",
+    "label": "Get Material Roughness",
+    "inputs": [
+      {
+        "name": "material",
+        "valueType": "material",
+        "defaultValue": null
+      }
+    ],
+    "outputs": [
+      {
+        "name": "result",
+        "valueType": "float"
+      }
+    ],
+    "configuration": []
+  },
+  {
+    "type": "hubs/material/setRoughness",
+    "category": "Materials",
+    "label": "Set Material Roughness",
+    "inputs": [
+      {
+        "name": "flow",
+        "valueType": "flow"
+      },
+      {
+        "name": "material",
+        "valueType": "material",
+        "defaultValue": null
+      },
+      {
+        "name": "roughness",
+        "valueType": "float",
+        "defaultValue": 0
+      }
+    ],
+    "outputs": [
+      {
+        "name": "flow",
+        "valueType": "flow"
+      }
+    ],
+    "configuration": []
+  },
+  {
+    "type": "hubs/material/getMetalness",
+    "category": "Materials",
+    "label": "Get Material Metalness",
+    "inputs": [
+      {
+        "name": "material",
+        "valueType": "material",
+        "defaultValue": null
+      }
+    ],
+    "outputs": [
+      {
+        "name": "result",
+        "valueType": "float"
+      }
+    ],
+    "configuration": []
+  },
+  {
+    "type": "hubs/material/setMetalness",
+    "category": "Materials",
+    "label": "Set Material Metalness",
+    "inputs": [
+      {
+        "name": "flow",
+        "valueType": "flow"
+      },
+      {
+        "name": "material",
+        "valueType": "material",
+        "defaultValue": null
+      },
+      {
+        "name": "metalness",
+        "valueType": "float",
+        "defaultValue": 0
+      }
+    ],
+    "outputs": [
+      {
+        "name": "flow",
+        "valueType": "flow"
+      }
+    ],
+    "configuration": []
+  },
+  {
+    "type": "hubs/material/getLightMapIntensity",
+    "category": "Materials",
+    "label": "Get Material Lightmap Intensity",
+    "inputs": [
+      {
+        "name": "material",
+        "valueType": "material",
+        "defaultValue": null
+      }
+    ],
+    "outputs": [
+      {
+        "name": "result",
+        "valueType": "float"
+      }
+    ],
+    "configuration": []
+  },
+  {
+    "type": "hubs/material/setLightMapIntensity",
+    "category": "Materials",
+    "label": "Set Material Lightmap Intensity",
+    "inputs": [
+      {
+        "name": "flow",
+        "valueType": "flow"
+      },
+      {
+        "name": "material",
+        "valueType": "material",
+        "defaultValue": null
+      },
+      {
+        "name": "intensity",
+        "valueType": "float",
+        "defaultValue": 0
+      }
+    ],
+    "outputs": [
+      {
+        "name": "flow",
+        "valueType": "flow"
+      }
+    ],
+    "configuration": []
+  },
+  {
+    "type": "hubs/material/getAOMapIntensity",
+    "category": "Materials",
+    "label": "Get Material AO Map Intensity",
+    "inputs": [
+      {
+        "name": "material",
+        "valueType": "material",
+        "defaultValue": null
+      }
+    ],
+    "outputs": [
+      {
+        "name": "result",
+        "valueType": "float"
+      }
+    ],
+    "configuration": []
+  },
+  {
+    "type": "hubs/material/setAOMapIntensity",
+    "category": "Materials",
+    "label": "Set Material AO Map Intensity",
+    "inputs": [
+      {
+        "name": "flow",
+        "valueType": "flow"
+      },
+      {
+        "name": "material",
+        "valueType": "material",
+        "defaultValue": null
+      },
+      {
+        "name": "intensity",
+        "valueType": "float",
+        "defaultValue": 0
+      }
+    ],
+    "outputs": [
+      {
+        "name": "flow",
+        "valueType": "flow"
+      }
+    ],
+    "configuration": []
+  },
+  {
+    "type": "hubs/material/getEmissiveIntensity",
+    "category": "Materials",
+    "label": "Get Material Emissive Intensity",
+    "inputs": [
+      {
+        "name": "material",
+        "valueType": "material",
+        "defaultValue": null
+      }
+    ],
+    "outputs": [
+      {
+        "name": "result",
+        "valueType": "float"
+      }
+    ],
+    "configuration": []
+  },
+  {
+    "type": "hubs/material/setEmissiveIntensity",
+    "category": "Materials",
+    "label": "Set Material Emissive Intensity",
+    "inputs": [
+      {
+        "name": "flow",
+        "valueType": "flow"
+      },
+      {
+        "name": "material",
+        "valueType": "material",
+        "defaultValue": null
+      },
+      {
+        "name": "intensity",
+        "valueType": "float",
+        "defaultValue": 0
+      }
+    ],
+    "outputs": [
+      {
+        "name": "flow",
+        "valueType": "flow"
+      }
+    ],
+    "configuration": []
+  },
+  {
     "type": "math/vec3/combine",
     "category": "Vec3 Math",
     "label": "Combine Vec3",

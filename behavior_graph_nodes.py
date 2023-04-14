@@ -527,6 +527,7 @@ type_to_socket = {
     "animationAction": "BGHubsAnimationActionSocket",
     "player": "BGHubsPlayerSocket",
     "material": "NodeSocketMaterial",
+    "color": "NodeSocketColor",
 }
 
 socket_to_type = {
@@ -539,6 +540,7 @@ socket_to_type = {
     "NodeSocketVector": "vec3",
     "NodeSocketVectorXYZ": "vec3",
     "NodeSocketMaterial": "material",
+    "NodeSocketColor": "color",
     "NodeSocketVectorEuler": "euler",
     "BGHubsAnimationActionSocket": "animationAction",
     "BGEnumSocket": "string",
@@ -657,6 +659,9 @@ def get_socket_value(export_settings, socket : NodeSocket):
         return gather_property(export_settings, socket, socket, "target")
     elif socket_type == "material":
         return gather_material_property(export_settings, socket, socket, "default_value")
+    elif socket_type == "color":
+        a = socket.default_value
+        return [a[0], a[1], a[2]]
     elif socket_type == "vec3": # TODO gather_property seems to not handle this correctly
         a = socket.default_value
         return {"x": a[0], "y": a[1], "z": a[2]}
