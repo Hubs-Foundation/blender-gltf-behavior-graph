@@ -1623,6 +1623,95 @@
     "configuration": []
   },
   {
+    "type": "math/easing",
+    "category": "Logic",
+    "label": "Easing",
+    "inputs": [
+      {
+        "name": "easingFunction",
+        "valueType": "string",
+        "defaultValue": "linear",
+        "choices": [
+          {
+            "text": "linear",
+            "value": "linear"
+          },
+          {
+            "text": "quadratic",
+            "value": "quadratic"
+          },
+          {
+            "text": "cubic",
+            "value": "cubic"
+          },
+          {
+            "text": "quartric",
+            "value": "quartric"
+          },
+          {
+            "text": "quintic",
+            "value": "quintic"
+          },
+          {
+            "text": "sine",
+            "value": "sine"
+          },
+          {
+            "text": "exponential",
+            "value": "exponential"
+          },
+          {
+            "text": "circle",
+            "value": "circle"
+          },
+          {
+            "text": "back",
+            "value": "back"
+          },
+          {
+            "text": "elastic",
+            "value": "elastic"
+          },
+          {
+            "text": "bounce",
+            "value": "bounce"
+          }
+        ]
+      },
+      {
+        "name": "easingMode",
+        "valueType": "string",
+        "defaultValue": "inOut",
+        "choices": [
+          {
+            "text": "in",
+            "value": "in"
+          },
+          {
+            "text": "out",
+            "value": "out"
+          },
+          {
+            "text": "inOut",
+            "value": "inOut"
+          }
+        ]
+      },
+      {
+        "name": "t",
+        "valueType": "float",
+        "defaultValue": 0
+      }
+    ],
+    "outputs": [
+      {
+        "name": "t",
+        "valueType": "float"
+      }
+    ],
+    "configuration": []
+  },
+  {
     "type": "debug/log",
     "category": "Debug",
     "label": "Debug Log",
