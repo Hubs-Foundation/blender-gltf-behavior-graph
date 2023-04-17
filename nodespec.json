@@ -3616,6 +3616,100 @@
     "configuration": []
   },
   {
+    "type": "hubs/material/getDepthWrite",
+    "category": "Materials",
+    "label": "Get Material Depth Write",
+    "inputs": [
+      {
+        "name": "material",
+        "valueType": "material",
+        "defaultValue": null
+      }
+    ],
+    "outputs": [
+      {
+        "name": "result",
+        "valueType": "boolean"
+      }
+    ],
+    "configuration": []
+  },
+  {
+    "type": "hubs/material/setDepthWrite",
+    "category": "Materials",
+    "label": "Set Material Depth Write",
+    "inputs": [
+      {
+        "name": "flow",
+        "valueType": "flow"
+      },
+      {
+        "name": "material",
+        "valueType": "material",
+        "defaultValue": null
+      },
+      {
+        "name": "depthWrite",
+        "valueType": "boolean",
+        "defaultValue": false
+      }
+    ],
+    "outputs": [
+      {
+        "name": "flow",
+        "valueType": "flow"
+      }
+    ],
+    "configuration": []
+  },
+  {
+    "type": "hubs/material/getalphaTest",
+    "category": "Materials",
+    "label": "Get Material Alpha Cutoff",
+    "inputs": [
+      {
+        "name": "material",
+        "valueType": "material",
+        "defaultValue": null
+      }
+    ],
+    "outputs": [
+      {
+        "name": "result",
+        "valueType": "float"
+      }
+    ],
+    "configuration": []
+  },
+  {
+    "type": "hubs/material/setalphaTest",
+    "category": "Materials",
+    "label": "Set Material Alpha Cutoff",
+    "inputs": [
+      {
+        "name": "flow",
+        "valueType": "flow"
+      },
+      {
+        "name": "material",
+        "valueType": "material",
+        "defaultValue": null
+      },
+      {
+        "name": "cutoff",
+        "valueType": "float",
+        "defaultValue": 0
+      }
+    ],
+    "outputs": [
+      {
+        "name": "flow",
+        "valueType": "flow"
+      }
+    ],
+    "configuration": []
+  },
+  {
     "type": "math/vec3/combine",
     "category": "Vec3 Math",
     "label": "Combine Vec3",
