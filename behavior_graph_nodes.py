@@ -590,8 +590,13 @@ def create_node_class(node_data):
                     socket_type = type_to_socket[input_data["valueType"]]
                     sock = self.inputs.new(socket_type, input_data["name"])
 
-                if (input_data["valueType"] != 'vec3' and input_data["valueType"] != "euler") and "defaultValue" in input_data:
-                    sock.default_value = input_data["defaultValue"]
+                if "defaultValue" in input_data:
+                    if (input_data["valueType"] == 'vec3' or input_data["valueType"] == "euler"):
+                        sock.default_value[0] = input_data["defaultValue"]["x"]
+                        sock.default_value[1] = input_data["defaultValue"]["y"]
+                        sock.default_value[2] = input_data["defaultValue"]["z"]
+                    else:
+                        sock.default_value = input_data["defaultValue"]
                 if "description" in input_data:
                     sock.description = input_data["description"]
 

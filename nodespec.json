@@ -3859,12 +3859,12 @@
     "configuration": []
   },
   {
-    "type": "math/vec3/toEuler",
+    "type": "math/vec3",
     "category": "Vec3 Math",
-    "label": "To Euler",
+    "label": "Vec3",
     "inputs": [
       {
-        "name": "v",
+        "name": "a",
         "valueType": "vec3",
         "defaultValue": {
           "x": 0,
@@ -3875,20 +3875,29 @@
     ],
     "outputs": [
       {
-        "name": "v",
-        "valueType": "euler"
+        "name": "result",
+        "valueType": "vec3"
       }
     ],
     "configuration": []
   },
   {
-    "type": "math/vec3",
+    "type": "math/vec3/applyEuler",
     "category": "Vec3 Math",
-    "label": "Vec3",
+    "label": "Apply Euler",
     "inputs": [
       {
         "name": "a",
         "valueType": "vec3",
+        "defaultValue": {
+          "x": 0,
+          "y": 0,
+          "z": 1
+        }
+      },
+      {
+        "name": "b",
+        "valueType": "euler",
         "defaultValue": {
           "x": 0,
           "y": 0,
