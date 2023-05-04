@@ -75,6 +75,8 @@ class BGTree(NodeTree):
                         node.select = True
                     except:
                         self.links.remove(link)
+                elif type(link.to_socket) == BGEnumSocket and type(link.from_socket) == NodeSocketString:
+                    pass
                 else:
                     self.links.remove(link)
 

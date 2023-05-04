@@ -4305,6 +4305,37 @@
         "name": "z",
         "valueType": "float",
         "defaultValue": 0
+      },
+      {
+        "name": "order",
+        "valueType": "string",
+        "defaultValue": "XYZ",
+        "choices": [
+          {
+            "text": "XYZ",
+            "value": "XYZ"
+          },
+          {
+            "text": "YXZ",
+            "value": "YXZ"
+          },
+          {
+            "text": "ZXY",
+            "value": "ZXY"
+          },
+          {
+            "text": "ZYX",
+            "value": "ZYX"
+          },
+          {
+            "text": "YZX",
+            "value": "YZX"
+          },
+          {
+            "text": "XZY",
+            "value": "XZY"
+          }
+        ]
       }
     ],
     "outputs": [
@@ -4342,17 +4373,30 @@
       {
         "name": "z",
         "valueType": "float"
+      },
+      {
+        "name": "order",
+        "valueType": "string"
       }
     ],
     "configuration": []
   },
   {
-    "type": "math/euler/toVec3",
+    "type": "math/euler/add",
     "category": "Euler Math",
-    "label": "to Vec3",
+    "label": "Add Euler",
     "inputs": [
       {
-        "name": "v",
+        "name": "a",
+        "valueType": "euler",
+        "defaultValue": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        }
+      },
+      {
+        "name": "b",
         "valueType": "euler",
         "defaultValue": {
           "x": 0,
@@ -4363,8 +4407,36 @@
     ],
     "outputs": [
       {
-        "name": "v",
-        "valueType": "vec3"
+        "name": "result",
+        "valueType": "euler"
+      }
+    ],
+    "configuration": []
+  },
+  {
+    "type": "math/euler/subtract",
+    "category": "Euler Math",
+    "label": "Scale Euler",
+    "inputs": [
+      {
+        "name": "a",
+        "valueType": "euler",
+        "defaultValue": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        }
+      },
+      {
+        "name": "b",
+        "valueType": "float",
+        "defaultValue": 0
+      }
+    ],
+    "outputs": [
+      {
+        "name": "result",
+        "valueType": "euler"
       }
     ],
     "configuration": []
