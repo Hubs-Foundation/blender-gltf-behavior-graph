@@ -641,7 +641,10 @@ def resolve_output_link(output_socket: bpy.types.NodeSocket) -> bpy.types.NodeLi
         output_socket = output_socket.links[0].to_node.outputs[0]
     return output_socket.links[0]
 
-from io_scene_gltf2.blender.exp import gltf2_blender_gather_materials
+if bpy.app.version >= (3, 6, 0):
+    from io_scene_gltf2.blender.exp.material import gltf2_blender_gather_materials
+else:
+    from io_scene_gltf2.blender.exp import gltf2_blender_gather_materials
 from io_scene_gltf2.io.com import gltf2_io
 from io_scene_gltf2.io.com.gltf2_io_constants import TextureFilter, TextureWrap
 
