@@ -334,6 +334,11 @@ def do_register(ComponentClass):
     __components_registry[ComponentClass.get_name()] = ComponentClass
 
 
+def do_unregister(ComponentClass):
+    unregister_component(ComponentClass)
+    __components_registry.pop(ComponentClass.get_name())
+
+
 def register():
     do_register(Grabbable)
     do_register(RigidBody)
@@ -347,8 +352,12 @@ def register():
 
 
 def unregister():
-    #  No need to unregister the Hubs components here, the registry will handle that.
+    do_unregister(Grabbable)
+    do_unregister(RigidBody)
+    do_unregister(PhysicsShape)
+
     bpy.utils.unregister_class(CustomTagItem)
     bpy.utils.unregister_class(CUSTOM_TAGS_UL_tags_list)
     bpy.utils.unregister_class(CUSTOM_TAGS_OT_add_tag)
     bpy.utils.unregister_class(CUSTOM_TAGS_OT_remove_tag)
+    do_unregister(CustomTags)
