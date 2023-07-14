@@ -1,7 +1,10 @@
+import json
+from io_scene_gltf2.io.com.gltf2_io_constants import TextureFilter, TextureWrap
+from io_scene_gltf2.io.com import gltf2_io
 import bpy
 import os
 from bpy.props import StringProperty, PointerProperty
-from bpy.types import GeometryNode, Node, NodeTree, NodeSocket, NodeSocketStandard,NodeSocketInterface, ShaderNode, TextureNode, Operator, NodeGroupInput, NodeReroute, NodeSocketString, NodeSocketBool, NodeSocketFloat
+from bpy.types import GeometryNode, Node, NodeTree, NodeSocket, NodeSocketStandard, NodeSocketInterface, ShaderNode, TextureNode, Operator, NodeGroupInput, NodeReroute, NodeSocketString, NodeSocketBool, NodeSocketFloat
 from bpy.utils import register_class, unregister_class
 from nodeitems_utils import NodeCategory, NodeItem, register_node_categories, unregister_node_categories
 
@@ -34,6 +37,7 @@ auto_casts = {
     ("NodeSocketFloat", "NodeSocketVectorXYZ"): "BGNode_math_toVec3_float",
 }
 
+
 class BGTree(NodeTree):
     bl_idname = "BGTree"
     bl_label = "Behavior Graph"
@@ -51,7 +55,8 @@ class BGTree(NodeTree):
     def update(self):
         for link in self.links:
             if type(link.from_socket) != type(link.to_socket):
-                cast_key = (link.from_socket.bl_idname, link.to_socket.bl_idname)
+                cast_key = (link.from_socket.bl_idname,
+                            link.to_socket.bl_idname)
                 # if link.from_socket.bl_idname.startswith("NodeSocketVector") and link.to_socket.bl_idname.startswith("NodeSocketVector"):
                 #     continue
                 if isinstance(link.from_socket.node, NodeReroute):
@@ -67,10 +72,12 @@ class BGTree(NodeTree):
                 elif cast_key in auto_casts:
                     try:
                         node = self.nodes.new(auto_casts[cast_key])
-                        node.location = [link.from_node.location[0] + abs(link.from_node.location[0] - link.to_node.location[0])/2, link.from_node.location[1]]
+                        node.location = [link.from_node.location[0] + abs(
+                            link.from_node.location[0] - link.to_node.location[0])/2, link.from_node.location[1]]
                         self.links.new(link.from_socket, node.inputs[0])
                         self.links.new(node.outputs[0], link.to_socket)
-                        node.hide = len(node.inputs) <= 1 and len(node.outputs) <= 1
+                        node.hide = len(node.inputs) <= 1 and len(
+                            node.outputs) <= 1
                         link.from_node.select = False
                         node.select = True
                     except:
@@ -80,6 +87,7 @@ class BGTree(NodeTree):
                 else:
                     self.links.remove(link)
 
+
 class BGFlowSocket(NodeSocketStandard):
     bl_label = "Behavior Graph Flow"
 
@@ -87,19 +95,20 @@ class BGFlowSocket(NodeSocketStandard):
         self.display_shape = "DIAMOND"
         if self.is_output:
             self.link_limit = 1
-        else: 
+        else:
             self.link_limit = 0
 
     def draw(self, context, layout, node, text):
         if text == "flow":
             layout.label(text="▶")
         elif self.is_output:
-            layout.label(text = text + " ▶")
+            layout.label(text=text + " ▶")
         else:
-            layout.label(text = "▶ " + text)
+            layout.label(text="▶ " + text)
 
     def draw_color(self, context, node):
         return (1.0, 1.0, 1.0, 1.0)
+
 
 class BGHubsEntitySocket(NodeSocketStandard):
     bl_label = "Hubs Entity"
@@ -123,9 +132,11 @@ class BGHubsEntitySocket(NodeSocketStandard):
 def get_choices(self, context):
     return [(choice.value, choice.text, "") for choice in self.choices]
 
+
 class BGEnumSocketChoice(bpy.types.PropertyGroup):
     text: StringProperty()
     value: StringProperty()
+
 
 class BGEnumSocket(NodeSocketStandard):
     bl_label = "String Choice"
@@ -146,6 +157,7 @@ class BGEnumSocket(NodeSocketStandard):
     def draw_color(self, context, node):
         return (0.4, 0.7, 1.0, 1.0)
 
+
 class BGHubsAnimationActionSocketInterface(NodeSocketInterface):
     bl_idname = "BGHubsAnimationActionSocketInterface"
     bl_socket_idname = "BGHubsAnimationActionSocket"
@@ -156,6 +168,7 @@ class BGHubsAnimationActionSocketInterface(NodeSocketInterface):
     def draw_color(self, context):
         return (0.2, 1.0, 1.0, 1.0)
 
+
 class BGHubsAnimationActionSocket(NodeSocketStandard):
     bl_label = "Hubs AnimationAction"
 
@@ -164,6 +177,7 @@ class BGHubsAnimationActionSocket(NodeSocketStandard):
 
     def draw_color(self, context, node):
         return (0.2, 1.0, 1.0, 1.0)
+
 
 class BGHubsPlayerSocketInterface(NodeSocketInterface):
     bl_idname = "BGHubsPlayerSocketInterface"
@@ -175,6 +189,7 @@ class BGHubsPlayerSocketInterface(NodeSocketInterface):
     def draw_color(self, context):
         return (1.00, 0.91, 0.34, 1.0)
 
+
 class BGHubsPlayerSocket(NodeSocketStandard):
     bl_label = "Hubs Player"
 
@@ -183,6 +198,7 @@ class BGHubsPlayerSocket(NodeSocketStandard):
 
     def draw_color(self, context, node):
         return (1.00, 0.91, 0.34, 1.0)
+
 
 class BGNode():
     bl_label = "Behavior Graph Node"
@@ -196,11 +212,13 @@ class BGNode():
         # return True
         return ntree.bl_idname == 'BGTree'
 
+
 class BGEventNode():
     def init(self, context):
         super().init(context)
         self.color = (0.6, 0.2, 0.2)
         self.outputs.new("BGFlowSocket", "flow")
+
 
 class BGActionNode():
     def init(self, context):
@@ -209,20 +227,24 @@ class BGActionNode():
         self.inputs.new("BGFlowSocket", "flow")
         self.outputs.new("BGFlowSocket", "flow")
 
+
 entity_property_settings = {
     "visible": ("NodeSocketBool", False),
-    "position": ("NodeSocketVectorXYZ", [0.0,0.0,0.0]),
-    "rotation": ("NodeSocketVectorEuler", [0.0,0.0,0.0]),
-    "scale": ("NodeSocketVectorXYZ", [1.0,1.0,1.0]),
+    "position": ("NodeSocketVectorXYZ", [0.0, 0.0, 0.0]),
+    "rotation": ("NodeSocketVectorEuler", [0.0, 0.0, 0.0]),
+    "scale": ("NodeSocketVectorXYZ", [1.0, 1.0, 1.0]),
 }
+
 
 def update_target_property(self, context):
     if self.inputs and len(self.inputs) > 2:
         self.outputs.remove(self.inputs[2])
     setattr(self, "node_type",  "hubs/entity/set/" + self.targetProperty)
-    (socket_type, default_value) = entity_property_settings[self.targetProperty]
+    (socket_type,
+     default_value) = entity_property_settings[self.targetProperty]
     sock = self.inputs.new(socket_type, self.targetProperty)
     sock.default_value = default_value
+
 
 class BGHubsSetEntityProperty(BGActionNode, BGNode, Node):
     bl_label = "Set Entity Property"
@@ -268,14 +290,17 @@ class BGNode_hubs_onInteract(BGEventNode, BGNode, Node):
     def draw_buttons(self, context, layout):
         layout.prop(self, "target")
 
+
 def has_collider(self, ob):
     return has_component(ob, "physics-shape")
+
 
 class BGNode_hubs_onCollisionEnter(BGEventNode, BGNode, Node):
     bl_label = "On Collision Enter"
     node_type = "hubs/onCollisionEnter"
 
-    target: PointerProperty(name="Target", type=bpy.types.Object, poll=has_collider)
+    target: PointerProperty(
+        name="Target", type=bpy.types.Object, poll=has_collider)
 
     def init(self, context):
         super().init(context)
@@ -283,12 +308,14 @@ class BGNode_hubs_onCollisionEnter(BGEventNode, BGNode, Node):
 
     def draw_buttons(self, context, layout):
         layout.prop(self, "target")
+
 
 class BGNode_hubs_onCollisionStay(BGEventNode, BGNode, Node):
     bl_label = "On Collision Stay"
     node_type = "hubs/onCollisionStay"
 
-    target: PointerProperty(name="Target", type=bpy.types.Object, poll=has_collider)
+    target: PointerProperty(
+        name="Target", type=bpy.types.Object, poll=has_collider)
 
     def init(self, context):
         super().init(context)
@@ -296,12 +323,14 @@ class BGNode_hubs_onCollisionStay(BGEventNode, BGNode, Node):
 
     def draw_buttons(self, context, layout):
         layout.prop(self, "target")
+
 
 class BGNode_hubs_onCollisionExit(BGEventNode, BGNode, Node):
     bl_label = "On Collision Exit"
     node_type = "hubs/onCollisionExit"
 
-    target: PointerProperty(name="Target", type=bpy.types.Object, poll=has_collider)
+    target: PointerProperty(
+        name="Target", type=bpy.types.Object, poll=has_collider)
 
     def init(self, context):
         super().init(context)
@@ -310,11 +339,13 @@ class BGNode_hubs_onCollisionExit(BGEventNode, BGNode, Node):
     def draw_buttons(self, context, layout):
         layout.prop(self, "target")
 
+
 class BGNode_hubs_onPlayerCollisionEnter(BGEventNode, BGNode, Node):
     bl_label = "On Player Collision Enter"
     node_type = "hubs/onPlayerCollisionEnter"
 
-    target: PointerProperty(name="Target", type=bpy.types.Object, poll=has_collider)
+    target: PointerProperty(
+        name="Target", type=bpy.types.Object, poll=has_collider)
 
     def init(self, context):
         super().init(context)
@@ -322,12 +353,14 @@ class BGNode_hubs_onPlayerCollisionEnter(BGEventNode, BGNode, Node):
 
     def draw_buttons(self, context, layout):
         layout.prop(self, "target")
+
 
 class BGNode_hubs_onPlayerCollisionStay(BGEventNode, BGNode, Node):
     bl_label = "On Player Collision Stay"
     node_type = "hubs/onPlayerCollisionStay"
 
-    target: PointerProperty(name="Target", type=bpy.types.Object, poll=has_collider)
+    target: PointerProperty(
+        name="Target", type=bpy.types.Object, poll=has_collider)
 
     def init(self, context):
         super().init(context)
@@ -336,11 +369,13 @@ class BGNode_hubs_onPlayerCollisionStay(BGEventNode, BGNode, Node):
     def draw_buttons(self, context, layout):
         layout.prop(self, "target")
 
+
 class BGNode_hubs_onPlayerCollisionExit(BGEventNode, BGNode, Node):
     bl_label = "On Player Collision Exit"
     node_type = "hubs/onPlayerCollisionExit"
 
-    target: PointerProperty(name="Target", type=bpy.types.Object, poll=has_collider)
+    target: PointerProperty(
+        name="Target", type=bpy.types.Object, poll=has_collider)
 
     def init(self, context):
         super().init(context)
@@ -353,12 +388,13 @@ class BGNode_hubs_onPlayerCollisionExit(BGEventNode, BGNode, Node):
 def update_output_sockets(self, context):
     existing_outputs = len(self.outputs)
     print("existing", existing_outputs, "desired", self.numOutputs)
-    if(existing_outputs < self.numOutputs):
+    if (existing_outputs < self.numOutputs):
         for i in range(existing_outputs, self.numOutputs):
             self.outputs.new("BGFlowSocket", f"{i+1}")
     elif existing_outputs > self.numOutputs:
         for i in range(self.numOutputs, existing_outputs):
             self.outputs.remove(self.outputs[f"{i+1}"])
+
 
 class BGNode_flow_sequence(BGNode, Node):
     bl_label = "Sequence"
@@ -388,6 +424,7 @@ def get_available_input_sockets(self, context):
     else:
         return []
 
+
 def update_selected_variable_input(self, context):
     # Remove previous socket
     if self.inputs and len(self.inputs) > 1:
@@ -403,6 +440,7 @@ def update_selected_variable_input(self, context):
         self.inputs.new(socket_type, "value")
 
     return None
+
 
 def update_selected_variable_output(self, context):
     # Remove previous socket
@@ -420,6 +458,7 @@ def update_selected_variable_output(self, context):
         self.outputs.new(socket_type, "value")
 
     return None
+
 
 class BGNode_variable_get(BGNode, Node):
     bl_label = "Get Variable"
@@ -460,11 +499,13 @@ class BGNode_variable_set(BGActionNode, BGNode, Node):
     def draw_buttons(self, context, layout):
         layout.prop(self, "variableId")
 
+
 class BGCategory(NodeCategory):
     @classmethod
     def poll(cls, context):
         # return True
         return context.space_data.tree_type == "BGTree"
+
 
 behavior_graph_node_categories = {
     "Event": [
@@ -476,14 +517,14 @@ behavior_graph_node_categories = {
         NodeItem("BGNode_hubs_onPlayerCollisionStay"),
         NodeItem("BGNode_hubs_onPlayerCollisionExit"),
     ],
-   "Entity": [
+    "Entity": [
         NodeItem("BGHubsSetEntityProperty"),
     ],
     "Variables": [
         NodeItem("BGNode_variable_get"),
         NodeItem("BGNode_variable_set"),
     ],
-   "Flow": [
+    "Flow": [
         NodeItem("BGNode_flow_sequence"),
     ],
 }
@@ -515,7 +556,8 @@ all_classes = [
     BGHubsSetEntityProperty,
 ]
 
-hardcoded_nodes = {node.node_type for node in all_classes if hasattr(node,"node_type") }
+hardcoded_nodes = {
+    node.node_type for node in all_classes if hasattr(node, "node_type")}
 
 type_to_socket = {
     "float": "NodeSocketFloat",
@@ -558,6 +600,7 @@ category_colors = {
     "Action":  (0.2, 0.2, 0.6),
     "None": (0.6, 0.6, 0.2)
 }
+
 
 def create_node_class(node_data):
     label = node_data["type"]
@@ -613,7 +656,7 @@ def create_node_class(node_data):
 
     return CustomNode
 
-import json
+
 def read_nodespec(filename):
     with open(filename, "r") as file:
         nodes = json.load(file)
@@ -626,32 +669,36 @@ def read_nodespec(filename):
                 behavior_graph_node_categories[category] = []
             node_class = create_node_class(node_spec)
             all_classes.append(node_class)
-            behavior_graph_node_categories[category].append(NodeItem(node_class.__name__))
+            behavior_graph_node_categories[category].append(
+                NodeItem(node_class.__name__))
             # bpy.utils.register_class(node_class)
         # print(test_classes)
         #
+
 
 def resolve_input_link(input_socket: bpy.types.NodeSocket) -> bpy.types.NodeLink:
     while isinstance(input_socket.links[0].from_node, bpy.types.NodeReroute):
         input_socket = input_socket.links[0].from_node.inputs[0]
     return input_socket.links[0]
 
+
 def resolve_output_link(output_socket: bpy.types.NodeSocket) -> bpy.types.NodeLink:
     while isinstance(output_socket.links[0].to_node, bpy.types.NodeReroute):
         output_socket = output_socket.links[0].to_node.outputs[0]
     return output_socket.links[0]
 
+
 if bpy.app.version >= (3, 6, 0):
     from io_scene_gltf2.blender.exp.material import gltf2_blender_gather_materials
 else:
     from io_scene_gltf2.blender.exp import gltf2_blender_gather_materials
-from io_scene_gltf2.io.com import gltf2_io
-from io_scene_gltf2.io.com.gltf2_io_constants import TextureFilter, TextureWrap
+
 
 def gather_material_property(export_settings, blender_object, target, property_name):
     blender_material = getattr(target, property_name)
     if blender_material:
-        material = gltf2_blender_gather_materials.gather_material(blender_material, -1, export_settings)
+        material = gltf2_blender_gather_materials.gather_material(
+            blender_material, -1, export_settings)
         return {
             "__mhc_link_type": "material",
             "index": material
@@ -659,10 +706,12 @@ def gather_material_property(export_settings, blender_object, target, property_n
     else:
         return None
 
+
 def __gather_mag_filter(blender_shader_node, export_settings):
     if blender_shader_node.use_interpolation:
         return TextureFilter.Linear
     return TextureFilter.Nearest
+
 
 def __gather_min_filter(blender_shader_node, export_settings):
     if blender_shader_node.use_interpolation:
@@ -674,6 +723,7 @@ def __gather_min_filter(blender_shader_node, export_settings):
         return TextureFilter.NearestMipmapNearest
     else:
         return TextureFilter.Nearest
+
 
 def __gather_wrap(blender_shader_node, export_settings):
     # First gather from the Texture node
@@ -724,7 +774,8 @@ def gather_texture_property(export_settings, blender_object, target, property_na
     else:
         return None
 
-def get_socket_value(export_settings, socket : NodeSocket):
+
+def get_socket_value(export_settings, socket: NodeSocket):
     if hasattr(socket, "bl_socket_idname"):
         socket_idname = socket.bl_socket_idname
     else:
@@ -739,17 +790,18 @@ def get_socket_value(export_settings, socket : NodeSocket):
     elif socket_type == "material":
         return gather_material_property(export_settings, socket, socket, "default_value")
     elif socket_type == "texture":
-            return gather_texture_property(export_settings, socket, socket, "default_value")
+        return gather_texture_property(export_settings, socket, socket, "default_value")
     elif socket_type == "color":
         a = socket.default_value
         return [a[0], a[1], a[2]]
-    elif socket_type == "vec3": # TODO gather_property seems to not handle this correctly
+    elif socket_type == "vec3":  # TODO gather_property seems to not handle this correctly
         a = socket.default_value
         return {"x": a[0], "y": a[1], "z": a[2]}
     elif hasattr(socket, "default_value"):
         return gather_property(export_settings, socket, socket, "default_value")
     else:
         return None
+
 
 def extract_behavior_graph_data(node_tree, export_settings):
     data = {
@@ -780,7 +832,6 @@ def extract_behavior_graph_data(node_tree, export_settings):
             "flows": {}
         }
 
-
         for output_socket in node.outputs:
             if isinstance(output_socket, BGFlowSocket) and output_socket.is_linked:
                 link = resolve_output_link(output_socket)
@@ -802,17 +853,22 @@ def extract_behavior_graph_data(node_tree, export_settings):
                         }
                     }
                 elif isinstance(input_socket, BGHubsEntitySocket):
-                    node_data["parameters"][input_socket.identifier] = { "value": gather_property(export_settings, input_socket, input_socket, "target") }
+                    node_data["parameters"][input_socket.identifier] = {
+                        "value": gather_property(export_settings, input_socket, input_socket, "target")}
                 else:
                     value = get_socket_value(export_settings, input_socket)
-                    node_data["parameters"][input_socket.identifier] = { "value": value }
+                    node_data["parameters"][input_socket.identifier] = {
+                        "value": value}
 
         if isinstance(node, BGNode_variable_get) or isinstance(node, BGNode_variable_set):
-            print("VAR NODE", node.variableId, node_tree.inputs.find(node.variableId))
-            node_data["configuration"]["variableId"] = node_tree.inputs.find(node.variableId)
+            print("VAR NODE", node.variableId,
+                  node_tree.inputs.find(node.variableId))
+            node_data["configuration"]["variableId"] = node_tree.inputs.find(
+                node.variableId)
         elif hasattr(node, "__annotations__"):
             for key in node.__annotations__.keys():
-                node_data["configuration"][key] = gather_property(export_settings, node, node, key)
+                node_data["configuration"][key] = gather_property(
+                    export_settings, node, node, key)
 
         data["nodes"].append(node_data)
 
@@ -836,7 +892,8 @@ class glTF2ExportUserExtension:
 
     def gather_gltf_extensions_hook(self, gltf2_object, export_settings):
         print("GATHERING BG")
-        behaviors = [extract_behavior_graph_data(node_group, export_settings) for node_group in bpy.data.node_groups if node_group.bl_idname == "BGTree"]
+        behaviors = [extract_behavior_graph_data(
+            node_group, export_settings) for node_group in bpy.data.node_groups if node_group.bl_idname == "BGTree"]
         if behaviors:
             gltf2_object.extensions["MOZ_behavior"] = self.Extension(
                 name="MOZ_behavior",
@@ -848,21 +905,25 @@ class glTF2ExportUserExtension:
 
 
 def register():
-    read_nodespec(os.path.join(os.path.dirname(os.path.abspath(__file__)), "nodespec.json"))
+    read_nodespec(os.path.join(os.path.dirname(
+        os.path.abspath(__file__)), "nodespec.json"))
 
     for cls in all_classes:
         register_class(cls)
 
     print(behavior_graph_node_categories)
-    categories = [BGCategory("BEHAVIOR_GRAPH_" + category.replace(" ", "_"), category, items=items) for category, items in behavior_graph_node_categories.items()]
+    categories = [BGCategory("BEHAVIOR_GRAPH_" + category.replace(" ", "_"), category, items=items)
+                  for category, items in behavior_graph_node_categories.items()]
     print(categories)
     register_node_categories("BEHAVIOR_GRAPH_NODES", categories)
+
 
 def unregister():
     unregister_node_categories("BEHAVIOR_GRAPH_NODES")
 
     for cls in reversed(all_classes):
         unregister_class(cls)
+
 
 if __name__ == "__main__":
     register()
