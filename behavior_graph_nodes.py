@@ -91,13 +91,6 @@ class BGTree(NodeTree):
 class BGFlowSocket(NodeSocketStandard):
     bl_label = "Behavior Graph Flow"
 
-    def __init__(self):
-        self.display_shape = "DIAMOND"
-        if self.is_output:
-            self.link_limit = 1
-        else:
-            self.link_limit = 0
-
     def draw(self, context, layout, node, text):
         if text == "flow":
             layout.label(text="▶")
@@ -108,6 +101,15 @@ class BGFlowSocket(NodeSocketStandard):
 
     def draw_color(self, context, node):
         return (1.0, 1.0, 1.0, 1.0)
+
+    @classmethod
+    def create(cls, target, name="flow"):
+        node = target.new(cls.bl_rna.name, name)
+        node.display_shape = "DIAMOND"
+        if node.is_output:
+            node.link_limit = 1
+        else:
+            node.link_limit = 0
 
 
 class BGHubsEntitySocket(NodeSocketStandard):
@@ -217,15 +219,15 @@ class BGEventNode():
     def init(self, context):
         super().init(context)
         self.color = (0.6, 0.2, 0.2)
-        self.outputs.new("BGFlowSocket", "flow")
+        BGFlowSocket.create(self.outputs)
 
 
 class BGActionNode():
     def init(self, context):
         super().init(context)
         self.color = (0.2, 0.2, 0.6)
-        self.inputs.new("BGFlowSocket", "flow")
-        self.outputs.new("BGFlowSocket", "flow")
+        BGFlowSocket.create(self.inputs)
+        BGFlowSocket.create(self.outputs)
 
 
 entity_property_settings = {
@@ -390,7 +392,7 @@ def update_output_sockets(self, context):
     print("existing", existing_outputs, "desired", self.numOutputs)
     if (existing_outputs < self.numOutputs):
         for i in range(existing_outputs, self.numOutputs):
-            self.outputs.new("BGFlowSocket", f"{i+1}")
+            BGFlowSocket.create(self.outputs, f"{i+1}")
     elif existing_outputs > self.numOutputs:
         for i in range(self.numOutputs, existing_outputs):
             self.outputs.remove(self.outputs[f"{i+1}"])
@@ -410,7 +412,7 @@ class BGNode_flow_sequence(BGNode, Node):
     def init(self, context):
         super().init(context)
         self.color = (0.2, 0.2, 0.2)
-        self.inputs.new("BGFlowSocket", "flow")
+        BGFlowSocket.create(self.inputs)
         update_output_sockets(self, context)
 
     def draw_buttons(self, context, layout):
