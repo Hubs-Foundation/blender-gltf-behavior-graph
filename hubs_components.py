@@ -4,6 +4,7 @@ from io_hubs_addon.components.hubs_component import HubsComponent
 from io_hubs_addon.components.types import Category, NodeType, PanelType
 from io_hubs_addon.components.components_registry import register_component, unregister_component, __components_registry
 
+
 class Grabbable(HubsComponent):
     _definition = {
         'name': 'grabbable',
@@ -22,12 +23,14 @@ class Grabbable(HubsComponent):
     hand: BoolProperty(
         name="By Hand", description="Can be grabbed by VR hands", default=True)
 
+
 collision_masks = [
     ("objects", "Objects", "Interactive objects"),
     ("triggers", "Triggers", "Trigger Colliders"),
     ("environment", "Environment", "Environment geometry"),
     ("avatars", "Avatars", "Player Avatars")
 ]
+
 
 class RigidBody(HubsComponent):
     _definition = {
@@ -48,7 +51,6 @@ class RigidBody(HubsComponent):
                ("dynamic", "Dynamic", "Effected by physics and gravity"),
                ("kinematic", "Kinematic", "Not effected by gravity or collisions, but can be moved.")],
         default="dynamic")
-
 
     disableCollision: BoolProperty(
         name="Is Trigger",
@@ -124,7 +126,8 @@ class RigidBody(HubsComponent):
 
     def gather(self, export_settings, object):
         props = super().gather(export_settings, object)
-        props['collisionMask'] = [value for i, (value, _label, _desc) in enumerate(collision_masks) if self.collisionMask[i]]
+        props['collisionMask'] = [value for i, (value, _label, _desc) in enumerate(
+            collision_masks) if self.collisionMask[i]]
         # prefer to store as an array for new components
         props['gravity'] = [v for v in self.gravity]
         props['angularFactor'] = [v for v in self.angularFactor]
@@ -133,10 +136,11 @@ class RigidBody(HubsComponent):
     def draw(self, context, layout, panel):
         layout.prop(self, "type")
 
-        if (self.disableCollision  and self.collisionGroup != "triggers") or (self.collisionGroup == "triggers" and not self.disableCollision):
+        if (self.disableCollision and self.collisionGroup != "triggers") or (self.collisionGroup == "triggers" and not self.disableCollision):
             col = layout.column()
             # col.alert = True
-            col.label(text="When making triggers you likely want 'Is Trigger' checked and collision group set to 'Triggers'", icon='INFO')
+            col.label(
+                text="When making triggers you likely want 'Is Trigger' checked and collision group set to 'Triggers'", icon='INFO')
         layout.prop(self, "collisionGroup")
         layout.label(text="Collision Mask:")
         col = layout.column(align=True)
@@ -153,7 +157,6 @@ class RigidBody(HubsComponent):
         layout.prop(self, "gravity")
 
 
-
 class PhysicsShape(HubsComponent):
     _definition = {
         'name': 'physics-shape',
@@ -168,7 +171,8 @@ class PhysicsShape(HubsComponent):
     type: EnumProperty(
         name="Type", description="Type",
         items=[("box", "Box Collider", "A box-shaped primitive collision shape"),
-               ("sphere", "Sphere Collider", "A primitive collision shape which represents a sphere"),
+               ("sphere", "Sphere Collider",
+                "A primitive collision shape which represents a sphere"),
                ("hull", "Convex Hull",
                 "A convex hull wrapped around the object's vertices. A good analogy for a convex hull is an elastic membrane or balloon under pressure which is placed around a given set of vertices. When released the membrane will assume the shape of the convex hull"),
                ("mesh", "Mesh Collider",
@@ -235,7 +239,9 @@ class PhysicsShape(HubsComponent):
         if self.fit == "manual" and (self.type == "mesh" or self.type == "hull"):
             col = layout.column()
             col.alert = True
-            col.label(text="'Hull' and 'Mesh' do not support 'manual' fit mode", icon='ERROR')
+            col.label(
+                text="'Hull' and 'Mesh' do not support 'manual' fit mode", icon='ERROR')
+
 
 class CustomTagItem(bpy.types.PropertyGroup):
     def _set_unique_tag(self, context):
@@ -247,15 +253,18 @@ class CustomTagItem(bpy.types.PropertyGroup):
 
     tag: StringProperty(name="tag", update=_set_unique_tag)
 
+
 class CUSTOM_TAGS_UL_tags_list(bpy.types.UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
         layout.prop(item, "tag", text="", emboss=False, icon_value=icon)
+
 
 def get_host(context):
     if context.object.type == 'ARMATURE' and (context.mode == 'EDIT_ARMATURE' or context.mode == 'POSE'):
         return context.active_bone
     else:
         return context.object
+
 
 class CUSTOM_TAGS_OT_add_tag(bpy.types.Operator):
     bl_idname = "custom_tags.tag_add"
@@ -271,6 +280,7 @@ class CUSTOM_TAGS_OT_add_tag(bpy.types.Operator):
         new_tag.tag = "New Tag"
 
         return {'FINISHED'}
+
 
 class CUSTOM_TAGS_OT_remove_tag(bpy.types.Operator):
     bl_idname = "custom_tags.tag_remove"
@@ -307,7 +317,8 @@ class CustomTags(HubsComponent):
     active_tag_index: IntProperty(name="Active Tag Index", default=0)
 
     def draw(self, context, layout, panel):
-        layout.template_list("CUSTOM_TAGS_UL_tags_list", "", self, "tags", self, "active_tag_index")
+        layout.template_list("CUSTOM_TAGS_UL_tags_list",
+                             "", self, "tags", self, "active_tag_index")
         row = layout.row(align=True)
         row.operator("custom_tags.tag_add", text="", icon="ADD")
         row.operator("custom_tags.tag_remove", text="", icon="REMOVE")
@@ -317,9 +328,11 @@ class CustomTags(HubsComponent):
             "tags": [tag.tag for tag in self.tags]
         }
 
+
 def do_register(ComponentClass):
     register_component(ComponentClass)
     __components_registry[ComponentClass.get_name()] = ComponentClass
+
 
 def register():
     do_register(Grabbable)
@@ -334,7 +347,7 @@ def register():
 
 
 def unregister():
-    # No need to unregister the Hubs components here, the registry will handle that.
+    #  No need to unregister the Hubs components here, the registry will handle that.
     bpy.utils.unregister_class(CustomTagItem)
     bpy.utils.unregister_class(CUSTOM_TAGS_UL_tags_list)
     bpy.utils.unregister_class(CUSTOM_TAGS_OT_add_tag)
