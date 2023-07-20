@@ -4,7 +4,7 @@ from io_scene_gltf2.io.com import gltf2_io
 import bpy
 import os
 from bpy.props import StringProperty, PointerProperty
-from bpy.types import GeometryNode, Node, NodeTree, NodeSocket, NodeSocketStandard, NodeSocketInterface, ShaderNode, TextureNode, Operator, NodeGroupInput, NodeReroute, NodeSocketString, NodeSocketBool, NodeSocketFloat
+from bpy.types import Node, NodeTree, NodeSocket, NodeSocketStandard, NodeSocketInterface, NodeReroute, NodeSocketString
 from bpy.utils import register_class, unregister_class
 from nodeitems_utils import NodeCategory, NodeItem, register_node_categories, unregister_node_categories
 
@@ -421,10 +421,10 @@ class BGNode_flow_sequence(BGNode, Node):
 
 def get_available_input_sockets(self, context):
     tree = self.id_data
+    result = [('None', 'None', 'None')]
     if tree is not None:
-        return [(socket.name, socket.name, socket.name) for socket in tree.inputs]
-    else:
-        return []
+        result.extend([(socket.name, socket.name, socket.name) for socket in tree.inputs])
+    return result
 
 
 def update_selected_variable_input(self, context):
@@ -434,7 +434,7 @@ def update_selected_variable_input(self, context):
 
     # Create a new socket based on the selected variable type
     tree = self.id_data
-    if tree is not None:
+    if tree is not None and self.variableId and self.variableId != 'None':
         selected_socket = tree.inputs[self.variableId]
         socket_type = selected_socket.bl_socket_idname
         if socket_type == "NodeSocketVector":
@@ -451,7 +451,7 @@ def update_selected_variable_output(self, context):
 
     # Create a new socket based on the selected variable type
     tree = self.id_data
-    if tree is not None:
+    if tree is not None and self.variableId != 'None':
         print(self.variableId)
         selected_socket = tree.inputs[self.variableId]
         socket_type = selected_socket.bl_socket_idname
@@ -805,13 +805,13 @@ def get_socket_value(export_settings, socket: NodeSocket):
         return None
 
 
-def extract_behavior_graph_data(node_tree, export_settings):
+def extract_behavior_graph_data(slot, export_settings):
     data = {
         "variables": [],
         "nodes": []
     }
 
-    for i, socket in enumerate(node_tree.inputs):
+    for i, socket in enumerate(slot.graph.inputs):
         socket_type = socket_to_type[socket.bl_socket_idname]
         value = get_socket_value(export_settings, socket)
         print(socket.name, socket_type, value)
@@ -822,12 +822,12 @@ def extract_behavior_graph_data(node_tree, export_settings):
             "initialValue": value
         })
 
-    for node in node_tree.nodes:
+    for node in slot.graph.nodes:
         if not isinstance(node, BGNode):
             continue
 
         node_data = {
-            "id": str(node.name),
+            "id": f"{slot.name}_{node.name}",
             "type": node.node_type,
             "parameters": {},
             "configuration": {},
@@ -839,7 +839,7 @@ def extract_behavior_graph_data(node_tree, export_settings):
                 link = resolve_output_link(output_socket)
                 print(link)
                 node_data["flows"][output_socket.identifier] = {
-                    "nodeId": link.to_node.name,
+                    "nodeId": f"{slot.name}_{link.to_node.name}",
                     "socket": link.to_socket.identifier
                 }
         for input_socket in node.inputs:
@@ -850,7 +850,7 @@ def extract_behavior_graph_data(node_tree, export_settings):
                     link = resolve_input_link(input_socket)
                     node_data["parameters"][input_socket.identifier] = {
                         "link": {
-                            "nodeId": link.from_node.name,
+                            "nodeId": f"{slot.name}_{link.from_node.name}",
                             "socket": link.from_socket.identifier
                         }
                     }
@@ -863,10 +863,9 @@ def extract_behavior_graph_data(node_tree, export_settings):
                         "value": value}
 
         if isinstance(node, BGNode_variable_get) or isinstance(node, BGNode_variable_set):
-            print("VAR NODE", node.variableId,
-                  node_tree.inputs.find(node.variableId))
-            node_data["configuration"]["variableId"] = node_tree.inputs.find(
-                node.variableId)
+            if node.variableId != 'None':
+                print("VAR NODE", node.variableId, slot.graph.inputs.find(node.variableId))
+                node_data["configuration"]["variableId"] = slot.graph.inputs.find(node.variableId)
         elif hasattr(node, "__annotations__"):
             for key in node.__annotations__.keys():
                 node_data["configuration"][key] = gather_property(
@@ -891,16 +890,55 @@ class glTF2ExportUserExtension:
         from io_scene_gltf2.io.com.gltf2_io_extensions import Extension
 
         self.Extension = Extension
+        self.delayed_gathers = []
+
+    def gather_graph(self, blender_object, export_settings):
+        slots = list(map(lambda slot: slot, blender_object.bg_slots))
+        return [extract_behavior_graph_data(
+            slot, export_settings) for slot in slots if slot.graph.bl_idname == "BGTree"]
 
     def gather_gltf_extensions_hook(self, gltf2_object, export_settings):
         print("GATHERING BG")
-        behaviors = [extract_behavior_graph_data(
-            node_group, export_settings) for node_group in bpy.data.node_groups if node_group.bl_idname == "BGTree"]
+        extension_name = "MOZ_behavior"
+        gltf2_object.extensions[extension_name] = self.Extension(
+            name=extension_name,
+            extension={
+                "version": 1,
+                "exporterVersion": "1.0.0"
+            },
+            required=False
+        )
+
+        behaviors = {
+            "variables": [],
+            "nodes": []
+        }
+
+        for scene in bpy.data.scenes:
+            graphs = self.gather_graph(scene, export_settings)
+            for graph in graphs:
+                var_keys = list(map(lambda var: var['name'], behaviors['variables']))
+                for var in graph['variables']:
+                    if var['name'] not in var_keys:
+                        behaviors['variables'].append(var)
+                behaviors['nodes'].extend(graph['nodes'])
+
+        for object in bpy.data.objects:
+            graphs = self.gather_graph(object, export_settings)
+            for graph in graphs:
+                var_keys = list(map(lambda var: var['name'], behaviors['variables']))
+                for var in graph['variables']:
+                    if var['name'] not in var_keys:
+                        behaviors['variables'].append(var)
+                behaviors['nodes'].extend(graph['nodes'])
+
         if behaviors:
+            if gltf2_object.extensions is None:
+                gltf2_object.extensions = {}
             gltf2_object.extensions["MOZ_behavior"] = self.Extension(
                 name="MOZ_behavior",
                 extension={
-                    "behaviors": behaviors
+                    "behaviors": [behaviors]
                 },
                 required=False
             )
