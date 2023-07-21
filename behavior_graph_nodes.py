@@ -4,7 +4,7 @@ from io_scene_gltf2.io.com import gltf2_io
 import bpy
 import os
 from bpy.props import StringProperty, PointerProperty
-from bpy.types import Node, NodeTree, NodeSocket, NodeSocketStandard, NodeSocketInterface, NodeReroute, NodeSocketString
+from bpy.types import Node, NodeTree, NodeSocket, NodeSocketStandard, NodeSocketInterface, NodeReroute, NodeSocketString, NodeSocketInterfaceString
 from bpy.utils import register_class, unregister_class
 from nodeitems_utils import NodeCategory, NodeItem, register_node_categories, unregister_node_categories
 
@@ -194,6 +194,27 @@ class BGHubsPlayerSocketInterface(NodeSocketInterface):
 
 class BGHubsPlayerSocket(NodeSocketStandard):
     bl_label = "Hubs Player"
+
+    def draw(self, context, layout, node, text):
+        layout.label(text=text)
+
+    def draw_color(self, context, node):
+        return (1.00, 0.91, 0.34, 1.0)
+
+
+class BGCustomEventSocketInterface(NodeSocketInterfaceString):
+    bl_idname = "BGCustomEventSocketInterface"
+    bl_socket_idname = "BGCustomEventSocket"
+
+    def draw(self, context, layout):
+        pass
+
+    def draw_color(self, context):
+        return (1.00, 0.91, 0.34, 1.0)
+
+
+class BGCustomEventSocket(NodeSocketString):
+    bl_label = "Custom Event"
 
     def draw(self, context, layout, node, text):
         layout.label(text=text)
@@ -423,7 +444,8 @@ def get_available_input_sockets(self, context):
     tree = self.id_data
     result = [('None', 'None', 'None')]
     if tree is not None:
-        result.extend([(socket.name, socket.name, socket.name) for socket in tree.inputs])
+        result.extend([(socket.name, socket.name, socket.name) for socket in tree.inputs if not hasattr(
+            socket, "bl_idname") or socket.bl_idname != BGCustomEventSocketInterface.bl_idname])
     return result
 
 
@@ -502,6 +524,49 @@ class BGNode_variable_set(BGActionNode, BGNode, Node):
         layout.prop(self, "variableId")
 
 
+def get_available_custom_event_input_sockets(self, context):
+    tree = self.id_data
+    result = [('None', 'None', 'None')]
+    if tree is not None:
+        result.extend([(socket.name, socket.name, socket.name) for socket in tree.inputs if hasattr(
+            socket, "bl_idname") and socket.bl_idname == BGCustomEventSocketInterface.bl_idname])
+    return result
+
+
+class BGNode_customEvent_trigger(BGActionNode, BGNode, Node):
+    bl_label = "Trigger"
+    node_type = "customEvent/trigger"
+
+    customEventId: bpy.props.EnumProperty(
+        name="Custom Event",
+        description="Custom Event",
+        items=get_available_custom_event_input_sockets,
+    )
+
+    def init(self, context):
+        super().init(context)
+
+    def draw_buttons(self, context, layout):
+        layout.prop(self, "customEventId")
+
+
+class BGNode_customEvent_onTriggered(BGEventNode, BGNode, Node):
+    bl_label = "On Trigger"
+    node_type = "customEvent/onTriggered"
+
+    customEventId: bpy.props.EnumProperty(
+        name="Custom Event",
+        description="Custom Event",
+        items=get_available_custom_event_input_sockets,
+    )
+
+    def init(self, context):
+        super().init(context)
+
+    def draw_buttons(self, context, layout):
+        layout.prop(self, "customEventId")
+
+
 class BGCategory(NodeCategory):
     @classmethod
     def poll(cls, context):
@@ -518,6 +583,7 @@ behavior_graph_node_categories = {
         NodeItem("BGNode_hubs_onPlayerCollisionEnter"),
         NodeItem("BGNode_hubs_onPlayerCollisionStay"),
         NodeItem("BGNode_hubs_onPlayerCollisionExit"),
+        NodeItem("BGNode_customEvent_onTriggered"),
     ],
     "Entity": [
         NodeItem("BGHubsSetEntityProperty"),
@@ -529,6 +595,9 @@ behavior_graph_node_categories = {
     "Flow": [
         NodeItem("BGNode_flow_sequence"),
     ],
+    "Action": {
+        NodeItem("BGNode_customEvent_trigger"),
+    }
 }
 
 all_classes = [
@@ -539,6 +608,8 @@ all_classes = [
     BGHubsAnimationActionSocketInterface,
     BGHubsPlayerSocket,
     BGHubsPlayerSocketInterface,
+    BGCustomEventSocket,
+    BGCustomEventSocketInterface,
 
     BGEnumSocketChoice,
     BGEnumSocket,
@@ -554,8 +625,10 @@ all_classes = [
     BGNode_hubs_onPlayerCollisionEnter,
     BGNode_hubs_onPlayerCollisionStay,
     BGNode_hubs_onPlayerCollisionExit,
+    BGNode_customEvent_onTriggered,
 
     BGHubsSetEntityProperty,
+    BGNode_customEvent_trigger
 ]
 
 hardcoded_nodes = {
@@ -574,7 +647,7 @@ type_to_socket = {
     "player": "BGHubsPlayerSocket",
     "material": "NodeSocketMaterial",
     "texture": "NodeSocketTexture",
-    "color": "NodeSocketColor",
+    "color": "NodeSocketColor"
 }
 
 socket_to_type = {
@@ -592,7 +665,8 @@ socket_to_type = {
     "NodeSocketVectorEuler": "euler",
     "BGHubsAnimationActionSocket": "animationAction",
     "BGEnumSocket": "string",
-    "BGHubsPlayerSocket": "player"
+    "BGHubsPlayerSocket": "player",
+    "BGCustomEventSocket": "string"
 }
 
 category_colors = {
@@ -787,6 +861,8 @@ def get_socket_value(export_settings, socket: NodeSocket):
 
     if socket_idname == "BGEnumSocket":
         return socket.default_value
+    if socket_idname == "BGCustomEventSocket":
+        return socket.name
     if socket_type == "entity":
         return gather_property(export_settings, socket, socket, "target")
     elif socket_type == "material":
@@ -807,20 +883,29 @@ def get_socket_value(export_settings, socket: NodeSocket):
 
 def extract_behavior_graph_data(slot, export_settings):
     data = {
+        "customEvents": [],
         "variables": [],
         "nodes": []
     }
 
     for i, socket in enumerate(slot.graph.inputs):
-        socket_type = socket_to_type[socket.bl_socket_idname]
-        value = get_socket_value(export_settings, socket)
-        print(socket.name, socket_type, value)
-        data["variables"].append({
-            "name": socket.name,
-            "id": i,
-            "valueTypeName": socket_type,
-            "initialValue": value
-        })
+        if socket.bl_socket_idname == "BGCustomEventSocket":
+            value = get_socket_value(export_settings, socket)
+            print(f'socket: {socket.name}, value: {value}')
+            data["customEvents"].append({
+                "name": socket.name,
+                "id": i
+            })
+        else:
+            value = get_socket_value(export_settings, socket)
+            socket_type = socket_to_type[socket.bl_socket_idname]
+            print(f'socket: {socket.name}, type: {socket_type}, value: {value}')
+            data["variables"].append({
+                "name": socket.name,
+                "id": i,
+                "valueTypeName": socket_type,
+                "initialValue": value
+            })
 
     for node in slot.graph.nodes:
         if not isinstance(node, BGNode):
@@ -864,8 +949,14 @@ def extract_behavior_graph_data(slot, export_settings):
 
         if isinstance(node, BGNode_variable_get) or isinstance(node, BGNode_variable_set):
             if node.variableId != 'None':
-                print("VAR NODE", node.variableId, slot.graph.inputs.find(node.variableId))
+                print(f'variable node: {node.variableId}, id: {slot.graph.inputs.find(node.variableId)}')
                 node_data["configuration"]["variableId"] = slot.graph.inputs.find(node.variableId)
+
+        elif isinstance(node, BGNode_customEvent_trigger) or isinstance(node, BGNode_customEvent_onTriggered):
+            if node.customEventId != 'None':
+                print(f'variable node: {node.customEventId}, id: {slot.graph.inputs.find(node.customEventId)}')
+                node_data["configuration"]["customEventId"] = slot.graph.inputs.find(node.customEventId)
+
         elif hasattr(node, "__annotations__"):
             for key in node.__annotations__.keys():
                 node_data["configuration"][key] = gather_property(
@@ -893,7 +984,7 @@ class glTF2ExportUserExtension:
         self.delayed_gathers = []
 
     def gather_graph(self, blender_object, export_settings):
-        slots = list(map(lambda slot: slot, blender_object.bg_slots))
+        slots = map(lambda slot: slot, blender_object.bg_slots)
         return [extract_behavior_graph_data(
             slot, export_settings) for slot in slots if slot.graph.bl_idname == "BGTree"]
 
@@ -909,28 +1000,33 @@ class glTF2ExportUserExtension:
             required=False
         )
 
+        # This is a hack to allow multi-graph while we have proper per gltf node graph support
         behaviors = {
+            "customEvents": [],
             "variables": [],
             "nodes": []
         }
 
+        def extend_behavior(graph):
+            behaviors['variables'].extend(
+                [var for var in graph['variables']
+                    if var['name'] not in map(lambda var: var['name'],
+                                              behaviors['variables'])])
+            behaviors['customEvents'].extend(
+                [event for event in graph['customEvents']
+                    if event['name'] not in map(lambda var: var['name'],
+                                                behaviors['customEvents'])])
+            behaviors['nodes'].extend(graph['nodes'])
+
         for scene in bpy.data.scenes:
             graphs = self.gather_graph(scene, export_settings)
             for graph in graphs:
-                var_keys = list(map(lambda var: var['name'], behaviors['variables']))
-                for var in graph['variables']:
-                    if var['name'] not in var_keys:
-                        behaviors['variables'].append(var)
-                behaviors['nodes'].extend(graph['nodes'])
+                extend_behavior(graph)
 
         for object in bpy.data.objects:
             graphs = self.gather_graph(object, export_settings)
             for graph in graphs:
-                var_keys = list(map(lambda var: var['name'], behaviors['variables']))
-                for var in graph['variables']:
-                    if var['name'] not in var_keys:
-                        behaviors['variables'].append(var)
-                behaviors['nodes'].extend(graph['nodes'])
+                extend_behavior(graph)
 
         if behaviors:
             if gltf2_object.extensions is None:

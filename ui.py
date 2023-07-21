@@ -171,9 +171,9 @@ class BGScenePanel(bpy.types.Panel):
 
 
 def indexForBGItem(slots, graph):
-    graphs = list(map(lambda slot: slot.graph.name, slots))
-    if graph.name in graphs:
-        return graphs.index(graph.name)
+    slot = next(slot for slot in slots if slot.graph.name == graph.name)
+    if slot:
+        return list(slots).index(slot)
     return -1
 
 
