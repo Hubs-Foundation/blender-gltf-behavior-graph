@@ -964,7 +964,7 @@ def gather_nodes(slot, export_settings, events, variables):
         elif isinstance(node, BGNode_customEvent_trigger) or isinstance(node, BGNode_customEvent_onTriggered):
             if node.customEventId:
                 print(f'variable node: {node.customEventId}, id: {slot.graph.inputs.find(node.customEventId)}')
-                node_data["configuration"]["customEventId"] = events[node.variableId]["id"]
+                node_data["configuration"]["customEventId"] = events[node.customEventId]["id"]
 
         elif hasattr(node, "__annotations__"):
             for key in node.__annotations__.keys():
