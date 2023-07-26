@@ -112,6 +112,17 @@ class BGFlowSocket(NodeSocketStandard):
             node.link_limit = 0
 
 
+class BGHubsEntitySocketInterface(NodeSocketInterface):
+    bl_idname = "BGHubsEntitySocketInterface"
+    bl_socket_idname = "BGHubsEntitySocket"
+
+    def draw(self, context, layout):
+        pass
+
+    def draw_color(self, context):
+        return (0.2, 1.0, 0.2, 1.0)
+
+
 class BGHubsEntitySocket(NodeSocketStandard):
     bl_label = "Hubs Entity"
 
@@ -604,6 +615,7 @@ all_classes = [
     BGTree,
     BGFlowSocket,
     BGHubsEntitySocket,
+    BGHubsEntitySocketInterface,
     BGHubsAnimationActionSocket,
     BGHubsAnimationActionSocketInterface,
     BGHubsPlayerSocket,
