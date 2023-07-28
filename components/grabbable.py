@@ -12,7 +12,7 @@ class Grabbable(HubsComponent):
         'node_type': NodeType.NODE,
         'panel_type': [PanelType.OBJECT],
         'icon': 'VIEW_PAN',
-        'deps': ['rigidbody'],
+        'deps': ['rigidbody', 'networked-transform'],
         'version': (1, 0, 0)
     }
 
