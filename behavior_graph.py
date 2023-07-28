@@ -1,15 +1,15 @@
+from .sockets import *
+from .nodes import *
 import json
 from io_scene_gltf2.io.com.gltf2_io_constants import TextureFilter, TextureWrap
 from io_scene_gltf2.io.com import gltf2_io
 import bpy
 import os
-from bpy.props import StringProperty, PointerProperty
-from bpy.types import Node, NodeTree, NodeSocket, NodeSocketStandard, NodeSocketInterface, NodeReroute, NodeSocketString, NodeSocketInterfaceString
+from bpy.props import StringProperty
+from bpy.types import Node, NodeTree, NodeSocket, NodeReroute, NodeSocketString
 from bpy.utils import register_class, unregister_class
 from nodeitems_utils import NodeCategory, NodeItem, register_node_categories, unregister_node_categories
-
 from io_hubs_addon.io.utils import gather_property, gather_image
-from io_hubs_addon.components.utils import has_component
 
 auto_casts = {
     ("BGHubsEntitySocket", "NodeSocketString"): "BGNode_hubs_entity_toString",
@@ -53,6 +53,7 @@ class BGTree(NodeTree):
                 link.is_valid = False
 
     def update(self):
+        from .sockets import BGEnumSocket
         for link in self.links:
             if type(link.from_socket) != type(link.to_socket):
                 cast_key = (link.from_socket.bl_idname,
@@ -87,495 +88,9 @@ class BGTree(NodeTree):
                 else:
                     self.links.remove(link)
 
-
-class BGFlowSocket(NodeSocketStandard):
-    bl_label = "Behavior Graph Flow"
-
-    def draw(self, context, layout, node, text):
-        if text == "flow":
-            layout.label(text="▶")
-        elif self.is_output:
-            layout.label(text=text + " ▶")
-        else:
-            layout.label(text="▶ " + text)
-
-    def draw_color(self, context, node):
-        return (1.0, 1.0, 1.0, 1.0)
-
-    @classmethod
-    def create(cls, target, name="flow"):
-        node = target.new(cls.bl_rna.name, name)
-        node.display_shape = "DIAMOND"
-        if node.is_output:
-            node.link_limit = 1
-        else:
-            node.link_limit = 0
-
-
-class BGHubsEntitySocketInterface(NodeSocketInterface):
-    bl_idname = "BGHubsEntitySocketInterface"
-    bl_socket_idname = "BGHubsEntitySocket"
-
-    def draw(self, context, layout):
-        pass
-
-    def draw_color(self, context):
-        return (0.2, 1.0, 0.2, 1.0)
-
-
-class BGHubsEntitySocket(NodeSocketStandard):
-    bl_label = "Hubs Entity"
-
-    target: PointerProperty(
-        name="Target",
-        type=bpy.types.Object,
-        # poll=filter_on_component
-    )
-
-    def draw(self, context, layout, node, text):
-        if self.is_output or self.is_linked:
-            layout.label(text=text)
-        else:
-            layout.prop(self, "target", text=text)
-
-    def draw_color(self, context, node):
-        return (0.2, 1.0, 0.2, 1.0)
-
-
-def get_choices(self, context):
-    return [(choice.value, choice.text, "") for choice in self.choices]
-
-
-class BGEnumSocketChoice(bpy.types.PropertyGroup):
-    text: StringProperty()
-    value: StringProperty()
-
-
-class BGEnumSocket(NodeSocketStandard):
-    bl_label = "String Choice"
-
-    default_value: bpy.props.EnumProperty(
-        name="",
-        items=get_choices
-    )
-
-    choices: bpy.props.CollectionProperty(type=BGEnumSocketChoice)
-
-    def draw(self, context, layout, node, text):
-        if self.is_linked:
-            layout.label(text=text)
-        else:
-            layout.prop(self, "default_value", text=text)
-
-    def draw_color(self, context, node):
-        return (0.4, 0.7, 1.0, 1.0)
-
-
-class BGHubsAnimationActionSocketInterface(NodeSocketInterface):
-    bl_idname = "BGHubsAnimationActionSocketInterface"
-    bl_socket_idname = "BGHubsAnimationActionSocket"
-
-    def draw(self, context, layout):
-        pass
-
-    def draw_color(self, context):
-        return (0.2, 1.0, 1.0, 1.0)
-
-
-class BGHubsAnimationActionSocket(NodeSocketStandard):
-    bl_label = "Hubs AnimationAction"
-
-    def draw(self, context, layout, node, text):
-        layout.label(text=text)
-
-    def draw_color(self, context, node):
-        return (0.2, 1.0, 1.0, 1.0)
-
-
-class BGHubsPlayerSocketInterface(NodeSocketInterface):
-    bl_idname = "BGHubsPlayerSocketInterface"
-    bl_socket_idname = "BGHubsPlayerSocket"
-
-    def draw(self, context, layout):
-        pass
-
-    def draw_color(self, context):
-        return (1.00, 0.91, 0.34, 1.0)
-
-
-class BGHubsPlayerSocket(NodeSocketStandard):
-    bl_label = "Hubs Player"
-
-    def draw(self, context, layout, node, text):
-        layout.label(text=text)
-
-    def draw_color(self, context, node):
-        return (1.00, 0.91, 0.34, 1.0)
-
-
-class BGCustomEventSocketInterface(NodeSocketInterfaceString):
-    bl_idname = "BGCustomEventSocketInterface"
-    bl_socket_idname = "BGCustomEventSocket"
-
-    def draw(self, context, layout):
-        pass
-
-    def draw_color(self, context):
-        return (1.00, 0.91, 0.34, 1.0)
-
-
-class BGCustomEventSocket(NodeSocketString):
-    bl_label = "Custom Event"
-
-    def draw(self, context, layout, node, text):
-        layout.label(text=text)
-
-    def draw_color(self, context, node):
-        return (1.00, 0.91, 0.34, 1.0)
-
-
-class BGNode():
-    bl_label = "Behavior Graph Node"
-    bl_icon = "NODE"
-
-    def init(self, context):
-        self.use_custom_color = True
-
-    @classmethod
-    def poll(cls, ntree):
-        # return True
-        return ntree.bl_idname == 'BGTree'
-
-
-class BGEventNode():
-    def init(self, context):
-        super().init(context)
-        self.color = (0.6, 0.2, 0.2)
-        BGFlowSocket.create(self.outputs)
-
-
-class BGActionNode():
-    def init(self, context):
-        super().init(context)
-        self.color = (0.2, 0.2, 0.6)
-        BGFlowSocket.create(self.inputs)
-        BGFlowSocket.create(self.outputs)
-
-
-entity_property_settings = {
-    "visible": ("NodeSocketBool", False),
-    "position": ("NodeSocketVectorXYZ", [0.0, 0.0, 0.0]),
-    "rotation": ("NodeSocketVectorEuler", [0.0, 0.0, 0.0]),
-    "scale": ("NodeSocketVectorXYZ", [1.0, 1.0, 1.0]),
-}
-
-
-def update_target_property(self, context):
-    if self.inputs and len(self.inputs) > 2:
-        self.outputs.remove(self.inputs[2])
-    setattr(self, "node_type",  "hubs/entity/set/" + self.targetProperty)
-    (socket_type,
-     default_value) = entity_property_settings[self.targetProperty]
-    sock = self.inputs.new(socket_type, self.targetProperty)
-    sock.default_value = default_value
-
-
-class BGHubsSetEntityProperty(BGActionNode, BGNode, Node):
-    bl_label = "Set Entity Property"
-
-    node_type: bpy.props.StringProperty()
-
-    targetProperty: bpy.props.EnumProperty(
-        name="",
-        items=[
-            ("visible", "visible", ""),
-            ("position", "position", ""),
-            ("rotation", "rotation", ""),
-            ("scale", "scale", "")
-        ],
-        default="visible",
-        update=update_target_property
-    )
-
-    def init(self, context):
-        super().init(context)
-        self.color = (0.2, 0.6, 0.2)
-        self.inputs.new("BGHubsEntitySocket", "entity")
-        update_target_property(self, context)
-
-    def draw_buttons(self, context, layout):
-        layout.prop(self, "targetProperty")
-
-
-class BGNode_hubs_onInteract(BGEventNode, BGNode, Node):
-    bl_label = "On Interact"
-    node_type = "hubs/onInteract"
-
-    target: PointerProperty(
-        name="Target",
-        type=bpy.types.Object,
-        # poll=filter_on_component
-    )
-
-    def init(self, context):
-        super().init(context)
-        self.outputs.new("BGHubsEntitySocket", "entity")
-
-    def draw_buttons(self, context, layout):
-        layout.prop(self, "target")
-
-
-def has_collider(self, ob):
-    return has_component(ob, "physics-shape")
-
-
-class BGNode_hubs_onCollisionEnter(BGEventNode, BGNode, Node):
-    bl_label = "On Collision Enter"
-    node_type = "hubs/onCollisionEnter"
-
-    target: PointerProperty(
-        name="Target", type=bpy.types.Object, poll=has_collider)
-
-    def init(self, context):
-        super().init(context)
-        self.outputs.new("BGHubsEntitySocket", "entity")
-
-    def draw_buttons(self, context, layout):
-        layout.prop(self, "target")
-
-
-class BGNode_hubs_onCollisionStay(BGEventNode, BGNode, Node):
-    bl_label = "On Collision Stay"
-    node_type = "hubs/onCollisionStay"
-
-    target: PointerProperty(
-        name="Target", type=bpy.types.Object, poll=has_collider)
-
-    def init(self, context):
-        super().init(context)
-        self.outputs.new("BGHubsEntitySocket", "entity")
-
-    def draw_buttons(self, context, layout):
-        layout.prop(self, "target")
-
-
-class BGNode_hubs_onCollisionExit(BGEventNode, BGNode, Node):
-    bl_label = "On Collision Exit"
-    node_type = "hubs/onCollisionExit"
-
-    target: PointerProperty(
-        name="Target", type=bpy.types.Object, poll=has_collider)
-
-    def init(self, context):
-        super().init(context)
-        self.outputs.new("BGHubsEntitySocket", "entity")
-
-    def draw_buttons(self, context, layout):
-        layout.prop(self, "target")
-
-
-class BGNode_hubs_onPlayerCollisionEnter(BGEventNode, BGNode, Node):
-    bl_label = "On Player Collision Enter"
-    node_type = "hubs/onPlayerCollisionEnter"
-
-    target: PointerProperty(
-        name="Target", type=bpy.types.Object, poll=has_collider)
-
-    def init(self, context):
-        super().init(context)
-        self.outputs.new("BGHubsPlayerSocket", "player")
-
-    def draw_buttons(self, context, layout):
-        layout.prop(self, "target")
-
-
-class BGNode_hubs_onPlayerCollisionStay(BGEventNode, BGNode, Node):
-    bl_label = "On Player Collision Stay"
-    node_type = "hubs/onPlayerCollisionStay"
-
-    target: PointerProperty(
-        name="Target", type=bpy.types.Object, poll=has_collider)
-
-    def init(self, context):
-        super().init(context)
-        self.outputs.new("BGHubsPlayerSocket", "player")
-
-    def draw_buttons(self, context, layout):
-        layout.prop(self, "target")
-
-
-class BGNode_hubs_onPlayerCollisionExit(BGEventNode, BGNode, Node):
-    bl_label = "On Player Collision Exit"
-    node_type = "hubs/onPlayerCollisionExit"
-
-    target: PointerProperty(
-        name="Target", type=bpy.types.Object, poll=has_collider)
-
-    def init(self, context):
-        super().init(context)
-        self.outputs.new("BGHubsPlayerSocket", "player")
-
-    def draw_buttons(self, context, layout):
-        layout.prop(self, "target")
-
-
-def update_output_sockets(self, context):
-    existing_outputs = len(self.outputs)
-    print("existing", existing_outputs, "desired", self.numOutputs)
-    if (existing_outputs < self.numOutputs):
-        for i in range(existing_outputs, self.numOutputs):
-            BGFlowSocket.create(self.outputs, f"{i+1}")
-    elif existing_outputs > self.numOutputs:
-        for i in range(self.numOutputs, existing_outputs):
-            self.outputs.remove(self.outputs[f"{i+1}"])
-
-
-class BGNode_flow_sequence(BGNode, Node):
-    bl_label = "Sequence"
-    node_type = "flow/sequence"
-
-    numOutputs: bpy.props.IntProperty(
-        name="Outputs",
-        default=2,
-        min=1,
-        update=update_output_sockets
-    )
-
-    def init(self, context):
-        super().init(context)
-        self.color = (0.2, 0.2, 0.2)
-        BGFlowSocket.create(self.inputs)
-        update_output_sockets(self, context)
-
-    def draw_buttons(self, context, layout):
-        layout.prop(self, "numOutputs")
-
-
-def get_available_input_sockets(self, context):
-    tree = self.id_data
-    result = []
-    if tree is not None:
-        result.extend([(socket.name, socket.name, socket.name) for socket in tree.inputs if not hasattr(
-            socket, "bl_idname") or socket.bl_idname != BGCustomEventSocketInterface.bl_idname])
-    return result
-
-
-def update_selected_variable_input(self, context):
-    # Remove previous socket
-    if self.inputs and len(self.inputs) > 1:
-        self.inputs.remove(self.inputs[1])
-
-    # Create a new socket based on the selected variable type
-    tree = self.id_data
-    if tree is not None and self.variableId:
-        selected_socket = tree.inputs[self.variableId]
-        socket_type = selected_socket.bl_socket_idname
-        if socket_type == "NodeSocketVector":
-            socket_type = "NodeSocketVectorXYZ"
-        self.inputs.new(socket_type, "value")
-
-    return None
-
-
-def update_selected_variable_output(self, context):
-    # Remove previous socket
-    if self.outputs:
-        self.outputs.remove(self.outputs[0])
-
-    # Create a new socket based on the selected variable type
-    tree = self.id_data
-    if tree is not None and self.variableId:
-        print(self.variableId)
-        selected_socket = tree.inputs[self.variableId]
-        socket_type = selected_socket.bl_socket_idname
-        if socket_type == "NodeSocketVector":
-            socket_type = "NodeSocketVectorXYZ"
-        self.outputs.new(socket_type, "value")
-
-    return None
-
-
-class BGNode_variable_get(BGNode, Node):
-    bl_label = "Get Variable"
-    node_type = "variable/get"
-
-    variableId: bpy.props.EnumProperty(
-        name="Variable",
-        description="Variable",
-        items=get_available_input_sockets,
-        update=update_selected_variable_output,
-    )
-
-    def init(self, context):
-        super().init(context)
-        self.color = (0.2, 0.6, 0.2)
-        update_selected_variable_output(self, context)
-
-    def draw_buttons(self, context, layout):
-        layout.prop(self, "variableId")
-
-
-class BGNode_variable_set(BGActionNode, BGNode, Node):
-    bl_label = "Set Variable"
-    node_type = "variable/set"
-
-    variableId: bpy.props.EnumProperty(
-        name="Value",
-        description="Variable Value",
-        items=get_available_input_sockets,
-        update=update_selected_variable_input
-    )
-
-    def init(self, context):
-        super().init(context)
-        self.color = (0.2, 0.6, 0.2)
-        update_selected_variable_input(self, context)
-
-    def draw_buttons(self, context, layout):
-        layout.prop(self, "variableId")
-
-
-def get_available_custom_event_input_sockets(self, context):
-    tree = self.id_data
-    result = []
-    if tree is not None:
-        result.extend([(socket.name, socket.name, socket.name) for socket in tree.inputs if hasattr(
-            socket, "bl_idname") and socket.bl_idname == BGCustomEventSocketInterface.bl_idname])
-    return result
-
-
-class BGNode_customEvent_trigger(BGActionNode, BGNode, Node):
-    bl_label = "Trigger"
-    node_type = "customEvent/trigger"
-
-    customEventId: bpy.props.EnumProperty(
-        name="Custom Event",
-        description="Custom Event",
-        items=get_available_custom_event_input_sockets,
-    )
-
-    def init(self, context):
-        super().init(context)
-
-    def draw_buttons(self, context, layout):
-        layout.prop(self, "customEventId")
-
-
-class BGNode_customEvent_onTriggered(BGEventNode, BGNode, Node):
-    bl_label = "On Trigger"
-    node_type = "customEvent/onTriggered"
-
-    customEventId: bpy.props.EnumProperty(
-        name="Custom Event",
-        description="Custom Event",
-        items=get_available_custom_event_input_sockets,
-    )
-
-    def init(self, context):
-        super().init(context)
-
-    def draw_buttons(self, context, layout):
-        layout.prop(self, "customEventId")
+        for node in self.nodes:
+            if hasattr(node, "update") and callable(getattr(node, "update")):
+                node.update()
 
 
 class BGCategory(NodeCategory):
@@ -606,10 +121,15 @@ behavior_graph_node_categories = {
     "Flow": [
         NodeItem("BGNode_flow_sequence"),
     ],
-    "Action": {
+    "Action": [
         NodeItem("BGNode_customEvent_trigger"),
-    }
+    ],
+    "Components": [
+        NodeItem("BGNode_networkedVariable_get"),
+        NodeItem("BGNode_networkedVariable_set")
+    ]
 }
+
 
 all_classes = [
     BGTree,
@@ -640,7 +160,9 @@ all_classes = [
     BGNode_customEvent_onTriggered,
 
     BGHubsSetEntityProperty,
-    BGNode_customEvent_trigger
+    BGNode_customEvent_trigger,
+    BGNode_networkedVariable_get,
+    BGNode_networkedVariable_set
 ]
 
 hardcoded_nodes = {
@@ -691,6 +213,7 @@ category_colors = {
 
 
 def create_node_class(node_data):
+    from .nodes import BGNode
     label = node_data["type"]
     if "label" in node_data:
         # label = "%s (%s)" % (node_data["label"], node_data["type"])
@@ -926,6 +449,9 @@ def gather_events_and_variables(slots, export_settings):
 
 
 def gather_nodes(slot, export_settings, events, variables):
+    from .sockets import BGFlowSocket, BGHubsEntitySocket
+    from .nodes import BGNode, BGNode_variable_set, BGNode_variable_get, BGNode_customEvent_trigger, BGNode_customEvent_onTriggered
+
     nodes = []
 
     for node in slot.graph.nodes:
@@ -948,6 +474,7 @@ def gather_nodes(slot, export_settings, events, variables):
                     "nodeId": f"{slot.name}_{link.to_node.name}",
                     "socket": link.to_socket.identifier
                 }
+
         for input_socket in node.inputs:
             if isinstance(input_socket, BGFlowSocket):
                 pass
@@ -963,6 +490,13 @@ def gather_nodes(slot, export_settings, events, variables):
                 elif isinstance(input_socket, BGHubsEntitySocket):
                     node_data["parameters"][input_socket.identifier] = {
                         "value": gather_property(export_settings, input_socket, input_socket, "target")}
+
+                elif isinstance(node, BGNode_networkedVariable_set):
+                    if node.prop_type == input_socket.identifier:
+                        value = get_socket_value(export_settings, input_socket)
+                        node_data["parameters"][node.prop_type] = {
+                            "value": value}
+
                 else:
                     value = get_socket_value(export_settings, input_socket)
                     node_data["parameters"][input_socket.identifier] = {
@@ -986,13 +520,6 @@ def gather_nodes(slot, export_settings, events, variables):
         nodes.append(node_data)
 
     return nodes
-
-# behavior_graph_data_list = []
-# for node_group in bpy.data.node_groups:
-#     if node_group.bl_idname == "BGTree":
-#         behavior_graph_data = extract_behavior_graph_data(node_group)
-#         behavior_graph_data_list.append(behavior_graph_data)
-# pprint(behavior_graph_data_list)
 
 
 class glTF2ExportUserExtension:
@@ -1067,7 +594,7 @@ def register():
 def unregister():
     unregister_node_categories("BEHAVIOR_GRAPH_NODES")
 
-    for cls in reversed(all_classes):
+    for cls in all_classes:
         unregister_class(cls)
 
 

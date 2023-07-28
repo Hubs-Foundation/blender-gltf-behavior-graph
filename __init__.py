@@ -1,4 +1,4 @@
-from . import hubs_components, behavior_graph_nodes, ui
+from . import (behavior_graph, components, ui)
 bl_info = {
     "name": "Behavior Graph Editor",
     "blender": (3, 2, 0),
@@ -9,19 +9,19 @@ bl_info = {
     "description": "Create and export GLTF KHR_behavior graphs using Blender's node group editor"
 }
 
-glTF2ExportUserExtension = behavior_graph_nodes.glTF2ExportUserExtension
+glTF2ExportUserExtension = behavior_graph.glTF2ExportUserExtension
 
 
 def register():
+    components.register()
     ui.register()
-    behavior_graph_nodes.register()
-    hubs_components.register()
+    behavior_graph.register()
 
 
 def unregister():
-    behavior_graph_nodes.unregister()
-    hubs_components.unregister()
+    behavior_graph.unregister()
     ui.unregister()
+    components.unregister()
 
 
 if __name__ == "__main__":

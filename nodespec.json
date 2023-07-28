@@ -1583,6 +1583,37 @@
     "configuration": []
   },
   {
+    "type": "customEvent/onTriggered",
+    "category": "Event",
+    "label": "On Triggered",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "flow",
+        "valueType": "flow"
+      }
+    ],
+    "configuration": []
+  },
+  {
+    "type": "customEvent/trigger",
+    "category": "Action",
+    "label": "Trigger",
+    "inputs": [
+      {
+        "name": "flow",
+        "valueType": "flow"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "flow",
+        "valueType": "flow"
+      }
+    ],
+    "configuration": []
+  },
+  {
     "type": "variable/get",
     "category": "Query",
     "label": "Get",
@@ -4488,6 +4519,11 @@
         "name": "additiveBlending",
         "valueType": "boolean",
         "defaultValue": false
+      },
+      {
+        "name": "entity",
+        "valueType": "entity",
+        "defaultValue": 0
       }
     ],
     "outputs": [
@@ -4646,6 +4682,150 @@
       {
         "name": "result",
         "valueType": "boolean"
+      }
+    ],
+    "configuration": []
+  },
+  {
+    "type": "networking/takeSoftOwnership",
+    "category": "Networking",
+    "label": "Take Ownership",
+    "inputs": [
+      {
+        "name": "flow",
+        "valueType": "flow"
+      },
+      {
+        "name": "entity",
+        "valueType": "entity",
+        "defaultValue": 0
+      }
+    ],
+    "outputs": [
+      {
+        "name": "success",
+        "valueType": "flow"
+      },
+      {
+        "name": "error",
+        "valueType": "flow"
+      }
+    ],
+    "configuration": []
+  },
+  {
+    "type": "networking/isMine",
+    "category": "Networking",
+    "label": "Is Entity Mine",
+    "inputs": [
+      {
+        "name": "entity",
+        "valueType": "entity",
+        "defaultValue": 0
+      }
+    ],
+    "outputs": [
+      {
+        "name": "result",
+        "valueType": "boolean"
+      }
+    ],
+    "configuration": []
+  },
+  {
+    "type": "networking/isOwner",
+    "category": "Networking",
+    "label": "Is Entity Owner",
+    "inputs": [
+      {
+        "name": "player",
+        "valueType": "player",
+        "defaultValue": null
+      },
+      {
+        "name": "entity",
+        "valueType": "entity",
+        "defaultValue": 0
+      }
+    ],
+    "outputs": [
+      {
+        "name": "result",
+        "valueType": "boolean"
+      }
+    ],
+    "configuration": []
+  },
+  {
+    "type": "networking/isOwned",
+    "category": "Networking",
+    "label": "Is Entity Owned",
+    "inputs": [
+      {
+        "name": "entity",
+        "valueType": "entity",
+        "defaultValue": 0
+      }
+    ],
+    "outputs": [
+      {
+        "name": "result",
+        "valueType": "boolean"
+      }
+    ],
+    "configuration": []
+  },
+  {
+    "type": "networking/getOwner",
+    "category": "Networking",
+    "label": "Get Entity Owner",
+    "inputs": [
+      {
+        "name": "entity",
+        "valueType": "entity",
+        "defaultValue": 0
+      }
+    ],
+    "outputs": [
+      {
+        "name": "player",
+        "valueType": "player"
+      }
+    ],
+    "configuration": []
+  },
+  {
+    "type": "networkedVariable/set",
+    "category": "Components",
+    "label": "Networked Variable Set",
+    "inputs": [
+      {
+        "name": "flow",
+        "valueType": "flow"
+      },
+      {
+        "name": "string",
+        "valueType": "string",
+        "defaultValue": ""
+      }
+    ],
+    "outputs": [
+      {
+        "name": "flow",
+        "valueType": "flow"
+      }
+    ],
+    "configuration": []
+  },
+  {
+    "type": "networkedVariable/get",
+    "category": "Components",
+    "label": "Get",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "string",
+        "valueType": "string"
       }
     ],
     "configuration": []
@@ -4990,6 +5170,40 @@
       {
         "name": "scale",
         "valueType": "vec3"
+      }
+    ],
+    "configuration": []
+  },
+  {
+    "type": "hubs/onPlayerJoined",
+    "category": "Event",
+    "label": "On Player Joined",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "flow",
+        "valueType": "flow"
+      },
+      {
+        "name": "player",
+        "valueType": "player"
+      }
+    ],
+    "configuration": []
+  },
+  {
+    "type": "hubs/onPlayerLeft",
+    "category": "Event",
+    "label": "On Player Left",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "flow",
+        "valueType": "flow"
+      },
+      {
+        "name": "player",
+        "valueType": "player"
       }
     ],
     "configuration": []
