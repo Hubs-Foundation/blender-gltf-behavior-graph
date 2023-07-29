@@ -4689,7 +4689,7 @@
   {
     "type": "networking/takeSoftOwnership",
     "category": "Networking",
-    "label": "Take Ownership",
+    "label": "Take Soft Ownership",
     "inputs": [
       {
         "name": "flow",
@@ -4708,6 +4708,29 @@
       },
       {
         "name": "error",
+        "valueType": "flow"
+      }
+    ],
+    "configuration": []
+  },
+  {
+    "type": "networking/takeOwnership",
+    "category": "Networking",
+    "label": "Take Ownership",
+    "inputs": [
+      {
+        "name": "flow",
+        "valueType": "flow"
+      },
+      {
+        "name": "entity",
+        "valueType": "entity",
+        "defaultValue": 0
+      }
+    ],
+    "outputs": [
+      {
+        "name": "flow",
         "valueType": "flow"
       }
     ],
