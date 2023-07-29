@@ -11,7 +11,8 @@ class NetworkedAnimation(HubsComponent):
         'node_type': NodeType.NODE,
         'panel_type': [PanelType.OBJECT],
         'icon': 'RENDER_ANIMATION',
-        'version': (1, 0, 0)
+        'version': (1, 0, 0),
+        'deps': ['networked']
     }
 
 
