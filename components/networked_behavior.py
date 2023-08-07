@@ -15,7 +15,7 @@ NETWORKED_TYPES = [
 
 
 def update_ui(self, context):
-    if hasattr(context.object, "bg_active_graph"):
+    if hasattr(context.object, "bg_active_graph") and context.object.bg_active_graph:
         context.object.bg_active_graph.update()
 
 
