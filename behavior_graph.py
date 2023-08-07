@@ -533,15 +533,6 @@ class glTF2ExportUserExtension:
 
     def gather_gltf_extensions_hook(self, gltf2_object, export_settings):
         print("GATHERING BG")
-        extension_name = "MOZ_behavior"
-        gltf2_object.extensions[extension_name] = self.Extension(
-            name=extension_name,
-            extension={
-                "version": 1,
-                "exporterVersion": "1.0.0"
-            },
-            required=False
-        )
 
         # This is a hack to allow multi-graph while we have proper per gltf node graph support
         slots = []
