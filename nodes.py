@@ -225,13 +225,10 @@ class BGNode_flow_sequence(BGNode, Node):
         layout.prop(self, "numOutputs")
 
 
-def get_available_input_sockets(self, context):
-    from .sockets import BGCustomEventSocketInterface
-    tree = self.id_data
-    result = []
-    if tree is not None:
-        result.extend([(socket.name, socket.name, socket.name) for socket in tree.inputs if not hasattr(
-            socket, "bl_idname") or socket.bl_idname != BGCustomEventSocketInterface.bl_idname])
+def get_available_variables(self, context):
+    result = [("None", "None", "None")]
+    for var in context.scene.bg_global_variables:
+        result.append((var.name, var.name, var.name))
     return result
 
 
@@ -240,16 +237,16 @@ def update_selected_variable_input(self, context):
     if self.inputs and len(self.inputs) > 1:
         self.inputs.remove(self.inputs[1])
 
-    # Create a new socket based on the selected variable type
-    tree = self.id_data
-    if tree is not None and self.variableId:
-        selected_socket = tree.inputs[self.variableId]
-        socket_type = selected_socket.bl_socket_idname
-        if socket_type == "NodeSocketVector":
-            socket_type = "NodeSocketVectorXYZ"
-        self.inputs.new(socket_type, "value")
+    if not context:
+        return
 
-    return None
+    has_var = self.variableId in context.scene.bg_global_variables
+    var_type = context.scene.bg_global_variables.get(self.variableId).type if has_var else "None"
+
+    # Create a new socket based on the selected variable type
+    from .behavior_graph import type_to_socket
+    if var_type != "None":
+        self.inputs.new(type_to_socket[var_type], "value")
 
 
 def update_selected_variable_output(self, context):
@@ -257,17 +254,16 @@ def update_selected_variable_output(self, context):
     if self.outputs:
         self.outputs.remove(self.outputs[0])
 
-    # Create a new socket based on the selected variable type
-    tree = self.id_data
-    if tree is not None and self.variableId:
-        print(self.variableId)
-        selected_socket = tree.inputs[self.variableId]
-        socket_type = selected_socket.bl_socket_idname
-        if socket_type == "NodeSocketVector":
-            socket_type = "NodeSocketVectorXYZ"
-        self.outputs.new(socket_type, "value")
+    if not context:
+        return
 
-    return None
+    has_var = self.variableId in context.scene.bg_global_variables
+    var_type = context.scene.bg_global_variables.get(self.variableId).type if has_var else "None"
+
+    # Create a new socket based on the selected variable type
+    from .behavior_graph import type_to_socket
+    if var_type != "None":
+        self.outputs.new(type_to_socket[var_type], "value")
 
 
 class BGNode_variable_get(BGNode, Node):
@@ -277,7 +273,7 @@ class BGNode_variable_get(BGNode, Node):
     variableId: bpy.props.EnumProperty(
         name="Variable",
         description="Variable",
-        items=get_available_input_sockets,
+        items=get_available_variables,
         update=update_selected_variable_output,
     )
 
@@ -289,6 +285,15 @@ class BGNode_variable_get(BGNode, Node):
     def draw_buttons(self, context, layout):
         layout.prop(self, "variableId")
 
+    def update(self):
+        from .behavior_graph import socket_to_type
+        if bpy.context.scene and len(self.outputs) > 0 and len(self.outputs[0].links) > 0:
+            has_var = self.variableId in bpy.context.scene.bg_global_variables
+            var_type = bpy.context.scene.bg_global_variables.get(
+                self.variableId).type if has_var else "None"
+            if var_type != socket_to_type[self.outputs[0].bl_idname]:
+                bpy.context.scene.bg_active_graph.links.remove(self.outputs[0].links[0])
+
 
 class BGNode_variable_set(BGActionNode, BGNode, Node):
     bl_label = "Set Variable"
@@ -297,7 +302,7 @@ class BGNode_variable_set(BGActionNode, BGNode, Node):
     variableId: bpy.props.EnumProperty(
         name="Value",
         description="Variable Value",
-        items=get_available_input_sockets,
+        items=get_available_variables,
         update=update_selected_variable_input
     )
 
@@ -309,14 +314,20 @@ class BGNode_variable_set(BGActionNode, BGNode, Node):
     def draw_buttons(self, context, layout):
         layout.prop(self, "variableId")
 
+    def update(self):
+        from .behavior_graph import socket_to_type
+        if bpy.context.scene and len(self.inputs) > 1 and len(self.inputs[1].links) > 0:
+            has_var = self.variableId in bpy.context.scene.bg_global_variables
+            var_type = bpy.context.scene.bg_global_variables.get(
+                self.variableId).type if has_var else "None"
+            if var_type != socket_to_type[self.inputs[1].bl_idname]:
+                bpy.context.scene.bg_active_graph.links.remove(self.inputs[1].links[0])
 
-def get_available_custom_event_input_sockets(self, context):
-    from .sockets import BGCustomEventSocketInterface
-    tree = self.id_data
-    result = []
-    if tree is not None:
-        result.extend([(socket.name, socket.name, socket.name) for socket in tree.inputs if hasattr(
-            socket, "bl_idname") and socket.bl_idname == BGCustomEventSocketInterface.bl_idname])
+
+def get_available_custom_events(self, context):
+    result = [("None", "None", "None")]
+    for var in context.scene.bg_custom_events:
+        result.append((var.name, var.name, var.name))
     return result
 
 
@@ -327,7 +338,7 @@ class BGNode_customEvent_trigger(BGActionNode, BGNode, Node):
     customEventId: bpy.props.EnumProperty(
         name="Custom Event",
         description="Custom Event",
-        items=get_available_custom_event_input_sockets,
+        items=get_available_custom_events,
     )
 
     def init(self, context):
@@ -344,7 +355,7 @@ class BGNode_customEvent_onTriggered(BGEventNode, BGNode, Node):
     customEventId: bpy.props.EnumProperty(
         name="Custom Event",
         description="Custom Event",
-        items=get_available_custom_event_input_sockets,
+        items=get_available_custom_events,
     )
 
     def init(self, context):
@@ -370,9 +381,9 @@ def filter_on_networked_behavior(self, ob):
 def networkedBehavior_properties_updated(self, context):
     if self.target:
         has_prop = self.prop_name in self.target.hubs_component_networked_behavior.props_list
-        prop_type = self.target.hubs_component_networked_behavior.props_list[self.prop_name].type if has_prop else None
+        prop_type = self.target.hubs_component_networked_behavior.props_list[self.prop_name].type if has_prop else "None"
 
-        for socket_id in ["boolean", "float", "int", "string", "vec3",]:
+        for socket_id in ["boolean", "float", "int", "string", "vec3"]:
             if socket_id in self.inputs:
                 self.inputs[socket_id].hide = not prop_type or prop_type != socket_id
             if socket_id in self.outputs:

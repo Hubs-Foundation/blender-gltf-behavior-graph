@@ -417,33 +417,35 @@ def get_socket_value(export_settings, socket: NodeSocket):
 
 
 def gather_events_and_variables(slots, export_settings):
-    ev_idx = 0
-    var_idx = 0
     events = {}
     variables = {}
-    for slot in slots:
-        for i, socket in enumerate(slot.graph.inputs):
-            if socket.bl_socket_idname == "BGCustomEventSocket":
-                value = get_socket_value(export_settings, socket)
-                print(f'socket: {socket.name}, value: {value}')
-                if socket.name not in events:
-                    events[socket.name] = {
-                        "name": socket.name,
-                        "id": ev_idx
-                    }
-                    ev_idx += 1
-            else:
-                value = get_socket_value(export_settings, socket)
-                socket_type = socket_to_type[socket.bl_socket_idname]
-                print(f'socket: {socket.name}, type: {socket_type}, value: {value}')
-                if socket.name not in variables:
-                    variables[socket.name] = {
-                        "name": socket.name,
-                        "id": var_idx,
-                        "valueTypeName": socket_type,
-                        "initialValue": value
-                    }
-                    var_idx += 1
+
+    for var in bpy.context.scene.bg_global_variables:
+        default = None
+        if var.type == "integer":
+            default = var.defaultInt
+        elif var.type == "boolean":
+            default = var.defaultBoolean
+        elif var.type == "float":
+            default = var.defaultFloat
+        elif var.type == "string":
+            default = var.defaultString
+        elif var.type == "vec3":
+            default = var.defaultVec3
+        elif var.type == "animationAction":
+            default = var.defaultAnimationAction
+        variables[var.name] = {
+            "name": var.name,
+            "id": list(bpy.context.scene.bg_global_variables).index(var),
+            "valueTypeName": var.type,
+            "initialValue": default
+        }
+
+    for event in bpy.context.scene.bg_custom_events:
+        events[event.name] = {
+            "name": event.name,
+            "id": list(bpy.context.scene.bg_custom_events).index(event)
+        }
 
     return (events, variables)
 
@@ -469,7 +471,6 @@ def gather_nodes(slot, export_settings, events, variables):
         for output_socket in node.outputs:
             if isinstance(output_socket, BGFlowSocket) and output_socket.is_linked:
                 link = resolve_output_link(output_socket)
-                print(link)
                 node_data["flows"][output_socket.identifier] = {
                     "nodeId": f"{slot.name}_{link.to_node.name}",
                     "socket": link.to_socket.identifier
@@ -478,6 +479,7 @@ def gather_nodes(slot, export_settings, events, variables):
         for input_socket in node.inputs:
             if isinstance(input_socket, BGFlowSocket):
                 pass
+
             else:
                 if input_socket.is_linked:
                     link = resolve_input_link(input_socket)
@@ -487,6 +489,7 @@ def gather_nodes(slot, export_settings, events, variables):
                             "socket": link.from_socket.identifier
                         }
                     }
+
                 elif isinstance(input_socket, BGHubsEntitySocket):
                     node_data["parameters"][input_socket.identifier] = {
                         "value": gather_property(export_settings, input_socket, input_socket, "target")}
@@ -504,12 +507,12 @@ def gather_nodes(slot, export_settings, events, variables):
 
         if isinstance(node, BGNode_variable_get) or isinstance(node, BGNode_variable_set):
             if node.variableId:
-                print(f'variable node: {node.variableId}, id: {slot.graph.inputs.find(node.variableId)}')
+                print(f'variable node: {node.variableId}, id: {variables[node.variableId]["id"]}')
                 node_data["configuration"]["variableId"] = variables[node.variableId]["id"]
 
         elif isinstance(node, BGNode_customEvent_trigger) or isinstance(node, BGNode_customEvent_onTriggered):
             if node.customEventId:
-                print(f'variable node: {node.customEventId}, id: {slot.graph.inputs.find(node.customEventId)}')
+                print(f'variable node: {node.customEventId}, id: {events[node.customEventId]["id"]}')
                 node_data["configuration"]["customEventId"] = events[node.customEventId]["id"]
 
         elif hasattr(node, "__annotations__"):

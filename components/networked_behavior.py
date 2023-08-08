@@ -8,7 +8,7 @@ from ..utils import do_register, do_unregister
 NETWORKED_TYPES = [
     ("boolean", "Boolean", "Boolean"),
     ("float", "Float", "Float"),
-    ("int", "Integer", "Integer"),
+    ("integer", "Integer", "Integer"),
     ("string", "String", "String"),
     ("vec3", "Vector3", "Vector3")
 ]
@@ -31,7 +31,7 @@ class NetworkedPropertyType(PropertyGroup):
         description="Type",
         items=NETWORKED_TYPES,
         update=update_ui,
-        default="int"
+        default="integer"
     )
 
 
@@ -44,7 +44,7 @@ class NetworkedBehaviorAddProp(bpy.types.Operator):
         hubs_component = context.hubs_component
         new_prop = hubs_component.props_list.add()
         new_prop.name = f"prop{len(hubs_component.props_list)   }"
-        new_prop.type = "int"
+        new_prop.type = "integer"
 
         return {'FINISHED'}
 

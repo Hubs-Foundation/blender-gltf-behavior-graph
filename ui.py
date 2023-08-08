@@ -1,6 +1,6 @@
 import bpy
 from bpy.types import PropertyGroup, NodeTree
-from bpy.props import PointerProperty, CollectionProperty, IntProperty, EnumProperty, StringProperty
+from bpy.props import PointerProperty, CollectionProperty, IntProperty, EnumProperty, StringProperty, FloatProperty, BoolProperty, FloatVectorProperty
 import uuid
 from bpy.app.handlers import persistent
 
@@ -149,6 +149,168 @@ class BGObjectPanel(bpy.types.Panel):
         row.template_ID(context.object, "bg_active_graph", new=BGNew.bl_idname, unlink=BGRemove.bl_idname)
 
 
+GLOBAL_VARIABLES_TYPES = [
+    ("boolean", "Boolean", "Boolean"),
+    ("float", "Float", "Float"),
+    ("integer", "Integer", "Integer"),
+    ("string", "String", "String"),
+    ("vec3", "Vector3", "Vector3"),
+    ("animationAction", "Action", "Action"),
+    ("player", "Player", "Player"),
+    ("entity", "Entity", "Entity"),
+]
+
+
+def update_ui(self, context):
+    if hasattr(context.object, "bg_active_graph"):
+        context.object.bg_active_graph.update()
+    if hasattr(context.scene, "bg_active_graph"):
+        context.scene.bg_active_graph.update()
+
+
+class BGGlobalVariableType(PropertyGroup):
+    name: StringProperty(
+        name="Name",
+        description="Name",
+        update=update_ui
+    )
+
+    type: EnumProperty(
+        name="Type",
+        description="Type",
+        items=GLOBAL_VARIABLES_TYPES,
+        update=update_ui,
+        default="integer"
+    )
+
+    defaultInt: IntProperty(
+        name="default",
+        description="Default Value",
+        default=0
+    )
+
+    defaultFloat: FloatProperty(
+        name="default",
+        description="Default Value",
+        default=0.0
+    )
+
+    defaultString: StringProperty(
+        name="default",
+        description="Default Value",
+        default=""
+    )
+
+    defaultBoolean: BoolProperty(
+        name="default",
+        description="Default Value",
+        default=False
+    )
+
+    defaultVec3: FloatVectorProperty(
+        name="default",
+        description="Default Value",
+        subtype="XYZ",
+        default=(0.0, 0.0, 0.0)
+    )
+
+    defaultAnimationAction: StringProperty(
+        name="default",
+        description="Default Value",
+        default=""
+    )
+
+
+class BGGlobalVariableAdd(bpy.types.Operator):
+    bl_idname = "ui.bg_add_global_variable"
+    bl_label = "Add Global Variable"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def execute(self, context):
+        target = context.target
+        new_var = target.bg_global_variables.add()
+        new_var.name = f"prop{len(target.bg_global_variables)}"
+        new_var.type = "integer"
+
+        return {'FINISHED'}
+
+
+class BGGlobalVariableRemove(bpy.types.Operator):
+    bl_idname = "ui.bg_remove_global_variable"
+    bl_label = "Remove Global Variable"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def execute(self, context):
+        target = context.target
+        target.bg_global_variables.remove(target.bg_active_global_variable_idx)
+
+        return {'FINISHED'}
+
+
+class BGGlobalVariablesList(bpy.types.UIList):
+    bl_idname = "BG_UL_GlobalVariables_list"
+    bl_label = "Global Variables"
+
+    def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
+        split = layout.split(align=True)
+        split.prop(item, "name", text="", emboss=False, icon='NONE')
+        split.prop(item, "type", text="", emboss=False, icon='NONE')
+        if item.type == "integer":
+            split.prop(item, "defaultInt", text="", emboss=True, slider=False, icon='NONE')
+        elif item.type == "boolean":
+            split.prop(item, "defaultBoolean", text="", toggle=True, emboss=True, icon='NONE')
+        elif item.type == "float":
+            split.prop(item, "defaultFloat", text="", emboss=True, slider=False, icon='NONE')
+        elif item.type == "string":
+            split.prop(item, "defaultString", text="", emboss=True, icon='NONE')
+        elif item.type == "vec3":
+            split.prop(item, "defaultVec3", text="", emboss=True, icon='NONE')
+        elif item.type == "animationAction":
+            split.prop(item, "defaultAnimationAction", text="", emboss=True, icon='NONE')
+
+
+class BGCustomEventType(PropertyGroup):
+    name: StringProperty(
+        name="Name",
+        description="Name",
+        update=update_ui
+    )
+
+
+class BGCustomEventAdd(bpy.types.Operator):
+    bl_idname = "ui.bg_add_custom_event"
+    bl_label = "Add Custom Event"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def execute(self, context):
+        target = context.target
+        new_event = target.bg_custom_events.add()
+        new_event.name = f"prop{len(target.bg_custom_events)}"
+
+        return {'FINISHED'}
+
+
+class BGCustomEventRemove(bpy.types.Operator):
+    bl_idname = "ui.bg_remove_custom_event"
+    bl_label = "Remove Custom Event"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def execute(self, context):
+        target = context.target
+        target.bg_custom_events.remove(target.bg_active_custom_event_idx)
+
+        return {'FINISHED'}
+
+
+class BGCustomEventsList(bpy.types.UIList):
+    bl_idname = "BG_UL_CustomEvents_list"
+    bl_label = "Custom Events"
+
+    def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
+        split = layout.split(align=True)
+        split.prop(item, "name", text="", emboss=False, icon='NONE')
+
+
 class BGScenePanel(bpy.types.Panel):
     bl_label = 'Behavior Graphs'
     bl_idname = "SCENE_PT_BG"
@@ -158,6 +320,7 @@ class BGScenePanel(bpy.types.Panel):
 
     def draw(self, context):
         layout = self.layout
+
         row = layout.row()
         row.template_list(BGNodeTreeList.bl_idname, "", context.scene,
                           "bg_slots", context.scene, "bg_active_slot_idx", rows=5)
@@ -168,6 +331,26 @@ class BGScenePanel(bpy.types.Panel):
         row = layout.row()
         row.context_pointer_set("target", context.scene)
         row.template_ID(context.scene, "bg_active_graph", new=BGNew.bl_idname, unlink=BGRemove.bl_idname)
+
+        row = layout.row()
+        row.label(text="Global Variables:")
+        row = layout.row()
+        row.template_list(BGGlobalVariablesList.bl_idname, "", context.scene,
+                          "bg_global_variables", context.scene, "bg_active_global_variable_idx", rows=5)
+        col = row.column(align=True)
+        col.context_pointer_set('target', context.scene)
+        col.operator(BGGlobalVariableAdd.bl_idname, icon='ADD', text="")
+        col.operator(BGGlobalVariableRemove.bl_idname, icon='REMOVE', text="")
+
+        row = layout.row()
+        row.label(text="Custom Events:")
+        row = layout.row()
+        row.template_list(BGCustomEventsList.bl_idname, "", context.scene,
+                          "bg_custom_events", context.scene, "bg_active_custom_event_idx", rows=5)
+        col = row.column(align=True)
+        col.context_pointer_set('target', context.scene)
+        col.operator(BGCustomEventAdd.bl_idname, icon='ADD', text="")
+        col.operator(BGCustomEventRemove.bl_idname, icon='REMOVE', text="")
 
 
 def indexForBGItem(slots, graph):
@@ -220,6 +403,14 @@ def register():
     bpy.utils.register_class(BGNodeTreeList)
     bpy.utils.register_class(BGObjectPanel)
     bpy.utils.register_class(BGScenePanel)
+    bpy.utils.register_class(BGGlobalVariableType)
+    bpy.utils.register_class(BGGlobalVariableAdd)
+    bpy.utils.register_class(BGGlobalVariableRemove)
+    bpy.utils.register_class(BGGlobalVariablesList)
+    bpy.utils.register_class(BGCustomEventType)
+    bpy.utils.register_class(BGCustomEventAdd)
+    bpy.utils.register_class(BGCustomEventRemove)
+    bpy.utils.register_class(BGCustomEventsList)
 
     bpy.utils.register_class(BGItem)
     bpy.types.Object.bg_slots = CollectionProperty(type=BGItem)
@@ -242,6 +433,18 @@ def register():
                ("SCENE", "Scene", "Scene")],
         default="SCENE")
 
+    bpy.types.Scene.bg_global_variables = CollectionProperty(type=BGGlobalVariableType)
+    bpy.types.Scene.bg_active_global_variable_idx = IntProperty(
+        name="Active Global Variable index",
+        description="Active Global Variable index",
+        default=-1)
+
+    bpy.types.Scene.bg_custom_events = CollectionProperty(type=BGCustomEventType)
+    bpy.types.Scene.bg_active_custom_event_idx = IntProperty(
+        name="Active Custom Event index",
+        description="Active Custom Event index",
+        default=-1)
+
     bpy.types.NODE_HT_header.draw = draw_header
 
     if load_post not in bpy.app.handlers.load_post:
@@ -255,6 +458,14 @@ def unregister():
     bpy.utils.unregister_class(BGObjectPanel)
     bpy.utils.unregister_class(BGScenePanel)
     bpy.utils.unregister_class(BGNodeTreeList)
+    bpy.utils.unregister_class(BGGlobalVariableType)
+    bpy.utils.unregister_class(BGGlobalVariableAdd)
+    bpy.utils.unregister_class(BGGlobalVariableRemove)
+    bpy.utils.unregister_class(BGGlobalVariablesList)
+    bpy.utils.unregister_class(BGCustomEventType)
+    bpy.utils.unregister_class(BGCustomEventAdd)
+    bpy.utils.unregister_class(BGCustomEventRemove)
+    bpy.utils.unregister_class(BGCustomEventsList)
 
     del bpy.types.Object.bg_slots
     del bpy.types.Object.bg_active_graph
@@ -263,6 +474,10 @@ def unregister():
     del bpy.types.Scene.bg_active_graph
     del bpy.types.Scene.bg_active_slot_idx
     del bpy.types.Scene.bg_node_type
+    del bpy.types.Scene.bg_global_variables
+    del bpy.types.Scene.bg_active_global_variable_idx
+    del bpy.types.Scene.bg_custom_event
+    del bpy.types.Scene.bg_active_custom_event_idx
     bpy.utils.unregister_class(BGItem)
 
     bpy.types.NODE_HT_header.draw = original_NODE_HT_header_draw
