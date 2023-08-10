@@ -5232,6 +5232,103 @@
     "configuration": []
   },
   {
+    "type": "media/onMediaEvent",
+    "category": "Media",
+    "label": "On Media Event",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "create",
+        "valueType": "flow"
+      },
+      {
+        "name": "play",
+        "valueType": "flow"
+      },
+      {
+        "name": "pause",
+        "valueType": "flow"
+      },
+      {
+        "name": "end",
+        "valueType": "flow"
+      },
+      {
+        "name": "destroy",
+        "valueType": "flow"
+      },
+      {
+        "name": "entity",
+        "valueType": "entity"
+      }
+    ],
+    "configuration": []
+  },
+  {
+    "type": "media/mediaPlayback",
+    "category": "Media",
+    "label": "Media Playback",
+    "inputs": [
+      {
+        "name": "entity",
+        "valueType": "entity",
+        "defaultValue": 0
+      },
+      {
+        "name": "play",
+        "valueType": "flow"
+      },
+      {
+        "name": "pause",
+        "valueType": "flow"
+      },
+      {
+        "name": "setSrc",
+        "valueType": "flow"
+      },
+      {
+        "name": "src",
+        "valueType": "string",
+        "defaultValue": ""
+      },
+      {
+        "name": "setMuted",
+        "valueType": "flow"
+      },
+      {
+        "name": "muted",
+        "valueType": "boolean",
+        "defaultValue": false
+      }
+    ],
+    "outputs": [
+      {
+        "name": "flow",
+        "valueType": "flow"
+      }
+    ],
+    "configuration": []
+  },
+  {
+    "type": "media/getVideoComponent",
+    "category": "Media",
+    "label": "Get Video Component",
+    "inputs": [
+      {
+        "name": "entity",
+        "valueType": "entity",
+        "defaultValue": 0
+      }
+    ],
+    "outputs": [
+      {
+        "name": "entity",
+        "valueType": "entity"
+      }
+    ],
+    "configuration": []
+  },
+  {
     "type": "hubs/displayMessage",
     "category": "Misc",
     "label": "Display Notification Message",

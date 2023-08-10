@@ -127,6 +127,14 @@ behavior_graph_node_categories = {
     "Components": [
         NodeItem("BGNode_networkedVariable_get"),
         NodeItem("BGNode_networkedVariable_set")
+    ],
+    "Media": [
+        # NodeItem("BGNode_media_onCreate"),
+        # NodeItem("BGNode_media_onPlay"),
+        # NodeItem("BGNode_media_onPause"),
+        # NodeItem("BGNode_media_onEnd"),
+        # NodeItem("BGNode_media_onDestroy"),
+        NodeItem("BGNode_media_onMediaEvent")
     ]
 }
 
@@ -162,7 +170,14 @@ all_classes = [
     BGHubsSetEntityProperty,
     BGNode_customEvent_trigger,
     BGNode_networkedVariable_get,
-    BGNode_networkedVariable_set
+    BGNode_networkedVariable_set,
+
+    # BGNode_media_onCreate,
+    # BGNode_media_onPlay,
+    # BGNode_media_onPause,
+    # BGNode_media_onEnd,
+    # BGNode_media_onDestroy,
+    BGNode_media_onMediaEvent
 ]
 
 hardcoded_nodes = {

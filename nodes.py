@@ -191,6 +191,107 @@ class BGNode_hubs_onPlayerCollisionExit(BGEventNode, BGNode, Node):
         layout.prop(self, "target")
 
 
+def has_media(self, ob):
+    return has_component(ob, "video") or has_component(ob, "audio")
+
+
+# class BGNode_media_onCreate(BGEventNode, BGNode, Node):
+#     bl_label = "On Media Create"
+#     node_type = "media/onCreate"
+
+#     target: PointerProperty(
+#         name="Target", type=bpy.types.Object, poll=has_media)
+
+#     def init(self, context):
+#         super().init(context)
+#         self.outputs.new("BGHubsEntitySocket", "entity")
+
+#     def draw_buttons(self, context, layout):
+#         layout.prop(self, "target")
+
+
+# class BGNode_media_onPlay(BGEventNode, BGNode, Node):
+#     bl_label = "On Media Play"
+#     node_type = "media/onPlay"
+
+#     target: PointerProperty(
+#         name="Target", type=bpy.types.Object, poll=has_media)
+
+#     def init(self, context):
+#         super().init(context)
+#         self.outputs.new("BGHubsEntitySocket", "entity")
+
+#     def draw_buttons(self, context, layout):
+#         layout.prop(self, "target")
+
+
+# class BGNode_media_onPause(BGEventNode, BGNode, Node):
+#     bl_label = "On Media Pause"
+#     node_type = "media/onPause"
+
+#     target: PointerProperty(
+#         name="Target", type=bpy.types.Object, poll=has_media)
+
+#     def init(self, context):
+#         super().init(context)
+#         self.outputs.new("BGHubsEntitySocket", "entity")
+
+#     def draw_buttons(self, context, layout):
+#         layout.prop(self, "target")
+
+
+# class BGNode_media_onEnd(BGEventNode, BGNode, Node):
+#     bl_label = "On Media End"
+#     node_type = "media/onEnd"
+
+#     target: PointerProperty(
+#         name="Target", type=bpy.types.Object, poll=has_media)
+
+#     def init(self, context):
+#         super().init(context)
+#         self.outputs.new("BGHubsEntitySocket", "entity")
+
+#     def draw_buttons(self, context, layout):
+#         layout.prop(self, "target")
+
+
+# class BGNode_media_onDestroy(BGEventNode, BGNode, Node):
+#     bl_label = "On Media Destroy"
+#     node_type = "media/onDestroy"
+
+#     target: PointerProperty(
+#         name="Target", type=bpy.types.Object, poll=has_media)
+
+#     def init(self, context):
+#         super().init(context)
+#         self.outputs.new("BGHubsEntitySocket", "entity")
+
+#     def draw_buttons(self, context, layout):
+#         layout.prop(self, "target")
+
+
+class BGNode_media_onMediaEvent(BGEventNode, BGNode, Node):
+    bl_label = "On Media Event"
+    node_type = "media/onMediaEvent"
+
+    target: PointerProperty(
+        name="Target", type=bpy.types.Object, poll=has_media)
+
+    def init(self, context):
+        self.use_custom_color = True
+        self.color = (0.6, 0.2, 0.2)
+        from .sockets import BGFlowSocket
+        BGFlowSocket.create(self.outputs, name="create")
+        BGFlowSocket.create(self.outputs, name="play")
+        BGFlowSocket.create(self.outputs, name="pause")
+        BGFlowSocket.create(self.outputs, name="end")
+        BGFlowSocket.create(self.outputs, name="destroy")
+        self.outputs.new("BGHubsEntitySocket", "entity")
+
+    def draw_buttons(self, context, layout):
+        layout.prop(self, "target")
+
+
 def update_output_sockets(self, context):
     from .sockets import BGFlowSocket
     existing_outputs = len(self.outputs)
@@ -291,7 +392,7 @@ class BGNode_variable_get(BGNode, Node):
             has_var = self.variableId in bpy.context.scene.bg_global_variables
             var_type = bpy.context.scene.bg_global_variables.get(
                 self.variableId).type if has_var else "None"
-            if var_type != socket_to_type[self.outputs[0].bl_idname]:
+            if self.outputs[0] != None and var_type != socket_to_type[self.outputs[0].bl_idname]:
                 bpy.context.scene.bg_active_graph.links.remove(self.outputs[0].links[0])
 
 
@@ -320,7 +421,7 @@ class BGNode_variable_set(BGActionNode, BGNode, Node):
             has_var = self.variableId in bpy.context.scene.bg_global_variables
             var_type = bpy.context.scene.bg_global_variables.get(
                 self.variableId).type if has_var else "None"
-            if var_type != socket_to_type[self.inputs[1].bl_idname]:
+            if self.inputs[1] != None and var_type != socket_to_type[self.inputs[1].bl_idname]:
                 bpy.context.scene.bg_active_graph.links.remove(self.inputs[1].links[0])
 
 
