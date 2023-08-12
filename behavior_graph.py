@@ -96,15 +96,173 @@ class BGCategory(NodeCategory):
         return context.space_data.tree_type == "BGTree"
 
 
+class NODE_MT_behavior_graphs_subcategory_Media(bpy.types.Menu):
+    bl_idname = "NODE_MT_behavior_graphs_subcategory_Media"
+    bl_label = "Media"
+
+    def draw(self, context):
+        layout = self.layout
+        from bl_ui import node_add_menu
+        node_add_menu.add_node_type(layout, "BGNode_media_mediaPlayback")
+        node_add_menu.add_node_type(layout, "BGNode_media_onMediaEvent")
+
+
+class NODE_MT_behavior_graphs_subcategory_Text(bpy.types.Menu):
+    bl_idname = "NODE_MT_behavior_graphs_subcategory_Text"
+    bl_label = "Text"
+
+    def draw(self, context):
+        layout = self.layout
+        from bl_ui import node_add_menu
+        node_add_menu.add_node_type(layout, "BGNode_text_setTextProperties")
+
+
+class NODE_MT_behavior_graphs_subcategory_Networked_Behavior(bpy.types.Menu):
+    bl_idname = "NODE_MT_behavior_graphs_subcategory_Networked_Behavior"
+    bl_label = "Networked Behavior"
+
+    def draw(self, context):
+        layout = self.layout
+        from bl_ui import node_add_menu
+        node_add_menu.add_node_type(layout, "BGNode_networkedVariable_get")
+        node_add_menu.add_node_type(layout, "BGNode_networkedVariable_set")
+
+
+class NODE_MT_behavior_graphs_subcategory_Custom_Tags(bpy.types.Menu):
+    bl_idname = "NODE_MT_behavior_graphs_subcategory_Custom_Tags"
+    bl_label = "Custom Tags"
+
+    def draw(self, context):
+        layout = self.layout
+        from bl_ui import node_add_menu
+        node_add_menu.add_node_type(layout, "BGNode_hubs_entity_components_custom_tags_addTag")
+        node_add_menu.add_node_type(layout, "BGNode_hubs_entity_components_custom_tags_removeTag")
+        node_add_menu.add_node_type(layout, "BGNode_hubs_entity_components_custom_tags_hasTag")
+
+
+class NODE_MT_behavior_graphs_subcategory_String_Math(bpy.types.Menu):
+    bl_idname = "NODE_MT_behavior_graphs_subcategory_String_Math"
+    bl_label = "String Math"
+
+    def draw(self, context):
+        layout = self.layout
+        from bl_ui import node_add_menu
+        values = next(values for key, values in behavior_graph_node_categories.items() if key == self.bl_label)
+        for value in values:
+            node_add_menu.add_node_type(layout, value.nodetype)
+
+
+class NODE_MT_behavior_graphs_subcategory_Bool_Math(bpy.types.Menu):
+    bl_idname = "NODE_MT_behavior_graphs_subcategory_Bool_Math"
+    bl_label = "Bool Math"
+
+    def draw(self, context):
+        layout = self.layout
+        from bl_ui import node_add_menu
+        values = next(values for key, values in behavior_graph_node_categories.items() if key == self.bl_label)
+        for value in values:
+            node_add_menu.add_node_type(layout, value.nodetype)
+
+
+class NODE_MT_behavior_graphs_subcategory_Int_Math(bpy.types.Menu):
+    bl_idname = "NODE_MT_behavior_graphs_subcategory_Int_Math"
+    bl_label = "Int Math"
+
+    def draw(self, context):
+        layout = self.layout
+        from bl_ui import node_add_menu
+        values = next(values for key, values in behavior_graph_node_categories.items() if key == self.bl_label)
+        for value in values:
+            node_add_menu.add_node_type(layout, value.nodetype)
+
+
+class NODE_MT_behavior_graphs_subcategory_Float_Math(bpy.types.Menu):
+    bl_idname = "NODE_MT_behavior_graphs_subcategory_Float_Math"
+    bl_label = "Float Math"
+
+    def draw(self, context):
+        layout = self.layout
+        from bl_ui import node_add_menu
+        values = next(values for key, values in behavior_graph_node_categories.items() if key == self.bl_label)
+        for value in values:
+            node_add_menu.add_node_type(layout, value.nodetype)
+
+
+class NODE_MT_behavior_graphs_subcategory_Vec3_Math(bpy.types.Menu):
+    bl_idname = "NODE_MT_behavior_graphs_subcategory_Vec3_Math"
+    bl_label = "Vec3 Math"
+
+    def draw(self, context):
+        layout = self.layout
+        from bl_ui import node_add_menu
+        values = next(values for key, values in behavior_graph_node_categories.items() if key == self.bl_label)
+        for value in values:
+            node_add_menu.add_node_type(layout, value.nodetype)
+
+
+class NODE_MT_behavior_graphs_subcategory_Euler_Math(bpy.types.Menu):
+    bl_idname = "NODE_MT_behavior_graphs_subcategory_Euler_Math"
+    bl_label = "Euler Math"
+
+    def draw(self, context):
+        layout = self.layout
+        from bl_ui import node_add_menu
+        values = next(values for key, values in behavior_graph_node_categories.items() if key == self.bl_label)
+        for value in values:
+            node_add_menu.add_node_type(layout, value.nodetype)
+
+
+class NODE_MT_behavior_graphs_subcategory_Entity_Events(bpy.types.Menu):
+    bl_idname = "NODE_MT_behavior_graphs_subcategory_Entity_Events"
+    bl_label = "Entity Events"
+
+    def draw(self, context):
+        layout = self.layout
+        from bl_ui import node_add_menu
+        node_add_menu.add_node_type(layout, "BGNode_hubs_onInteract")
+        node_add_menu.add_node_type(layout, "BGNode_hubs_onCollisionEnter")
+        node_add_menu.add_node_type(layout, "BGNode_hubs_onCollisionStay")
+        node_add_menu.add_node_type(layout, "BGNode_hubs_onCollisionExit")
+
+
+class NODE_MT_behavior_graphs_subcategory_Player_Events(bpy.types.Menu):
+    bl_idname = "NODE_MT_behavior_graphs_subcategory_Player_Events"
+    bl_label = "Player Events"
+
+    def draw(self, context):
+        layout = self.layout
+        from bl_ui import node_add_menu
+        node_add_menu.add_node_type(layout, "BGNode_hubs_onPlayerCollisionEnter")
+        node_add_menu.add_node_type(layout, "BGNode_hubs_onPlayerCollisionStay")
+        node_add_menu.add_node_type(layout, "BGNode_hubs_onPlayerCollisionExit")
+        node_add_menu.add_node_type(layout, "BGNode_hubs_onPlayerJoined")
+        node_add_menu.add_node_type(layout, "BGNode_hubs_onPlayerLeft")
+
+
+class NODE_MT_behavior_graphs_subcategory_Lifecycle_Events(bpy.types.Menu):
+    bl_idname = "NODE_MT_behavior_graphs_subcategory_Lifecycle_Events"
+    bl_label = "Lifecycle Events"
+
+    def draw(self, context):
+        layout = self.layout
+        from bl_ui import node_add_menu
+        node_add_menu.add_node_type(layout, "BGNode_lifecycle_onStart")
+        node_add_menu.add_node_type(layout, "BGNode_lifecycle_onEnd")
+        node_add_menu.add_node_type(layout, "BGNode_lifecycle_onTick")
+
+
+class BGSubcategory(NodeItem):
+
+    def draw(self, ob, layout, context):
+        suffix = self.label.replace(" ", "_")
+        layout.menu(f"NODE_MT_behavior_graphs_subcategory_{suffix}", text=self.label)
+
+
 behavior_graph_node_categories = {
     "Event": [
-        NodeItem("BGNode_hubs_onInteract"),
-        NodeItem("BGNode_hubs_onCollisionEnter"),
-        NodeItem("BGNode_hubs_onCollisionStay"),
-        NodeItem("BGNode_hubs_onCollisionExit"),
-        NodeItem("BGNode_hubs_onPlayerCollisionEnter"),
-        NodeItem("BGNode_hubs_onPlayerCollisionStay"),
-        NodeItem("BGNode_hubs_onPlayerCollisionExit"),
+        BGSubcategory(f"BEHAVIOR_GRAPH_Subcategory_Events_Lifecycle", label="Lifecycle Events"),
+        BGSubcategory(f"BEHAVIOR_GRAPH_Subcategory_Events_Entity", label="Entity Events"),
+        BGSubcategory(f"BEHAVIOR_GRAPH_Subcategory_Events_Player", label="Player Events"),
         NodeItem("BGNode_customEvent_onTriggered"),
     ],
     "Entity": [
@@ -122,8 +280,18 @@ behavior_graph_node_categories = {
         NodeItem("BGNode_customEvent_trigger"),
     ],
     "Components": [
-        NodeItem("BGNode_networkedVariable_get"),
-        NodeItem("BGNode_networkedVariable_set")
+        BGSubcategory(f"BEHAVIOR_GRAPH_Subcategory_Networked_Behavior", label="Networked Behavior"),
+        BGSubcategory(f"BEHAVIOR_GRAPH_Subcategory_Media", label="Media"),
+        BGSubcategory(f"BEHAVIOR_GRAPH_Subcategory_Text", label="Text"),
+        BGSubcategory(f"BEHAVIOR_GRAPH_Subcategory_Custom_Tags", label="Custom Tags")
+    ],
+    "Math": [
+        BGSubcategory(f"BEHAVIOR_GRAPH_Subcategory_String_Math", label="String Math"),
+        BGSubcategory(f"BEHAVIOR_GRAPH_Subcategory_Bool_Math", label="Bool Math"),
+        BGSubcategory(f"BEHAVIOR_GRAPH_Subcategory_Int_Math", label="Int Math"),
+        BGSubcategory(f"BEHAVIOR_GRAPH_Subcategory_Float_Math", label="Float Math"),
+        BGSubcategory(f"BEHAVIOR_GRAPH_Subcategory_Vec3_Math", label="Vec3 Math"),
+        BGSubcategory(f"BEHAVIOR_GRAPH_Subcategory_Euler_Math", label="Euler Math")
     ],
     "Media": [
         # NodeItem("BGNode_media_onCreate"),
@@ -131,7 +299,6 @@ behavior_graph_node_categories = {
         # NodeItem("BGNode_media_onPause"),
         # NodeItem("BGNode_media_onEnd"),
         # NodeItem("BGNode_media_onDestroy"),
-        NodeItem("BGNode_media_onMediaEvent")
     ]
 }
 
@@ -175,7 +342,21 @@ all_classes = [
     # BGNode_media_onPause,
     # BGNode_media_onEnd,
     # BGNode_media_onDestroy,
-    BGNode_media_onMediaEvent
+    BGNode_media_onMediaEvent,
+
+    NODE_MT_behavior_graphs_subcategory_Media,
+    NODE_MT_behavior_graphs_subcategory_Text,
+    NODE_MT_behavior_graphs_subcategory_Networked_Behavior,
+    NODE_MT_behavior_graphs_subcategory_String_Math,
+    NODE_MT_behavior_graphs_subcategory_Bool_Math,
+    NODE_MT_behavior_graphs_subcategory_Int_Math,
+    NODE_MT_behavior_graphs_subcategory_Float_Math,
+    NODE_MT_behavior_graphs_subcategory_Vec3_Math,
+    NODE_MT_behavior_graphs_subcategory_Euler_Math,
+    NODE_MT_behavior_graphs_subcategory_Entity_Events,
+    NODE_MT_behavior_graphs_subcategory_Player_Events,
+    NODE_MT_behavior_graphs_subcategory_Lifecycle_Events,
+    NODE_MT_behavior_graphs_subcategory_Custom_Tags
 ]
 
 hardcoded_nodes = {
@@ -281,6 +462,13 @@ def create_node_class(node_data):
     return CustomNode
 
 
+FILTERED_NODES = ["BGNode_hubs_onPlayerJoined", "BGNode_hubs_onPlayerLeft", "BGNode_lifecycle_onStart",
+                  "BGNode_lifecycle_onEnd", "BGNode_lifecycle_onTick",
+                  "BGNode_hubs_entity_components_custom_tags_removeTag",
+                  "BGNode_hubs_entity_components_custom_tags_addTag",
+                  "BGNode_hubs_entity_components_custom_tags_hasTag"]
+
+
 def read_nodespec(filename):
     with open(filename, "r") as file:
         nodes = json.load(file)
@@ -293,11 +481,9 @@ def read_nodespec(filename):
                 behavior_graph_node_categories[category] = []
             node_class = create_node_class(node_spec)
             all_classes.append(node_class)
-            behavior_graph_node_categories[category].append(
-                NodeItem(node_class.__name__))
-            # bpy.utils.register_class(node_class)
-        # print(test_classes)
-        #
+            if node_class.__name__ not in FILTERED_NODES:
+                behavior_graph_node_categories[category].append(
+                    NodeItem(node_class.__name__))
 
 
 def resolve_input_link(input_socket: bpy.types.NodeSocket) -> bpy.types.NodeLink:
@@ -591,6 +777,18 @@ class glTF2ExportUserExtension:
             )
 
 
+def get_category(category, items):
+    cat_items = []
+    for item in items:
+        if isinstance(item, NodeItem) or isinstance(item, BGSubcategory):
+            cat_items.append(item)
+    return BGCategory("BEHAVIOR_GRAPH_" + category.replace(" ", "_"), category, items=cat_items)
+
+
+FILTERED_CATEGORIES = ["Media", "Text",  "String Math",
+                       "Bool Math", "Int Math", "Float Math", "Vec3 Math", "Euler Math"]
+
+
 def register():
     read_nodespec(os.path.join(os.path.dirname(
         os.path.abspath(__file__)), "nodespec.json"))
@@ -598,10 +796,11 @@ def register():
     for cls in all_classes:
         register_class(cls)
 
-    print(behavior_graph_node_categories)
-    categories = [BGCategory("BEHAVIOR_GRAPH_" + category.replace(" ", "_"), category, items=items)
-                  for category, items in behavior_graph_node_categories.items()]
-    print(categories)
+    categories = []
+    for category, items in behavior_graph_node_categories.items():
+        if category not in FILTERED_CATEGORIES:
+            categories.append(get_category(category, items))
+
     register_node_categories("BEHAVIOR_GRAPH_NODES", categories)
 
 
@@ -610,6 +809,8 @@ def unregister():
 
     for cls in all_classes:
         unregister_class(cls)
+
+    del behavior_graph_node_categories
 
 
 if __name__ == "__main__":
