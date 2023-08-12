@@ -158,7 +158,7 @@ GLOBAL_VARIABLES_TYPES = [
     ("animationAction", "Action", "Action"),
     ("player", "Player", "Player"),
     ("entity", "Entity", "Entity"),
-    ("color", "Color", "COLOR"),
+    ("color", "Color", "Color"),
 ]
 
 
