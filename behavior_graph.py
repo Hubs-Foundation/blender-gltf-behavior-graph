@@ -263,6 +263,7 @@ behavior_graph_node_categories = {
         BGSubcategory(f"BEHAVIOR_GRAPH_Subcategory_Events_Lifecycle", label="Lifecycle Events"),
         BGSubcategory(f"BEHAVIOR_GRAPH_Subcategory_Events_Entity", label="Entity Events"),
         BGSubcategory(f"BEHAVIOR_GRAPH_Subcategory_Events_Player", label="Player Events"),
+        NodeItem("BGNode_customEvent_trigger"),
         NodeItem("BGNode_customEvent_onTriggered"),
     ],
     "Entity": [
@@ -275,9 +276,6 @@ behavior_graph_node_categories = {
     ],
     "Flow": [
         NodeItem("BGNode_flow_sequence"),
-    ],
-    "Action": [
-        NodeItem("BGNode_customEvent_trigger"),
     ],
     "Components": [
         BGSubcategory(f"BEHAVIOR_GRAPH_Subcategory_Networked_Behavior", label="Networked Behavior"),
