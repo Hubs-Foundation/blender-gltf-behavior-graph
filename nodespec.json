@@ -2791,6 +2791,30 @@
     "configuration": []
   },
   {
+    "type": "entity/getEntityComponent",
+    "category": "Entity",
+    "label": "Get Entity Component",
+    "inputs": [
+      {
+        "name": "entity",
+        "valueType": "entity",
+        "defaultValue": 0
+      },
+      {
+        "name": "component",
+        "valueType": "string",
+        "defaultValue": ""
+      }
+    ],
+    "outputs": [
+      {
+        "name": "entity",
+        "valueType": "entity"
+      }
+    ],
+    "configuration": []
+  },
+  {
     "type": "hubs/material/getMap",
     "category": "Materials",
     "label": "Get Material Diffuse Map",
@@ -5310,20 +5334,61 @@
     "configuration": []
   },
   {
-    "type": "media/getVideoComponent",
-    "category": "Media",
-    "label": "Get Video Component",
+    "type": "text/setTextProperties",
+    "category": "Text",
+    "label": "Set Text",
     "inputs": [
       {
         "name": "entity",
         "valueType": "entity",
         "defaultValue": 0
+      },
+      {
+        "name": "setText",
+        "valueType": "flow"
+      },
+      {
+        "name": "text",
+        "valueType": "string",
+        "defaultValue": ""
+      },
+      {
+        "name": "setFontSize",
+        "valueType": "flow"
+      },
+      {
+        "name": "fontSize",
+        "valueType": "float",
+        "defaultValue": 0
+      },
+      {
+        "name": "setFontColor",
+        "valueType": "flow"
+      },
+      {
+        "name": "color",
+        "valueType": "color",
+        "defaultValue": [
+          1,
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "name": "setTextOpacity",
+        "valueType": "flow"
+      },
+      {
+        "name": "fillOpacity",
+        "valueType": "float",
+        "defaultValue": 0
       }
     ],
     "outputs": [
       {
-        "name": "entity",
-        "valueType": "entity"
+        "name": "flow",
+        "valueType": "flow"
       }
     ],
     "configuration": []

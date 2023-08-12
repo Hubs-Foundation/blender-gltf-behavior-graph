@@ -534,6 +534,8 @@ class BGNode_networkedVariable_set(BGActionNode, BGNode, Node):
         self.inputs['string'].hide = True
         self.inputs.new("NodeSocketVectorXYZ", "vec3")
         self.inputs['vec3'].hide = True
+        self.inputs.new("NodeSocketVectorXYZ", "color")
+        self.inputs['color'].hide = True
 
     def draw_buttons(self, context, layout):
         layout.prop(self, "target")
@@ -578,6 +580,8 @@ class BGNode_networkedVariable_get(BGNode, Node):
         self.outputs['string'].hide = True
         self.outputs.new("NodeSocketVectorXYZ", "vec3")
         self.outputs['vec3'].hide = True
+        self.outputs.new("NodeSocketVectorXYZ", "color")
+        self.outputs['color'].hide = True
 
     def draw_buttons(self, context, layout):
         layout.prop(self, "target")

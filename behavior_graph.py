@@ -9,7 +9,7 @@ from bpy.props import StringProperty
 from bpy.types import Node, NodeTree, NodeSocket, NodeReroute, NodeSocketString
 from bpy.utils import register_class, unregister_class
 from nodeitems_utils import NodeCategory, NodeItem, register_node_categories, unregister_node_categories
-from io_hubs_addon.io.utils import gather_property, gather_image
+from io_hubs_addon.io.utils import gather_property, gather_image, gather_vec_property, gather_color_property
 
 auto_casts = {
     ("BGHubsEntitySocket", "NodeSocketString"): "BGNode_hubs_entity_toString",
@@ -420,11 +420,9 @@ def get_socket_value(export_settings, socket: NodeSocket):
     elif socket_type == "texture":
         return gather_texture_property(export_settings, socket, socket, "default_value")
     elif socket_type == "color":
-        a = socket.default_value
-        return [a[0], a[1], a[2]]
-    elif socket_type == "vec3":  # TODO gather_property seems to not handle this correctly
-        a = socket.default_value
-        return {"x": a[0], "y": a[1], "z": a[2]}
+        return gather_color_property(export_settings, socket, socket, "default_value", "COLOR_GAMMA")
+    elif socket_type == "vec3":
+        return gather_vec_property(export_settings, socket, socket, "default_value")
     elif hasattr(socket, "default_value"):
         return gather_property(export_settings, socket, socket, "default_value")
     else:
@@ -446,9 +444,11 @@ def gather_events_and_variables(slots, export_settings):
         elif var.type == "string":
             default = var.defaultString
         elif var.type == "vec3":
-            default = var.defaultVec3
+            default = gather_vec_property(export_settings, var, var, "defaultVec3")
         elif var.type == "animationAction":
             default = var.defaultAnimationAction
+        elif var.type == "color":
+            default = gather_color_property(export_settings, var, var, "defaultColor", "COLOR_GAMMA")
         variables[var.name] = {
             "name": var.name,
             "id": list(bpy.context.scene.bg_global_variables).index(var),

@@ -158,6 +158,7 @@ GLOBAL_VARIABLES_TYPES = [
     ("animationAction", "Action", "Action"),
     ("player", "Player", "Player"),
     ("entity", "Entity", "Entity"),
+    ("color", "Color", "COLOR"),
 ]
 
 
@@ -220,6 +221,16 @@ class BGGlobalVariableType(PropertyGroup):
         default=""
     )
 
+    defaultColor: FloatVectorProperty(
+        name="default",
+        description="Default Value",
+        subtype="COLOR_GAMMA",
+        default=(1.0, 1.0, 1.0, 1.0),
+        size=4,
+        min=0,
+        max=1
+    )
+
 
 class BGGlobalVariableAdd(bpy.types.Operator):
     bl_idname = "ui.bg_add_global_variable"
@@ -267,6 +278,8 @@ class BGGlobalVariablesList(bpy.types.UIList):
             split.prop(item, "defaultVec3", text="", emboss=True, icon='NONE')
         elif item.type == "animationAction":
             split.prop(item, "defaultAnimationAction", text="", emboss=True, icon='NONE')
+        elif item.type == "color":
+            split.prop(item, "defaultColor", text="", emboss=True, icon='NONE')
 
 
 class BGCustomEventType(PropertyGroup):
