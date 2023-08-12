@@ -333,23 +333,6 @@ def get_available_variables(self, context):
     return result
 
 
-def update_selected_variable_input(self, context):
-    # Remove previous socket
-    if self.inputs and len(self.inputs) > 1:
-        self.inputs.remove(self.inputs[1])
-
-    if not context:
-        return
-
-    has_var = self.variableId in context.scene.bg_global_variables
-    var_type = context.scene.bg_global_variables.get(self.variableId).type if has_var else "None"
-
-    # Create a new socket based on the selected variable type
-    from .behavior_graph import type_to_socket
-    if var_type != "None":
-        self.inputs.new(type_to_socket[var_type], "value")
-
-
 def update_selected_variable_output(self, context):
     # Remove previous socket
     if self.outputs:
@@ -358,8 +341,8 @@ def update_selected_variable_output(self, context):
     if not context:
         return
 
-    has_var = self.variableId in context.scene.bg_global_variables
-    var_type = context.scene.bg_global_variables.get(self.variableId).type if has_var else "None"
+    has_var = self.variableName in context.scene.bg_global_variables
+    var_type = context.scene.bg_global_variables.get(self.variableName).type if has_var else "None"
 
     # Create a new socket based on the selected variable type
     from .behavior_graph import type_to_socket
@@ -367,15 +350,39 @@ def update_selected_variable_output(self, context):
         self.outputs.new(type_to_socket[var_type], "value")
 
 
+def getVariableId(self):
+    if self.variableName in bpy.context.scene.bg_global_variables:
+        return bpy.context.scene.bg_global_variables.find(self.variableName) + 1
+    return 0
+
+
+def setVariableId(self, value):
+    if value == 0:
+        self.variableName = 'None'
+    elif value <= len(bpy.context.scene.bg_global_variables):
+        self.variableName = bpy.context.scene.bg_global_variables[value - 1].name
+    else:
+        self.variableName = 'None'
+
+
 class BGNode_variable_get(BGNode, Node):
     bl_label = "Get Variable"
     node_type = "variable/get"
+
+    variableName: bpy.props.StringProperty(
+        name="Variable Name",
+        description="Variable Name",
+        options={"HIDDEN"},
+        default="None"
+    )
 
     variableId: bpy.props.EnumProperty(
         name="Variable",
         description="Variable",
         items=get_available_variables,
         update=update_selected_variable_output,
+        get=getVariableId,
+        set=setVariableId,
     )
 
     def init(self, context):
@@ -386,25 +393,56 @@ class BGNode_variable_get(BGNode, Node):
     def draw_buttons(self, context, layout):
         layout.prop(self, "variableId")
 
-    def update(self):
+    def refresh(self):
         from .behavior_graph import socket_to_type
-        if bpy.context.scene and len(self.outputs) > 0 and len(self.outputs[0].links) > 0:
-            has_var = self.variableId in bpy.context.scene.bg_global_variables
-            var_type = bpy.context.scene.bg_global_variables.get(
-                self.variableId).type if has_var else "None"
-            if self.outputs[0] != None and var_type != socket_to_type[self.outputs[0].bl_idname]:
-                bpy.context.scene.bg_active_graph.links.remove(self.outputs[0].links[0])
+        has_var = self.variableName in bpy.context.scene.bg_global_variables
+        var_type = bpy.context.scene.bg_global_variables.get(self.variableName).type if has_var else "None"
+        cur_type = socket_to_type[self.outputs[0].bl_idname] if self.outputs and len(self.outputs) > 0 else 'None'
+        if not has_var or var_type != cur_type:
+            update_selected_variable_output(self, bpy.context)
+            if bpy.context.scene and len(self.outputs) > 0 and len(self.outputs[0].links) > 0:
+                has_var = self.variableId in bpy.context.scene.bg_global_variables
+                var_type = bpy.context.scene.bg_global_variables.get(
+                    self.variableId).type if has_var else "None"
+                if self.outputs[0] != None and var_type != socket_to_type[self.outputs[0].bl_idname]:
+                    bpy.context.scene.bg_active_graph.links.remove(self.outputs[0].links[0])
+
+
+def update_selected_variable_input(self, context):
+    # Remove previous socket
+    if self.inputs and len(self.inputs) > 1:
+        self.inputs.remove(self.inputs[1])
+
+    if not context:
+        return
+
+    has_var = self.variableName in context.scene.bg_global_variables
+    var_type = context.scene.bg_global_variables.get(self.variableName).type if has_var else "None"
+
+    # Create a new socket based on the selected variable type
+    from .behavior_graph import type_to_socket
+    if var_type != "None":
+        self.inputs.new(type_to_socket[var_type], "value")
 
 
 class BGNode_variable_set(BGActionNode, BGNode, Node):
     bl_label = "Set Variable"
     node_type = "variable/set"
 
+    variableName: bpy.props.StringProperty(
+        name="Variable Name",
+        description="Variable Name",
+        options={"HIDDEN"},
+        default="None"
+    )
+
     variableId: bpy.props.EnumProperty(
         name="Value",
         description="Variable Value",
         items=get_available_variables,
-        update=update_selected_variable_input
+        update=update_selected_variable_input,
+        get=getVariableId,
+        set=setVariableId,
     )
 
     def init(self, context):
@@ -415,14 +453,19 @@ class BGNode_variable_set(BGActionNode, BGNode, Node):
     def draw_buttons(self, context, layout):
         layout.prop(self, "variableId")
 
-    def update(self):
+    def refresh(self):
         from .behavior_graph import socket_to_type
-        if bpy.context.scene and len(self.inputs) > 1 and len(self.inputs[1].links) > 0:
-            has_var = self.variableId in bpy.context.scene.bg_global_variables
-            var_type = bpy.context.scene.bg_global_variables.get(
-                self.variableId).type if has_var else "None"
-            if self.inputs[1] != None and var_type != socket_to_type[self.inputs[1].bl_idname]:
-                bpy.context.scene.bg_active_graph.links.remove(self.inputs[1].links[0])
+        has_var = self.variableName in bpy.context.scene.bg_global_variables
+        var_type = bpy.context.scene.bg_global_variables.get(self.variableName).type if has_var else "None"
+        cur_type = socket_to_type[self.inputs[1].bl_idname] if self.inputs and len(self.inputs) > 1 else 'None'
+        if not has_var or var_type != cur_type:
+            update_selected_variable_input(self, bpy.context)
+            if bpy.context.scene and len(self.inputs) > 1 and len(self.inputs[1].links) > 0:
+                has_var = self.variableId in bpy.context.scene.bg_global_variables
+                var_type = bpy.context.scene.bg_global_variables.get(
+                    self.variableId).type if has_var else "None"
+                if self.inputs[1] != None and var_type != socket_to_type[self.inputs[1].bl_idname]:
+                    bpy.context.scene.bg_active_graph.links.remove(self.inputs[1].links[0])
 
 
 def get_available_custom_events(self, context):
@@ -432,14 +475,38 @@ def get_available_custom_events(self, context):
     return result
 
 
+def getCustomEventId(self):
+    if self.customEventName in bpy.context.scene.bg_custom_events:
+        return bpy.context.scene.bg_custom_events.find(self.customEventName) + 1
+    return 0
+
+
+def setCustomEventId(self, value):
+    if value == 0:
+        self.customEventName = 'None'
+    elif value <= len(bpy.context.scene.bg_custom_events):
+        self.customEventName = bpy.context.scene.bg_custom_events[value - 1].name
+    else:
+        self.customEventName = 'None'
+
+
 class BGNode_customEvent_trigger(BGActionNode, BGNode, Node):
     bl_label = "Trigger"
     node_type = "customEvent/trigger"
+
+    customEventName: bpy.props.StringProperty(
+        name="Custom Event Name",
+        description="Custom Event Name",
+        options={"HIDDEN"},
+        default="None"
+    )
 
     customEventId: bpy.props.EnumProperty(
         name="Custom Event",
         description="Custom Event",
         items=get_available_custom_events,
+        get=getCustomEventId,
+        set=setCustomEventId,
     )
 
     def init(self, context):
@@ -447,16 +514,28 @@ class BGNode_customEvent_trigger(BGActionNode, BGNode, Node):
 
     def draw_buttons(self, context, layout):
         layout.prop(self, "customEventId")
+
+    def refresh(self):
+        self.customEventId = self.customEventId
 
 
 class BGNode_customEvent_onTriggered(BGEventNode, BGNode, Node):
     bl_label = "On Trigger"
     node_type = "customEvent/onTriggered"
 
+    customEventName: bpy.props.StringProperty(
+        name="Custom Event Name",
+        description="Custom Event Name",
+        options={"HIDDEN"},
+        default="None"
+    )
+
     customEventId: bpy.props.EnumProperty(
         name="Custom Event",
         description="Custom Event",
         items=get_available_custom_events,
+        get=getCustomEventId,
+        set=setCustomEventId,
     )
 
     def init(self, context):
@@ -464,6 +543,9 @@ class BGNode_customEvent_onTriggered(BGEventNode, BGNode, Node):
 
     def draw_buttons(self, context, layout):
         layout.prop(self, "customEventId")
+
+    def refresh(self):
+        self.customEventId = self.customEventId
 
 
 def get_available_networkedBehavior_properties(self, context):
@@ -542,7 +624,7 @@ class BGNode_networkedVariable_set(BGActionNode, BGNode, Node):
         if self.target:
             layout.prop(self, "prop_name")
 
-    def update(self):
+    def refresh(self):
         if self.prop_name:
             self.prop_name = self.prop_name
 
@@ -588,6 +670,6 @@ class BGNode_networkedVariable_get(BGNode, Node):
         if self.target:
             layout.prop(self, "prop_name")
 
-    def update(self):
+    def refresh(self):
         if self.prop_name:
             self.prop_name = self.prop_name

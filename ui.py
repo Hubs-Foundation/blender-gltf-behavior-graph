@@ -162,7 +162,18 @@ GLOBAL_VARIABLES_TYPES = [
 ]
 
 
-def update_ui(self, context):
+def update_nodes(self, context):
+    if hasattr(context.object, "bg_active_graph") and context.object.bg_active_graph != None:
+        for node in context.object.bg_active_graph.nodes:
+            if hasattr(node, "refresh") and callable(getattr(node, "refresh")):
+                node.refresh()
+    if hasattr(context.scene, "bg_active_graph") and context.scene.bg_active_graph != None:
+        for node in context.scene.bg_active_graph.nodes:
+            if hasattr(node, "refresh") and callable(getattr(node, "refresh")):
+                node.refresh()
+
+
+def update_graphs(self, context):
     if hasattr(context.object, "bg_active_graph") and context.object.bg_active_graph != None:
         context.object.bg_active_graph.update()
     if hasattr(context.scene, "bg_active_graph") and context.scene.bg_active_graph != None:
@@ -173,14 +184,14 @@ class BGGlobalVariableType(PropertyGroup):
     name: StringProperty(
         name="Name",
         description="Name",
-        update=update_ui
+        update=update_nodes
     )
 
     type: EnumProperty(
         name="Type",
         description="Type",
         items=GLOBAL_VARIABLES_TYPES,
-        update=update_ui,
+        update=update_nodes,
         default="integer"
     )
 
@@ -243,6 +254,8 @@ class BGGlobalVariableAdd(bpy.types.Operator):
         new_var.name = f"prop{len(target.bg_global_variables)}"
         new_var.type = "integer"
 
+        update_nodes(self, context)
+
         return {'FINISHED'}
 
 
@@ -254,6 +267,8 @@ class BGGlobalVariableRemove(bpy.types.Operator):
     def execute(self, context):
         target = context.target
         target.bg_global_variables.remove(target.bg_active_global_variable_idx)
+
+        update_nodes(self, context)
 
         return {'FINISHED'}
 
@@ -286,7 +301,7 @@ class BGCustomEventType(PropertyGroup):
     name: StringProperty(
         name="Name",
         description="Name",
-        update=update_ui
+        update=update_nodes
     )
 
 
@@ -300,6 +315,8 @@ class BGCustomEventAdd(bpy.types.Operator):
         new_event = target.bg_custom_events.add()
         new_event.name = f"prop{len(target.bg_custom_events)}"
 
+        update_nodes(self, context)
+
         return {'FINISHED'}
 
 
@@ -311,6 +328,8 @@ class BGCustomEventRemove(bpy.types.Operator):
     def execute(self, context):
         target = context.target
         target.bg_custom_events.remove(target.bg_active_custom_event_idx)
+
+        update_nodes(self, context)
 
         return {'FINISHED'}
 

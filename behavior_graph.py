@@ -88,10 +88,6 @@ class BGTree(NodeTree):
                 else:
                     self.links.remove(link)
 
-        for node in self.nodes:
-            if hasattr(node, "update") and callable(getattr(node, "update")):
-                node.update()
-
 
 class BGCategory(NodeCategory):
     @classmethod
@@ -522,13 +518,19 @@ def gather_nodes(slot, export_settings, events, variables):
 
         if isinstance(node, BGNode_variable_get) or isinstance(node, BGNode_variable_set):
             if node.variableId:
-                print(f'variable node: {node.variableId}, id: {variables[node.variableId]["id"]}')
-                node_data["configuration"]["variableId"] = variables[node.variableId]["id"]
+                if node.variableId == 'None':
+                    print(f'WARNING: variable node: {node.variableId}, id: "None"')
+                else:
+                    print(f'variable node: {node.variableId}, id: {variables[node.variableId]["id"]}')
+                    node_data["configuration"]["variableId"] = variables[node.variableId]["id"]
 
         elif isinstance(node, BGNode_customEvent_trigger) or isinstance(node, BGNode_customEvent_onTriggered):
             if node.customEventId:
-                print(f'variable node: {node.customEventId}, id: {events[node.customEventId]["id"]}')
-                node_data["configuration"]["customEventId"] = events[node.customEventId]["id"]
+                if node.customEventId == 'None':
+                    print(f'WARNING: custom event node: {node.customEventId}, id: "None"')
+                else:
+                    print(f'custom event node: {node.customEventId}, id: {events[node.customEventId]["id"]}')
+                    node_data["configuration"]["customEventId"] = events[node.customEventId]["id"]
 
         elif hasattr(node, "__annotations__"):
             for key in node.__annotations__.keys():

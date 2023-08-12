@@ -4,6 +4,7 @@ from bpy.props import EnumProperty, CollectionProperty, StringProperty, IntPrope
 from io_hubs_addon.components.hubs_component import HubsComponent
 from io_hubs_addon.components.types import Category, NodeType, PanelType
 from ..utils import do_register, do_unregister
+from ..ui import update_nodes
 
 NETWORKED_TYPES = [
     ("boolean", "Boolean", "Boolean"),
@@ -14,23 +15,18 @@ NETWORKED_TYPES = [
 ]
 
 
-def update_ui(self, context):
-    if hasattr(context.object, "bg_active_graph") and context.object.bg_active_graph:
-        context.object.bg_active_graph.update()
-
-
 class NetworkedPropertyType(PropertyGroup):
     name: StringProperty(
         name="Name",
         description="Name",
-        update=update_ui
+        update=update_nodes
     )
 
     type: EnumProperty(
         name="Type",
         description="Type",
         items=NETWORKED_TYPES,
-        update=update_ui,
+        update=update_nodes,
         default="integer"
     )
 
