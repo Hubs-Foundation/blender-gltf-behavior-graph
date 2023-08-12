@@ -2,6 +2,8 @@ import bpy
 from bpy.props import PointerProperty
 from bpy.types import Node
 from io_hubs_addon.components.utils import has_component
+from io_hubs_addon.components.definitions import text, video, audio
+from .components import networked_animation, networked_behavior, networked_transform, rigid_body, physics_shape
 
 
 class BGNode():
@@ -673,3 +675,60 @@ class BGNode_networkedVariable_get(BGNode, Node):
     def refresh(self):
         if self.prop_name:
             self.prop_name = self.prop_name
+
+
+COMPONENTS_FILTER = [
+    video.Video.get_name(),
+    audio.Audio.get_name(),
+    text.Text.get_name(),
+    networked_animation.NetworkedAnimation.get_name(),
+    rigid_body.RigidBody.get_name(),
+    physics_shape.PhysicsShape.get_name(),
+    networked_transform.NetworkedTransform.get_name(),
+    networked_behavior.NetworkedBehavior.get_name()
+]
+
+
+def map_registry(component):
+    component_name, component_class = component
+    return (component_name,
+            component_class.get_display_name(),
+            component[1].get_display_name()) if component_name in COMPONENTS_FILTER else None
+
+
+def getAvailableComponents(self, context):
+    from io_hubs_addon.components.components_registry import get_components_registry
+    registry = get_components_registry()
+    return map(map_registry, registry.items())
+
+
+def component_updated(self, context):
+    self.inputs[0].component = self.component_name
+    self.inputs[1].default_value = self.component_name
+    if self.inputs[0].target is not None and not has_component(self.inputs[0].target, self.component_name):
+        self.inputs[0].target = None
+
+
+class BGNode_get_component(BGNode, Node):
+    bl_label = "Get Component"
+    node_type = "entity/getEntityComponent"
+
+    component_name: bpy.props.EnumProperty(
+        name="Component",
+        description="Component",
+        items=getAvailableComponents,
+        update=component_updated,
+        options={"HIDDEN"},
+        default=0
+    )
+
+    def init(self, context):
+        super().init(context)
+        self.color = (0.2, 0.6, 0.2)
+        self.inputs.new("BGHubsEntitySocket", "entity")
+        component = self.inputs.new("NodeSocketString", "component")
+        component.hide = False
+        self.outputs.new("BGHubsEntitySocket", "entity")
+
+    def draw_buttons(self, context, layout):
+        layout.prop(self, "component_name")

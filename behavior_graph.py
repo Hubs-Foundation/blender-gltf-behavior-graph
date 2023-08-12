@@ -109,6 +109,7 @@ behavior_graph_node_categories = {
     ],
     "Entity": [
         NodeItem("BGHubsSetEntityProperty"),
+        NodeItem("BGNode_get_component"),
     ],
     "Variables": [
         NodeItem("BGNode_variable_get"),
@@ -164,6 +165,7 @@ all_classes = [
     BGNode_customEvent_onTriggered,
 
     BGHubsSetEntityProperty,
+    BGNode_get_component,
     BGNode_customEvent_trigger,
     BGNode_networkedVariable_get,
     BGNode_networkedVariable_set,
@@ -534,8 +536,9 @@ def gather_nodes(slot, export_settings, events, variables):
 
         elif hasattr(node, "__annotations__"):
             for key in node.__annotations__.keys():
-                node_data["configuration"][key] = gather_property(
-                    export_settings, node, node, key)
+                if not node.is_property_hidden(key):
+                    node_data["configuration"][key] = gather_property(
+                        export_settings, node, node, key)
 
         nodes.append(node_data)
 
