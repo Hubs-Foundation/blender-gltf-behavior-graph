@@ -2,7 +2,7 @@ import bpy
 from bpy.props import PointerProperty
 from bpy.types import Node
 from io_hubs_addon.components.utils import has_component
-from io_hubs_addon.components.definitions import text, video, audio
+from io_hubs_addon.components.definitions import text, video, audio, media_frame
 from .components import networked_animation, networked_behavior, networked_transform, rigid_body, physics_shape
 
 
@@ -685,7 +685,8 @@ COMPONENTS_FILTER = [
     rigid_body.RigidBody.get_name(),
     physics_shape.PhysicsShape.get_name(),
     networked_transform.NetworkedTransform.get_name(),
-    networked_behavior.NetworkedBehavior.get_name()
+    networked_behavior.NetworkedBehavior.get_name(),
+    media_frame.MediaFrame.get_name()
 ]
 
 

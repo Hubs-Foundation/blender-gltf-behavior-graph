@@ -8,7 +8,8 @@ collision_masks = [
     ("objects", "Objects", "Interactive objects"),
     ("triggers", "Triggers", "Trigger Colliders"),
     ("environment", "Environment", "Environment geometry"),
-    ("avatars", "Avatars", "Player Avatars")
+    ("avatars", "Avatars", "Player Avatars"),
+    ("media-frames", "Media Frames", "Media Frames"),
 ]
 
 
@@ -20,7 +21,7 @@ class RigidBody(HubsComponent):
         'node_type': NodeType.NODE,
         'panel_type': [PanelType.OBJECT],
         'icon': 'PHYSICS',
-        'deps': ['physics-shape'],
+        'deps': ['physics-shape', 'networked'],
         'version': (1, 0, 0)
     }
 
@@ -46,7 +47,7 @@ class RigidBody(HubsComponent):
     collisionMask: BoolVectorProperty(
         name="Collision Mask",
         description="What collision groups this object will collide with. Note: the other object must also be set to collide with this object's group.",
-        size=4, subtype='LAYER', options={'ANIMATABLE'},
+        size=5, subtype='LAYER', options={'ANIMATABLE'},
         default=[value in ["objects", "triggers", "environment"] for (value, _label, _desc) in collision_masks])
 
     mass: FloatProperty(

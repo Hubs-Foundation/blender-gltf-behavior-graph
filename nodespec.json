@@ -2793,7 +2793,7 @@
   {
     "type": "entity/getEntityComponent",
     "category": "Entity",
-    "label": "Get Entity Component",
+    "label": "Get Component",
     "inputs": [
       {
         "name": "entity",
@@ -5336,7 +5336,7 @@
   {
     "type": "text/setTextProperties",
     "category": "Text",
-    "label": "Set Text",
+    "label": "Set Text Property",
     "inputs": [
       {
         "name": "entity",
@@ -5383,6 +5383,102 @@
         "name": "fillOpacity",
         "valueType": "float",
         "defaultValue": 0
+      }
+    ],
+    "outputs": [
+      {
+        "name": "flow",
+        "valueType": "flow"
+      }
+    ],
+    "configuration": []
+  },
+  {
+    "type": "media_frame/setMediaFrameProperty",
+    "category": "Media Frame",
+    "label": "Set Media Frame Property",
+    "inputs": [
+      {
+        "name": "entity",
+        "valueType": "entity",
+        "defaultValue": 0
+      },
+      {
+        "name": "setActive",
+        "valueType": "flow"
+      },
+      {
+        "name": "active",
+        "valueType": "boolean",
+        "defaultValue": false
+      },
+      {
+        "name": "setLocked",
+        "valueType": "flow"
+      },
+      {
+        "name": "locked",
+        "valueType": "boolean",
+        "defaultValue": false
+      },
+      {
+        "name": "setSnapToCenter",
+        "valueType": "flow"
+      },
+      {
+        "name": "snapToCenter",
+        "valueType": "boolean",
+        "defaultValue": false
+      }
+    ],
+    "outputs": [
+      {
+        "name": "flow",
+        "valueType": "flow"
+      }
+    ],
+    "configuration": []
+  },
+  {
+    "type": "physics/setRigidBodyProperties",
+    "category": "Physics",
+    "label": "Set Rigid Body Property",
+    "inputs": [
+      {
+        "name": "entity",
+        "valueType": "entity",
+        "defaultValue": 0
+      },
+      {
+        "name": "setType",
+        "valueType": "flow"
+      },
+      {
+        "name": "type",
+        "valueType": "string",
+        "defaultValue": "kinematic"
+      },
+      {
+        "name": "setMass",
+        "valueType": "flow"
+      },
+      {
+        "name": "mass",
+        "valueType": "float",
+        "defaultValue": 1
+      },
+      {
+        "name": "setGravity",
+        "valueType": "flow"
+      },
+      {
+        "name": "gravity",
+        "valueType": "vec3",
+        "defaultValue": {
+          "x": 0,
+          "y": -9.8,
+          "z": 0
+        }
       }
     ],
     "outputs": [

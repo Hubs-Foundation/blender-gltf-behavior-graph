@@ -251,6 +251,26 @@ class NODE_MT_behavior_graphs_subcategory_Lifecycle_Events(bpy.types.Menu):
         node_add_menu.add_node_type(layout, "BGNode_lifecycle_onTick")
 
 
+class NODE_MT_behavior_graphs_subcategory_Media_Frame(bpy.types.Menu):
+    bl_idname = "NODE_MT_behavior_graphs_subcategory_Media_Frame"
+    bl_label = "Media Frame"
+
+    def draw(self, context):
+        layout = self.layout
+        from bl_ui import node_add_menu
+        node_add_menu.add_node_type(layout, "BGNode_media_frame_setMediaFrameProperty")
+
+
+class NODE_MT_behavior_graphs_subcategory_Physics(bpy.types.Menu):
+    bl_idname = "NODE_MT_behavior_graphs_subcategory_Physics"
+    bl_label = "Media Frame"
+
+    def draw(self, context):
+        layout = self.layout
+        from bl_ui import node_add_menu
+        node_add_menu.add_node_type(layout, "BGNode_physics_setRigidBodyProperties")
+
+
 class BGSubcategory(NodeItem):
 
     def draw(self, ob, layout, context):
@@ -281,7 +301,9 @@ behavior_graph_node_categories = {
         BGSubcategory(f"BEHAVIOR_GRAPH_Subcategory_Networked_Behavior", label="Networked Behavior"),
         BGSubcategory(f"BEHAVIOR_GRAPH_Subcategory_Media", label="Media"),
         BGSubcategory(f"BEHAVIOR_GRAPH_Subcategory_Text", label="Text"),
-        BGSubcategory(f"BEHAVIOR_GRAPH_Subcategory_Custom_Tags", label="Custom Tags")
+        BGSubcategory(f"BEHAVIOR_GRAPH_Subcategory_Custom_Tags", label="Custom Tags"),
+        BGSubcategory(f"BEHAVIOR_GRAPH_Subcategory_Media_Frame", label="Media Frame"),
+        BGSubcategory(f"BEHAVIOR_GRAPH_Subcategory_Physics", label="Physics")
     ],
     "Math": [
         BGSubcategory(f"BEHAVIOR_GRAPH_Subcategory_String_Math", label="String Math"),
@@ -354,7 +376,9 @@ all_classes = [
     NODE_MT_behavior_graphs_subcategory_Entity_Events,
     NODE_MT_behavior_graphs_subcategory_Player_Events,
     NODE_MT_behavior_graphs_subcategory_Lifecycle_Events,
-    NODE_MT_behavior_graphs_subcategory_Custom_Tags
+    NODE_MT_behavior_graphs_subcategory_Custom_Tags,
+    NODE_MT_behavior_graphs_subcategory_Media_Frame,
+    NODE_MT_behavior_graphs_subcategory_Physics
 ]
 
 hardcoded_nodes = {
@@ -784,7 +808,7 @@ def get_category(category, items):
 
 
 FILTERED_CATEGORIES = ["Media", "Text",  "String Math",
-                       "Bool Math", "Int Math", "Float Math", "Vec3 Math", "Euler Math"]
+                       "Bool Math", "Int Math", "Float Math", "Vec3 Math", "Euler Math", "Physics"]
 
 
 def register():
