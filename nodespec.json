@@ -5323,6 +5323,15 @@
         "name": "muted",
         "valueType": "boolean",
         "defaultValue": false
+      },
+      {
+        "name": "setLoop",
+        "valueType": "flow"
+      },
+      {
+        "name": "loop",
+        "valueType": "boolean",
+        "defaultValue": false
       }
     ],
     "outputs": [
