@@ -17,7 +17,7 @@ class Grabbable(HubsComponent):
     }
 
     cursor: BoolProperty(
-        name="By Curosr", description="Can be grabbed by a cursor", default=True)
+        name="By Cursor", description="Can be grabbed by a cursor", default=True)
 
     hand: BoolProperty(
         name="By Hand", description="Can be grabbed by VR hands", default=True)
