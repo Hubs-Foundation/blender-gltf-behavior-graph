@@ -808,7 +808,7 @@ def get_category(category, items):
 
 
 FILTERED_CATEGORIES = ["Media", "Text",  "String Math",
-                       "Bool Math", "Int Math", "Float Math", "Vec3 Math", "Euler Math", "Physics"]
+                       "Bool Math", "Int Math", "Float Math", "Vec3 Math", "Euler Math", "Physics", "Media Frame"]
 
 
 def register():
