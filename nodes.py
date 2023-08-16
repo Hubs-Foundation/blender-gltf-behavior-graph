@@ -568,7 +568,7 @@ def networkedBehavior_properties_updated(self, context):
         has_prop = self.prop_name in self.target.hubs_component_networked_behavior.props_list
         prop_type = self.target.hubs_component_networked_behavior.props_list[self.prop_name].type if has_prop else "None"
 
-        for socket_id in ["boolean", "float", "int", "string", "vec3"]:
+        for socket_id in ["boolean", "float", "integer", "string", "vec3"]:
             if socket_id in self.inputs:
                 self.inputs[socket_id].hide = not prop_type or prop_type != socket_id
             if socket_id in self.outputs:
@@ -612,7 +612,7 @@ class BGNode_networkedVariable_set(BGActionNode, BGNode, Node):
         self.inputs['boolean'].hide = True
         self.inputs.new("NodeSocketFloat", "float")
         self.inputs['float'].hide = True
-        self.inputs.new("NodeSocketInt", "int")
+        self.inputs.new("NodeSocketInt", "integer")
         self.inputs['int'].hide = True
         self.inputs.new("NodeSocketString", "string")
         self.inputs['string'].hide = True
@@ -658,7 +658,7 @@ class BGNode_networkedVariable_get(BGNode, Node):
         self.outputs['boolean'].hide = True
         self.outputs.new("NodeSocketFloat", "float")
         self.outputs['float'].hide = True
-        self.outputs.new("NodeSocketInt", "int")
+        self.outputs.new("NodeSocketInt", "integer")
         self.outputs['int'].hide = True
         self.outputs.new("NodeSocketString", "string")
         self.outputs['string'].hide = True
