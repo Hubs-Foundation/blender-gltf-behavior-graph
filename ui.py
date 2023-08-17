@@ -1,7 +1,6 @@
 import bpy
 from bpy.types import PropertyGroup, NodeTree
 from bpy.props import PointerProperty, CollectionProperty, IntProperty, EnumProperty, StringProperty, FloatProperty, BoolProperty, FloatVectorProperty
-import uuid
 from bpy.app.handlers import persistent
 
 original_NODE_HT_header_draw = bpy.types.NODE_HT_header.draw
@@ -122,7 +121,6 @@ class BGAddSlot(bpy.types.Operator):
     def execute(self, context):
         target = context.target
         new_slot = target.bg_slots.add()
-        new_slot.name = str(uuid.uuid1())
         target.bg_active_slot_idx = len(target.bg_slots) - 1
 
         return {'FINISHED'}
@@ -408,7 +406,6 @@ def bg_active_slot_update(self, context):
             self.bg_slots[self.bg_active_slot_idx].graph = self.bg_active_graph
     elif self.bg_active_graph:
         new_slot = self.bg_slots.add()
-        new_slot.name = str(uuid.uuid1())
         new_slot.graph = self.bg_active_graph
         idx = indexForBGItem(self.bg_slots, self.bg_active_graph)
         self.bg_active_slot_idx = idx
@@ -416,16 +413,6 @@ def bg_active_slot_update(self, context):
 
 class BGItem(PropertyGroup):
     graph: PointerProperty(type=NodeTree)
-
-
-@persistent
-def load_post(dummy):
-    for scene in bpy.data.scenes:
-        for slot in scene.bg_slots:
-            slot.name = str(uuid.uuid1())
-    for object in bpy.data.objects:
-        for slot in object.bg_slots:
-            slot.name = str(uuid.uuid1())
 
 
 def register():
@@ -479,9 +466,6 @@ def register():
 
     bpy.types.NODE_HT_header.draw = draw_header
 
-    if load_post not in bpy.app.handlers.load_post:
-        bpy.app.handlers.load_post.append(load_post)
-
 
 def unregister():
     bpy.utils.unregister_class(BGNew)
@@ -513,6 +497,3 @@ def unregister():
     bpy.utils.unregister_class(BGItem)
 
     bpy.types.NODE_HT_header.draw = original_NODE_HT_header_draw
-
-    if load_post in bpy.app.handlers.load_post:
-        bpy.app.handlers.load_post.remove(load_post)

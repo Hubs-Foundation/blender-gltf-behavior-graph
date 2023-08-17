@@ -671,7 +671,7 @@ def gather_events_and_variables(slots, export_settings):
     return (events, variables)
 
 
-def gather_nodes(slot, export_settings, events, variables):
+def gather_nodes(ob, idx, slot, export_settings, events, variables):
     from .sockets import BGFlowSocket, BGHubsEntitySocket
     from .nodes import BGNode, BGNode_variable_set, BGNode_variable_get, BGNode_customEvent_trigger, BGNode_customEvent_onTriggered
 
@@ -681,8 +681,9 @@ def gather_nodes(slot, export_settings, events, variables):
         if not isinstance(node, BGNode):
             continue
 
+        prefix = f"{ob.name}_{slot.graph.name}_{idx}"
         node_data = {
-            "id": f"{slot.name}_{node.name}",
+            "id": f"{prefix}_{node.name}",
             "type": node.node_type,
             "parameters": {},
             "configuration": {},
@@ -693,7 +694,7 @@ def gather_nodes(slot, export_settings, events, variables):
             if isinstance(output_socket, BGFlowSocket) and output_socket.is_linked:
                 link = resolve_output_link(output_socket)
                 node_data["flows"][output_socket.identifier] = {
-                    "nodeId": f"{slot.name}_{link.to_node.name}",
+                    "nodeId": f"{prefix}_{link.to_node.name}",
                     "socket": link.to_socket.identifier
                 }
 
@@ -706,7 +707,7 @@ def gather_nodes(slot, export_settings, events, variables):
                     link = resolve_input_link(input_socket)
                     node_data["parameters"][input_socket.identifier] = {
                         "link": {
-                            "nodeId": f"{slot.name}_{link.from_node.name}",
+                            "nodeId": f"{prefix}_{link.from_node.name}",
                             "socket": link.from_socket.identifier
                         }
                     }
@@ -768,7 +769,7 @@ class glTF2ExportUserExtension:
         # This is a hack to allow multi-graph while we have proper per gltf node graph support
         slots = []
         for ob in list(bpy.data.scenes) + list(bpy.data.objects):
-            slots.extend(list(map(lambda slot: slot, ob.bg_slots)))
+            slots.append({"ob": ob, "slots": list(ob.bg_slots)})
 
         glob_events, glob_variables = gather_events_and_variables(slots, export_settings)
 
@@ -780,8 +781,12 @@ class glTF2ExportUserExtension:
             customEvents.append(glob_events[event])
 
         nodes = []
-        for slot in slots:
-            nodes.extend(gather_nodes(slot, export_settings, glob_events, glob_variables))
+        for item in slots:
+            ob = item["ob"]
+            slots = item["slots"]
+            for slot in slots:
+                idx = slots.index(slot)
+                nodes.extend(gather_nodes(ob, idx, slot, export_settings, glob_events, glob_variables))
 
         if nodes:
             if gltf2_object.extensions is None:
