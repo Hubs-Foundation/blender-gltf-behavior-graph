@@ -613,7 +613,7 @@ class BGNode_networkedVariable_set(BGActionNode, BGNode, Node):
         self.inputs.new("NodeSocketFloat", "float")
         self.inputs['float'].hide = True
         self.inputs.new("NodeSocketInt", "integer")
-        self.inputs['int'].hide = True
+        self.inputs['integer'].hide = True
         self.inputs.new("NodeSocketString", "string")
         self.inputs['string'].hide = True
         self.inputs.new("NodeSocketVectorXYZ", "vec3")
@@ -659,7 +659,7 @@ class BGNode_networkedVariable_get(BGNode, Node):
         self.outputs.new("NodeSocketFloat", "float")
         self.outputs['float'].hide = True
         self.outputs.new("NodeSocketInt", "integer")
-        self.outputs['int'].hide = True
+        self.outputs['integer'].hide = True
         self.outputs.new("NodeSocketString", "string")
         self.outputs['string'].hide = True
         self.outputs.new("NodeSocketVectorXYZ", "vec3")
