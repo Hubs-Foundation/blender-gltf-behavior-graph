@@ -154,7 +154,6 @@ GLOBAL_VARIABLES_TYPES = [
     ("string", "String", "String"),
     ("vec3", "Vector3", "Vector3"),
     ("animationAction", "Action", "Action"),
-    ("player", "Player", "Player"),
     ("entity", "Entity", "Entity"),
     ("color", "Color", "Color"),
 ]
@@ -240,6 +239,8 @@ class BGGlobalVariableType(PropertyGroup):
         max=1
     )
 
+    defaultEntity: PointerProperty(name="default", type=bpy.types.Object)
+
 
 class BGGlobalVariableAdd(bpy.types.Operator):
     bl_idname = "ui.bg_add_global_variable"
@@ -293,6 +294,8 @@ class BGGlobalVariablesList(bpy.types.UIList):
             split.prop(item, "defaultAnimationAction", text="", emboss=True, icon='NONE')
         elif item.type == "color":
             split.prop(item, "defaultColor", text="", emboss=True, icon='NONE')
+        elif item.type == "entity":
+            split.prop(item, "defaultEntity", text="", emboss=True, icon='NONE')
 
 
 class BGCustomEventType(PropertyGroup):
