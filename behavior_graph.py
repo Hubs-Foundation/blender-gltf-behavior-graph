@@ -357,11 +357,6 @@ all_classes = [
     BGNode_networkedVariable_get,
     BGNode_networkedVariable_set,
 
-    # BGNode_media_onCreate,
-    # BGNode_media_onPlay,
-    # BGNode_media_onPause,
-    # BGNode_media_onEnd,
-    # BGNode_media_onDestroy,
     BGNode_media_onMediaEvent,
 
     NODE_MT_behavior_graphs_subcategory_Media,
