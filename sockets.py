@@ -2,6 +2,7 @@ import bpy
 from bpy.props import StringProperty, PointerProperty
 from bpy.types import NodeSocketStandard, NodeSocketInterface, NodeSocketString, NodeSocketInterfaceString
 from io_hubs_addon.components.utils import has_component
+from .utils import gather_object_property
 
 
 class BGFlowSocket(NodeSocketStandard):
@@ -20,12 +21,12 @@ class BGFlowSocket(NodeSocketStandard):
 
     @classmethod
     def create(cls, target, name="flow"):
-        node = target.new(cls.bl_rna.name, name)
-        node.display_shape = "DIAMOND"
-        if node.is_output:
-            node.link_limit = 1
+        socket = target.new(cls.bl_rna.name, name)
+        socket.display_shape = "DIAMOND"
+        if socket.is_output:
+            socket.link_limit = 1
         else:
-            node.link_limit = 0
+            socket.link_limit = 0
 
 
 class BGHubsEntitySocketInterface(NodeSocketInterface):
@@ -54,6 +55,14 @@ class BGHubsEntitySocket(NodeSocketStandard):
         poll=filter_on_component
     )
 
+    entity_type: bpy.props.EnumProperty(
+        name="",
+        description="Target Entity",
+        items=[("self", "Self", "Self"), ("other", "Other", "Other")],
+        options={'HIDDEN'},
+        default=0
+    )
+
     component: bpy.props.StringProperty(
         name="Component",
         description="Component",
@@ -65,10 +74,21 @@ class BGHubsEntitySocket(NodeSocketStandard):
         if self.is_output or self.is_linked:
             layout.label(text=text)
         else:
-            layout.prop(self, "target", text=text)
+            col = layout.column()
+            col.prop(self, "entity_type")
+            if self.entity_type != "self":
+                col.prop(self, "target", text=text)
 
     def draw_color(self, context, node):
         return (0.2, 1.0, 0.2, 1.0)
+
+    def gather_parameters(self, ob, export_settings):
+        if not self.target:
+            return {
+                "value": gather_object_property(export_settings, ob)}
+        else:
+            return {
+                "value": gather_object_property(export_settings, self.target)}
 
 
 def get_choices(self, context):

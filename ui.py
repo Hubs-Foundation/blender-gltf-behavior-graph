@@ -146,6 +146,26 @@ class BGObjectPanel(bpy.types.Panel):
         row.context_pointer_set("target", context.object)
         row.template_ID(context.object, "bg_active_graph", new=BGNew.bl_idname, unlink=BGRemove.bl_idname)
 
+        row = layout.row()
+        row.label(text="Global Variables:")
+        row = layout.row()
+        row.template_list(BGGlobalVariablesList.bl_idname, "", context.object,
+                          "bg_global_variables", context.object, "bg_active_global_variable_idx", rows=5)
+        col = row.column(align=True)
+        col.context_pointer_set('target', context.object)
+        col.operator(BGGlobalVariableAdd.bl_idname, icon='ADD', text="")
+        col.operator(BGGlobalVariableRemove.bl_idname, icon='REMOVE', text="")
+
+        row = layout.row()
+        row.label(text="Custom Events:")
+        row = layout.row()
+        row.template_list(BGCustomEventsList.bl_idname, "", context.object,
+                          "bg_custom_events", context.object, "bg_active_custom_event_idx", rows=5)
+        col = row.column(align=True)
+        col.context_pointer_set('target', context.object)
+        col.operator(BGCustomEventAdd.bl_idname, icon='ADD', text="")
+        col.operator(BGCustomEventRemove.bl_idname, icon='REMOVE', text="")
+
 
 GLOBAL_VARIABLES_TYPES = [
     ("boolean", "Boolean", "Boolean"),
@@ -442,6 +462,17 @@ def register():
         description="Active BG index",
         update=bg_active_slot_idx_update,
         default=-1)
+    bpy.types.Object.bg_global_variables = CollectionProperty(type=BGGlobalVariableType)
+    bpy.types.Object.bg_active_global_variable_idx = IntProperty(
+        name="Active Global Object Variable index",
+        description="Active Global Object Variable index",
+        default=-1)
+    bpy.types.Object.bg_custom_events = CollectionProperty(type=BGCustomEventType)
+    bpy.types.Object.bg_active_custom_event_idx = IntProperty(
+        name="Active Custom Event index",
+        description="Active Custom Event index",
+        default=-1)
+
     bpy.types.Scene.bg_slots = CollectionProperty(type=BGItem)
     bpy.types.Scene.bg_active_graph = PointerProperty(type=NodeTree, update=bg_active_slot_update)
     bpy.types.Scene.bg_active_slot_idx = IntProperty(
@@ -454,13 +485,11 @@ def register():
         items=[("OBJECT", "Object", "Object"),
                ("SCENE", "Scene", "Scene")],
         default="SCENE")
-
     bpy.types.Scene.bg_global_variables = CollectionProperty(type=BGGlobalVariableType)
     bpy.types.Scene.bg_active_global_variable_idx = IntProperty(
         name="Active Global Variable index",
         description="Active Global Variable index",
         default=-1)
-
     bpy.types.Scene.bg_custom_events = CollectionProperty(type=BGCustomEventType)
     bpy.types.Scene.bg_active_custom_event_idx = IntProperty(
         name="Active Custom Event index",
@@ -489,6 +518,8 @@ def unregister():
     del bpy.types.Object.bg_slots
     del bpy.types.Object.bg_active_graph
     del bpy.types.Object.bg_active_slot_idx
+    del bpy.types.Object.bg_global_variables
+    del bpy.types.Object.bg_active_global_variable_idx
     del bpy.types.Scene.bg_slots
     del bpy.types.Scene.bg_active_graph
     del bpy.types.Scene.bg_active_slot_idx

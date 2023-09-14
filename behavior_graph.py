@@ -1,15 +1,14 @@
 from .sockets import *
 from .nodes import *
 import json
-from io_scene_gltf2.io.com.gltf2_io_constants import TextureFilter, TextureWrap
-from io_scene_gltf2.io.com import gltf2_io
 import bpy
 import os
 from bpy.props import StringProperty
-from bpy.types import Node, NodeTree, NodeSocket, NodeReroute, NodeSocketString
+from bpy.types import Node, NodeTree, NodeReroute, NodeSocketString
 from bpy.utils import register_class, unregister_class
 from nodeitems_utils import NodeCategory, NodeItem, register_node_categories, unregister_node_categories
-from io_hubs_addon.io.utils import gather_property, gather_image, gather_vec_property, gather_color_property
+from io_hubs_addon.io.utils import gather_property, gather_vec_property, gather_color_property
+from .utils import get_socket_value, type_to_socket, resolve_input_link, resolve_output_link
 
 auto_casts = {
     ("BGHubsEntitySocket", "NodeSocketString"): "BGNode_hubs_entity_toString",
@@ -312,13 +311,6 @@ behavior_graph_node_categories = {
         BGSubcategory(f"BEHAVIOR_GRAPH_Subcategory_Float_Math", label="Float Math"),
         BGSubcategory(f"BEHAVIOR_GRAPH_Subcategory_Vec3_Math", label="Vec3 Math"),
         BGSubcategory(f"BEHAVIOR_GRAPH_Subcategory_Euler_Math", label="Euler Math")
-    ],
-    "Media": [
-        # NodeItem("BGNode_media_onCreate"),
-        # NodeItem("BGNode_media_onPlay"),
-        # NodeItem("BGNode_media_onPause"),
-        # NodeItem("BGNode_media_onEnd"),
-        # NodeItem("BGNode_media_onDestroy"),
     ]
 }
 
@@ -379,41 +371,6 @@ all_classes = [
 hardcoded_nodes = {
     node.node_type for node in all_classes if hasattr(node, "node_type")}
 
-type_to_socket = {
-    "float": "NodeSocketFloat",
-    "integer": "NodeSocketInt",
-    "boolean": "NodeSocketBool",
-    "entity": "BGHubsEntitySocket",
-    "flow": "BGFlowSocket",
-    "string": "NodeSocketString",
-    "vec3": "NodeSocketVectorXYZ",
-    "euler": "NodeSocketVectorEuler",
-    "animationAction": "BGHubsAnimationActionSocket",
-    "player": "BGHubsPlayerSocket",
-    "material": "NodeSocketMaterial",
-    "texture": "NodeSocketTexture",
-    "color": "NodeSocketColor"
-}
-
-socket_to_type = {
-    "NodeSocketFloat": "float",
-    "NodeSocketInt": "integer",
-    "NodeSocketBool": "boolean",
-    "BGHubsEntitySocket": "entity",
-    "BGFlowSocket": "flow",
-    "NodeSocketString": "string",
-    "NodeSocketVector": "vec3",
-    "NodeSocketVectorXYZ": "vec3",
-    "NodeSocketMaterial": "material",
-    "NodeSocketTexture": "texture",
-    "NodeSocketColor": "color",
-    "NodeSocketVectorEuler": "euler",
-    "BGHubsAnimationActionSocket": "animationAction",
-    "BGEnumSocket": "string",
-    "BGHubsPlayerSocket": "player",
-    "BGCustomEventSocket": "string"
-}
-
 category_colors = {
     "Event":  (0.6, 0.2, 0.2),
     "Flow":  (0.2, 0.2, 0.2),
@@ -453,7 +410,10 @@ def create_node_class(node_data):
                         choice.value = choice_data["value"]
                 else:
                     socket_type = type_to_socket[input_data["valueType"]]
-                    sock = self.inputs.new(socket_type, input_data["name"])
+                    if socket_type == "BGFlowSocket":
+                        sock = BGFlowSocket.create(self.inputs, input_data["name"])
+                    else:
+                        sock = self.inputs.new(socket_type, input_data["name"])
 
                 if "defaultValue" in input_data:
                     if (input_data["valueType"] == 'vec3' or input_data["valueType"] == "euler"):
@@ -467,7 +427,10 @@ def create_node_class(node_data):
 
             for output_data in node_data["outputs"]:
                 socket_type = type_to_socket[output_data["valueType"]]
-                sock = self.outputs.new(socket_type, output_data["name"])
+                if socket_type == "BGFlowSocket":
+                    sock = BGFlowSocket.create(self.outputs, output_data["name"])
+                else:
+                    sock = self.outputs.new(socket_type, output_data["name"])
                 if (output_data["valueType"] != 'vec3' and output_data["valueType"] != "euler") and "defaultValue" in output_data:
                     sock.default_value = output_data["defaultValue"]
                 if "description" in output_data:
@@ -503,138 +466,8 @@ def read_nodespec(filename):
                     NodeItem(node_class.__name__))
 
 
-def resolve_input_link(input_socket: bpy.types.NodeSocket) -> bpy.types.NodeLink:
-    while isinstance(input_socket.links[0].from_node, bpy.types.NodeReroute):
-        input_socket = input_socket.links[0].from_node.inputs[0]
-    return input_socket.links[0]
-
-
-def resolve_output_link(output_socket: bpy.types.NodeSocket) -> bpy.types.NodeLink:
-    while isinstance(output_socket.links[0].to_node, bpy.types.NodeReroute):
-        output_socket = output_socket.links[0].to_node.outputs[0]
-    return output_socket.links[0]
-
-
-if bpy.app.version >= (3, 6, 0):
-    from io_scene_gltf2.blender.exp.material import gltf2_blender_gather_materials
-else:
-    from io_scene_gltf2.blender.exp import gltf2_blender_gather_materials
-
-
-def gather_material_property(export_settings, blender_object, target, property_name):
-    blender_material = getattr(target, property_name)
-    if blender_material:
-        material = gltf2_blender_gather_materials.gather_material(
-            blender_material, -1, export_settings)
-        return {
-            "__mhc_link_type": "material",
-            "index": material
-        }
-    else:
-        return None
-
-
-def __gather_mag_filter(blender_shader_node, export_settings):
-    if blender_shader_node.use_interpolation:
-        return TextureFilter.Linear
-    return TextureFilter.Nearest
-
-
-def __gather_min_filter(blender_shader_node, export_settings):
-    if blender_shader_node.use_interpolation:
-        if blender_shader_node.use_mipmap:
-            return TextureFilter.LinearMipmapLinear
-        else:
-            return TextureFilter.Linear
-    if blender_shader_node.use_mipmap:
-        return TextureFilter.NearestMipmapNearest
-    else:
-        return TextureFilter.Nearest
-
-
-def __gather_wrap(blender_shader_node, export_settings):
-    # First gather from the Texture node
-    if blender_shader_node.extension == 'EXTEND':
-        wrap_s = TextureWrap.ClampToEdge
-    elif blender_shader_node.extension == 'CLIP':
-        # Not possible in glTF, but ClampToEdge is closest
-        wrap_s = TextureWrap.ClampToEdge
-    elif blender_shader_node.extension == 'MIRROR':
-        wrap_s = TextureWrap.MirroredRepeat
-    else:
-        wrap_s = TextureWrap.Repeat
-    wrap_t = wrap_s
-
-    # Omit if both are repeat
-    if (wrap_s, wrap_t) == (TextureWrap.Repeat, TextureWrap.Repeat):
-        wrap_s, wrap_t = None, None
-
-    return wrap_s, wrap_t
-
-
-def gather_texture_property(export_settings, blender_object, target, property_name):
-    blender_texture = getattr(target, property_name)
-
-    wrap_s, wrap_t = __gather_wrap(blender_texture, export_settings)
-    sampler = gltf2_io.Sampler(
-        extensions=None,
-        extras=None,
-        mag_filter=__gather_mag_filter(blender_texture, export_settings),
-        min_filter=__gather_min_filter(blender_texture, export_settings),
-        name=None,
-        wrap_s=wrap_s,
-        wrap_t=wrap_t,
-    )
-
-    if blender_texture:
-        texture = gltf2_io.Texture(
-            extensions=None,
-            extras=None,
-            name=blender_texture.name,
-            sampler=sampler,
-            source=gather_image(blender_texture.image, export_settings)
-        )
-        return {
-            "__mhc_link_type": "texture",
-            "index": texture
-        }
-    else:
-        return None
-
-
-def get_socket_value(export_settings, socket: NodeSocket):
-    if hasattr(socket, "bl_socket_idname"):
-        socket_idname = socket.bl_socket_idname
-    else:
-        socket_idname = socket.bl_idname
-
-    socket_type = socket_to_type[socket_idname]
-
-    if socket_idname == "BGEnumSocket":
-        return socket.default_value
-    if socket_idname == "BGCustomEventSocket":
-        return socket.name
-    if socket_type == "entity":
-        return gather_property(export_settings, socket, socket, "target")
-    elif socket_type == "material":
-        return gather_material_property(export_settings, socket, socket, "default_value")
-    elif socket_type == "texture":
-        return gather_texture_property(export_settings, socket, socket, "default_value")
-    elif socket_type == "color":
-        return gather_color_property(export_settings, socket, socket, "default_value", "COLOR_GAMMA")
-    elif socket_type == "vec3":
-        return gather_vec_property(export_settings, socket, socket, "default_value")
-    elif hasattr(socket, "default_value"):
-        return gather_property(export_settings, socket, socket, "default_value")
-    else:
-        return None
-
-
-def gather_events_and_variables(slots, export_settings):
-    events = {}
-    variables = {}
-
-    for var in bpy.context.scene.bg_global_variables:
+def get_object_variables(ob, variables, export_settings):
+    for var in ob.bg_global_variables:
         default = None
         if var.type == "integer":
             default = var.defaultInt
@@ -650,25 +483,42 @@ def gather_events_and_variables(slots, export_settings):
             default = var.defaultAnimationAction
         elif var.type == "color":
             default = gather_color_property(export_settings, var, var, "defaultColor", "COLOR_GAMMA")
-        variables[var.name] = {
-            "name": var.name,
-            "id": list(bpy.context.scene.bg_global_variables).index(var),
+        elif var.type == "entity":
+            default = gather_property(export_settings, var, var, "defaultEntity")
+        variables[f"{ob.name}_{var.name}"] = {
+            "name": f"{ob.name}_{var.name}",
+            "id": len(variables),
             "valueTypeName": var.type,
             "initialValue": default
         }
 
-    for event in bpy.context.scene.bg_custom_events:
-        events[event.name] = {
-            "name": event.name,
-            "id": list(bpy.context.scene.bg_custom_events).index(event)
+
+def get_object_custom_events(ob, events, export_settings):
+    for event in ob.bg_custom_events:
+        events[f"{ob.name}_{event.name}"] = {
+            "name": f"{ob.name}_{event.name}",
+            "id": list(ob.bg_custom_events).index(event)
         }
+
+
+def gather_events_and_variables(slots, export_settings):
+    events = {}
+    variables = {}
+
+    get_object_variables(bpy.context.scene, variables, export_settings)
+    for ob in bpy.context.view_layer.objects:
+        get_object_variables(ob, variables, export_settings)
+
+    get_object_custom_events(bpy.context.scene, events, export_settings)
+    for ob in bpy.context.view_layer.objects:
+        get_object_custom_events(ob, events, export_settings)
 
     return (events, variables)
 
 
 def gather_nodes(ob, idx, slot, export_settings, events, variables):
     from .sockets import BGFlowSocket, BGHubsEntitySocket
-    from .nodes import BGNode, BGNode_variable_set, BGNode_variable_get, BGNode_customEvent_trigger, BGNode_customEvent_onTriggered
+    from .nodes import BGNode
 
     nodes = []
 
@@ -694,55 +544,34 @@ def gather_nodes(ob, idx, slot, export_settings, events, variables):
                 }
 
         for input_socket in node.inputs:
-            if isinstance(input_socket, BGFlowSocket):
-                pass
+            if input_socket.is_linked and not input_socket.hide:
+                link = resolve_input_link(input_socket)
+                node_data["parameters"][input_socket.identifier] = {
+                    "link": {
+                        "nodeId": f"{prefix}_{link.from_node.name}",
+                        "socket": link.from_socket.identifier
+                    }
+                }
+
+            elif hasattr(input_socket, "gather_parameters") and callable(getattr(input_socket, "gather_parameters")):
+                parameters = input_socket.gather_parameters(ob, export_settings)
+                if parameters:
+                    node_data["parameters"].update({input_socket.identifier: parameters})
+
+            elif hasattr(node, "gather_parameters") and callable(getattr(node, "gather_parameters")):
+                parameters = node.gather_parameters(ob, input_socket, export_settings)
+                if parameters:
+                    node_data["parameters"].update({input_socket.identifier: parameters})
 
             else:
-                if input_socket.is_linked:
-                    link = resolve_input_link(input_socket)
-                    node_data["parameters"][input_socket.identifier] = {
-                        "link": {
-                            "nodeId": f"{prefix}_{link.from_node.name}",
-                            "socket": link.from_socket.identifier
-                        }
-                    }
+                value = get_socket_value(ob, export_settings, input_socket)
+                if value:
+                    node_data["parameters"].update({input_socket.identifier: {"value": value}})
 
-                elif isinstance(input_socket, BGHubsEntitySocket):
-                    node_data["parameters"][input_socket.identifier] = {
-                        "value": gather_property(export_settings, input_socket, input_socket, "target")}
-
-                elif isinstance(node, BGNode_networkedVariable_set):
-                    if node.prop_type == input_socket.identifier:
-                        value = get_socket_value(export_settings, input_socket)
-                        node_data["parameters"][node.prop_type] = {
-                            "value": value}
-
-                else:
-                    value = get_socket_value(export_settings, input_socket)
-                    node_data["parameters"][input_socket.identifier] = {
-                        "value": value}
-
-        if isinstance(node, BGNode_variable_get) or isinstance(node, BGNode_variable_set):
-            if node.variableId:
-                if node.variableId == 'None':
-                    print(f'WARNING: variable node: {node.variableId}, id: "None"')
-                else:
-                    print(f'variable node: {node.variableId}, id: {variables[node.variableId]["id"]}')
-                    node_data["configuration"]["variableId"] = variables[node.variableId]["id"]
-
-        elif isinstance(node, BGNode_customEvent_trigger) or isinstance(node, BGNode_customEvent_onTriggered):
-            if node.customEventId:
-                if node.customEventId == 'None':
-                    print(f'WARNING: custom event node: {node.customEventId}, id: "None"')
-                else:
-                    print(f'custom event node: {node.customEventId}, id: {events[node.customEventId]["id"]}')
-                    node_data["configuration"]["customEventId"] = events[node.customEventId]["id"]
-
-        elif hasattr(node, "__annotations__"):
-            for key in node.__annotations__.keys():
-                if not node.is_property_hidden(key):
-                    node_data["configuration"][key] = gather_property(
-                        export_settings, node, node, key)
+        if hasattr(node, "gather_configuration") and callable(getattr(node, "gather_configuration")):
+            configuration = node.gather_configuration(ob, variables, events, export_settings)
+            if configuration:
+                node_data["configuration"] = configuration
 
         nodes.append(node_data)
 
@@ -763,7 +592,7 @@ class glTF2ExportUserExtension:
 
         # This is a hack to allow multi-graph while we have proper per gltf node graph support
         slots = []
-        for ob in list(bpy.data.scenes) + list(bpy.data.objects):
+        for ob in list(bpy.data.scenes) + list(bpy.context.view_layer.objects):
             slots.append({"ob": ob, "slots": list(ob.bg_slots)})
 
         glob_events, glob_variables = gather_events_and_variables(slots, export_settings)
@@ -780,8 +609,9 @@ class glTF2ExportUserExtension:
             ob = item["ob"]
             slots = item["slots"]
             for slot in slots:
-                idx = slots.index(slot)
-                nodes.extend(gather_nodes(ob, idx, slot, export_settings, glob_events, glob_variables))
+                if slot is not None:
+                    idx = slots.index(slot)
+                    nodes.extend(gather_nodes(ob, idx, slot, export_settings, glob_events, glob_variables))
 
         if nodes:
             if gltf2_object.extensions is None:

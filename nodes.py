@@ -1,9 +1,11 @@
 import bpy
-from bpy.props import PointerProperty
+from bpy.props import PointerProperty, StringProperty
 from bpy.types import Node
 from io_hubs_addon.components.utils import has_component
 from io_hubs_addon.components.definitions import text, video, audio, media_frame
 from .components import networked_animation, networked_behavior, networked_transform, rigid_body, physics_shape
+from io_hubs_addon.io.utils import gather_property
+from .utils import gather_object_property, get_socket_value
 
 
 class BGNode():
@@ -36,6 +38,56 @@ class BGActionNode():
         BGFlowSocket.create(self.outputs)
 
 
+def entity_poll(self, ob):
+    result = True
+    if hasattr(self, "poll_components"):
+        components = self.poll_components.split(",")
+        for component in components:
+            result = result and has_component(ob, component)
+    return result
+
+
+class BGEntityPropertyNode():
+    entity_type: bpy.props.EnumProperty(
+        name="",
+        description="Target Entity",
+        items=[("self", "Self", "Self"), ("other", "Other", "Other")],
+        default=0
+    )
+
+    target: PointerProperty(
+        name="Target",
+        type=bpy.types.Object,
+        poll=entity_poll
+    )
+
+    def draw_buttons(self, context, layout):
+        layout.prop(self, "entity_type")
+        if self.entity_type != "self":
+            layout.prop(self, "target")
+
+    def gather_configuration(self, ob, variables, events, export_settings):
+        from .behavior_graph import gather_object_property
+        target = ob if self.entity_type == "self" else self.target
+        return {
+            "target": gather_object_property(export_settings, target)
+        }
+
+    def gather_parameters(self, ob, input_socket, export_settings):
+        if not self.target:
+            return {
+                "value": gather_object_property(export_settings, ob)}
+        else:
+            return {
+                "value": gather_object_property(export_settings, input_socket.target)}
+
+    def get_target(self):
+        return self.target
+
+    def get_entity_type(self):
+        return self.entity_type
+
+
 entity_property_settings = {
     "visible": ("NodeSocketBool", False),
     "position": ("NodeSocketVectorXYZ", [0.0, 0.0, 0.0]),
@@ -47,6 +99,12 @@ entity_property_settings = {
 def update_target_property(self, context):
     if self.inputs and len(self.inputs) > 2:
         self.outputs.remove(self.inputs[2])
+
+    # context can be null here sometimes so using the global context
+    entity_type = self.inputs.get("entity").entity_type
+    if entity_type == "self" and bpy.context.scene.bg_node_type == 'SCENE':
+        return
+
     setattr(self, "node_type",  "hubs/entity/set/" + self.targetProperty)
     (socket_type,
      default_value) = entity_property_settings[self.targetProperty]
@@ -78,131 +136,91 @@ class BGHubsSetEntityProperty(BGActionNode, BGNode, Node):
         update_target_property(self, context)
 
     def draw_buttons(self, context, layout):
-        layout.prop(self, "targetProperty")
+        entity_type = self.inputs.get("entity").entity_type
+        if (entity_type == "self" and context.scene.bg_node_type != 'SCENE') or entity_type != "self":
+            layout.prop(self, "targetProperty")
 
 
-class BGNode_hubs_onInteract(BGEventNode, BGNode, Node):
+class BGNode_hubs_onInteract(BGEventNode, BGEntityPropertyNode, BGNode, Node):
     bl_label = "On Interact"
     node_type = "hubs/onInteract"
 
-    target: PointerProperty(
-        name="Target",
-        type=bpy.types.Object,
-        # poll=filter_on_component
-    )
-
     def init(self, context):
         super().init(context)
         self.outputs.new("BGHubsEntitySocket", "entity")
 
-    def draw_buttons(self, context, layout):
-        layout.prop(self, "target")
 
-
-def has_collider(self, ob):
-    return has_component(ob, "physics-shape")
-
-
-class BGNode_hubs_onCollisionEnter(BGEventNode, BGNode, Node):
+class BGNode_hubs_onCollisionEnter(BGEventNode, BGEntityPropertyNode, BGNode, Node):
     bl_label = "On Collision Enter"
     node_type = "hubs/onCollisionEnter"
 
-    target: PointerProperty(
-        name="Target", type=bpy.types.Object, poll=has_collider)
+    poll_components: StringProperty(default="physics-shape")
 
     def init(self, context):
         super().init(context)
         self.outputs.new("BGHubsEntitySocket", "entity")
 
-    def draw_buttons(self, context, layout):
-        layout.prop(self, "target")
 
-
-class BGNode_hubs_onCollisionStay(BGEventNode, BGNode, Node):
+class BGNode_hubs_onCollisionStay(BGEventNode, BGEntityPropertyNode, BGNode, Node):
     bl_label = "On Collision Stay"
     node_type = "hubs/onCollisionStay"
 
-    target: PointerProperty(
-        name="Target", type=bpy.types.Object, poll=has_collider)
+    poll_components: StringProperty(default="physics-shape")
 
     def init(self, context):
         super().init(context)
         self.outputs.new("BGHubsEntitySocket", "entity")
 
-    def draw_buttons(self, context, layout):
-        layout.prop(self, "target")
 
-
-class BGNode_hubs_onCollisionExit(BGEventNode, BGNode, Node):
+class BGNode_hubs_onCollisionExit(BGEventNode, BGEntityPropertyNode, BGNode, Node):
     bl_label = "On Collision Exit"
     node_type = "hubs/onCollisionExit"
 
-    target: PointerProperty(
-        name="Target", type=bpy.types.Object, poll=has_collider)
+    poll_components: StringProperty(default="physics-shape")
 
     def init(self, context):
         super().init(context)
         self.outputs.new("BGHubsEntitySocket", "entity")
 
-    def draw_buttons(self, context, layout):
-        layout.prop(self, "target")
 
-
-class BGNode_hubs_onPlayerCollisionEnter(BGEventNode, BGNode, Node):
+class BGNode_hubs_onPlayerCollisionEnter(BGEventNode, BGEntityPropertyNode, BGNode, Node):
     bl_label = "On Player Collision Enter"
     node_type = "hubs/onPlayerCollisionEnter"
 
-    target: PointerProperty(
-        name="Target", type=bpy.types.Object, poll=has_collider)
+    poll_components: StringProperty(default="physics-shape")
 
     def init(self, context):
         super().init(context)
         self.outputs.new("BGHubsPlayerSocket", "player")
 
-    def draw_buttons(self, context, layout):
-        layout.prop(self, "target")
 
-
-class BGNode_hubs_onPlayerCollisionStay(BGEventNode, BGNode, Node):
+class BGNode_hubs_onPlayerCollisionStay(BGEventNode, BGEntityPropertyNode, BGNode, Node):
     bl_label = "On Player Collision Stay"
     node_type = "hubs/onPlayerCollisionStay"
 
-    target: PointerProperty(
-        name="Target", type=bpy.types.Object, poll=has_collider)
+    poll_components: StringProperty(default="physics-shape")
 
     def init(self, context):
         super().init(context)
         self.outputs.new("BGHubsPlayerSocket", "player")
 
-    def draw_buttons(self, context, layout):
-        layout.prop(self, "target")
 
-
-class BGNode_hubs_onPlayerCollisionExit(BGEventNode, BGNode, Node):
+class BGNode_hubs_onPlayerCollisionExit(BGEventNode, BGEntityPropertyNode, BGNode, Node):
     bl_label = "On Player Collision Exit"
     node_type = "hubs/onPlayerCollisionExit"
 
-    target: PointerProperty(
-        name="Target", type=bpy.types.Object, poll=has_collider)
+    poll_components: StringProperty(default="physics-shape")
 
     def init(self, context):
         super().init(context)
         self.outputs.new("BGHubsPlayerSocket", "player")
 
-    def draw_buttons(self, context, layout):
-        layout.prop(self, "target")
 
-
-def has_media(self, ob):
-    return has_component(ob, "video") or has_component(ob, "audio")
-
-
-class BGNode_media_onMediaEvent(BGEventNode, BGNode, Node):
+class BGNode_media_onMediaEvent(BGEventNode, BGEntityPropertyNode, BGNode, Node):
     bl_label = "On Media Event"
     node_type = "media/onMediaEvent"
 
-    target: PointerProperty(
-        name="Target", type=bpy.types.Object, poll=has_media)
+    poll_components: StringProperty(default="video,audio")
 
     def init(self, context):
         self.use_custom_color = True
@@ -216,7 +234,7 @@ class BGNode_media_onMediaEvent(BGEventNode, BGNode, Node):
         self.outputs.new("BGHubsEntitySocket", "entity")
 
     def draw_buttons(self, context, layout):
-        layout.prop(self, "target")
+        super().draw_buttons(context, layout)
 
 
 def update_output_sockets(self, context):
@@ -255,8 +273,10 @@ class BGNode_flow_sequence(BGNode, Node):
 
 def get_available_variables(self, context):
     result = [("None", "None", "None")]
-    for var in context.scene.bg_global_variables:
-        result.append((var.name, var.name, var.name))
+    target = context.scene if self.variableType == "scene" else context.object
+    if target:
+        for var in target.bg_global_variables:
+            result.append((var.name, var.name, var.name))
     return result
 
 
@@ -268,26 +288,31 @@ def update_selected_variable_output(self, context):
     if not context:
         return
 
-    has_var = self.variableName in context.scene.bg_global_variables
-    var_type = context.scene.bg_global_variables.get(self.variableName).type if has_var else "None"
+    target = context.scene if self.variableType == "scene" else context.object
+    has_var = self.variableName in target.bg_global_variables
+    var_type = target.bg_global_variables.get(self.variableName).type if has_var else "None"
 
     # Create a new socket based on the selected variable type
-    from .behavior_graph import type_to_socket
+    from .utils import type_to_socket
     if var_type != "None":
         self.outputs.new(type_to_socket[var_type], "value")
+        if var_type == "entity":
+            self.outputs[0].target = target.bg_global_variables.get(self.variableName).defaultEntity
 
 
 def getVariableId(self):
-    if self.variableName in bpy.context.scene.bg_global_variables:
-        return bpy.context.scene.bg_global_variables.find(self.variableName) + 1
+    target = bpy.context.scene if self.variableType == "scene" else bpy.context.object
+    if target and self.variableName in target.bg_global_variables:
+        return target.bg_global_variables.find(self.variableName) + 1
     return 0
 
 
 def setVariableId(self, value):
-    if value == 0:
+    target = bpy.context.scene if self.variableType == "scene" else bpy.context.object
+    if not target or value == 0:
         self.variableName = 'None'
-    elif value <= len(bpy.context.scene.bg_global_variables):
-        self.variableName = bpy.context.scene.bg_global_variables[value - 1].name
+    elif value <= len(target.bg_global_variables):
+        self.variableName = target.bg_global_variables[value - 1].name
     else:
         self.variableName = 'None'
 
@@ -296,10 +321,16 @@ class BGNode_variable_get(BGNode, Node):
     bl_label = "Get Variable"
     node_type = "variable/get"
 
+    variableType: bpy.props.EnumProperty(
+        name="Variable Type",
+        description="Variable Type",
+        items=[("object", "Object", "Object"), ("scene", "Scene", "Scene")],
+        default="object"
+    )
+
     variableName: bpy.props.StringProperty(
         name="Variable Name",
         description="Variable Name",
-        options={"HIDDEN"},
         default="None"
     )
 
@@ -318,21 +349,34 @@ class BGNode_variable_get(BGNode, Node):
         update_selected_variable_output(self, context)
 
     def draw_buttons(self, context, layout):
+        layout.prop(self, "variableType")
         layout.prop(self, "variableId")
 
     def refresh(self):
-        from .behavior_graph import socket_to_type
-        has_var = self.variableName in bpy.context.scene.bg_global_variables
-        var_type = bpy.context.scene.bg_global_variables.get(self.variableName).type if has_var else "None"
+        from .utils import socket_to_type
+        target = bpy.context.scene if self.variableType == "scene" else bpy.context.object
+        has_var = self.variableName in target.bg_global_variables
+        var_type = target.bg_global_variables.get(self.variableName).type if has_var else "None"
         cur_type = socket_to_type[self.outputs[0].bl_idname] if self.outputs and len(self.outputs) > 0 else 'None'
         if not has_var or var_type != cur_type:
             update_selected_variable_output(self, bpy.context)
-            if bpy.context.scene and len(self.outputs) > 0 and len(self.outputs[0].links) > 0:
-                has_var = self.variableId in bpy.context.scene.bg_global_variables
-                var_type = bpy.context.scene.bg_global_variables.get(
+            if target and len(self.outputs) > 0 and len(self.outputs[0].links) > 0:
+                has_var = self.variableId in target.bg_global_variables
+                var_type = target.bg_global_variables.get(
                     self.variableId).type if has_var else "None"
                 if self.outputs[0] != None and var_type != socket_to_type[self.outputs[0].bl_idname]:
-                    bpy.context.scene.bg_active_graph.links.remove(self.outputs[0].links[0])
+                    target.bg_active_graph.links.remove(self.outputs[0].links[0])
+
+    def gather_configuration(self, ob, variables, events, export_settings):
+        target = bpy.context.scene if self.variableType == "scene" else ob
+        var_name = f"{target.name}_{self.variableName}"
+        if self.variableName == 'None':
+            print(f'WARNING: variable node: {self.variableName}[{var_name}],  id: "None"')
+        else:
+            print(f'variable node: {self.variableName}, id: {variables[var_name]["id"]}')
+            return {
+                "variableId": variables[var_name]["id"]
+            }
 
 
 def update_selected_variable_input(self, context):
@@ -343,11 +387,12 @@ def update_selected_variable_input(self, context):
     if not context:
         return
 
-    has_var = self.variableName in context.scene.bg_global_variables
-    var_type = context.scene.bg_global_variables.get(self.variableName).type if has_var else "None"
+    target = context.scene if self.variableType == "scene" else context.object
+    has_var = self.variableName in target.bg_global_variables
+    var_type = target.bg_global_variables.get(self.variableName).type if has_var else "None"
 
     # Create a new socket based on the selected variable type
-    from .behavior_graph import type_to_socket
+    from .utils import type_to_socket
     if var_type != "None":
         self.inputs.new(type_to_socket[var_type], "value")
 
@@ -356,10 +401,16 @@ class BGNode_variable_set(BGActionNode, BGNode, Node):
     bl_label = "Set Variable"
     node_type = "variable/set"
 
+    variableType: bpy.props.EnumProperty(
+        name="Variable Type",
+        description="Variable Type",
+        items=[("object", "Object", "Object"), ("scene", "Scene", "Scene")],
+        default="object"
+    )
+
     variableName: bpy.props.StringProperty(
         name="Variable Name",
         description="Variable Name",
-        options={"HIDDEN"},
         default="None"
     )
 
@@ -378,10 +429,11 @@ class BGNode_variable_set(BGActionNode, BGNode, Node):
         update_selected_variable_input(self, context)
 
     def draw_buttons(self, context, layout):
+        layout.prop(self, "variableType")
         layout.prop(self, "variableId")
 
     def refresh(self):
-        from .behavior_graph import socket_to_type
+        from .utils import socket_to_type
         has_var = self.variableName in bpy.context.scene.bg_global_variables
         var_type = bpy.context.scene.bg_global_variables.get(self.variableName).type if has_var else "None"
         cur_type = socket_to_type[self.inputs[1].bl_idname] if self.inputs and len(self.inputs) > 1 else 'None'
@@ -394,25 +446,40 @@ class BGNode_variable_set(BGActionNode, BGNode, Node):
                 if self.inputs[1] != None and var_type != socket_to_type[self.inputs[1].bl_idname]:
                     bpy.context.scene.bg_active_graph.links.remove(self.inputs[1].links[0])
 
+    def gather_configuration(self, ob, variables, events, export_settings):
+        target = bpy.context.scene if self.variableType == "scene" else ob
+        var_name = f"{target.name}_{self.variableName}"
+        if self.variableName == 'None':
+            print(f'WARNING: variable node: {self.variableName}[{var_name}],  id: "None"')
+        else:
+            print(f'variable node: {self.variableName}, id: {variables[var_name]["id"]}')
+            return {
+                "variableId": variables[var_name]["id"]
+            }
+
 
 def get_available_custom_events(self, context):
     result = [("None", "None", "None")]
-    for var in context.scene.bg_custom_events:
-        result.append((var.name, var.name, var.name))
+    target = context.scene if self.customEventType == "scene" else context.object
+    if target:
+        for var in target.bg_custom_events:
+            result.append((var.name, var.name, var.name))
     return result
 
 
 def getCustomEventId(self):
-    if self.customEventName in bpy.context.scene.bg_custom_events:
-        return bpy.context.scene.bg_custom_events.find(self.customEventName) + 1
+    target = bpy.context.scene if self.customEventType == "scene" else bpy.context.object
+    if target and self.customEventName in target.bg_custom_events:
+        return target.bg_custom_events.find(self.customEventName) + 1
     return 0
 
 
 def setCustomEventId(self, value):
-    if value == 0:
+    target = bpy.context.scene if self.customEventType == "scene" else bpy.context.object
+    if not target or value == 0:
         self.customEventName = 'None'
-    elif value <= len(bpy.context.scene.bg_custom_events):
-        self.customEventName = bpy.context.scene.bg_custom_events[value - 1].name
+    elif value <= len(target.bg_custom_events):
+        self.customEventName = target.bg_custom_events[value - 1].name
     else:
         self.customEventName = 'None'
 
@@ -421,10 +488,23 @@ class BGNode_customEvent_trigger(BGActionNode, BGNode, Node):
     bl_label = "Trigger"
     node_type = "customEvent/trigger"
 
+    customEventType: bpy.props.EnumProperty(
+        name="Variable Type",
+        description="Variable Type",
+        items=[("object", "Object", "Object"), ("scene", "Scene", "Scene")],
+        default="object"
+    )
+
+    customEventType: bpy.props.EnumProperty(
+        name="Variable Type",
+        description="Variable Type",
+        items=[("object", "Object", "Object"), ("scene", "Scene", "Scene")],
+        default="object"
+    )
+
     customEventName: bpy.props.StringProperty(
         name="Custom Event Name",
         description="Custom Event Name",
-        options={"HIDDEN"},
         default="None"
     )
 
@@ -440,20 +520,38 @@ class BGNode_customEvent_trigger(BGActionNode, BGNode, Node):
         super().init(context)
 
     def draw_buttons(self, context, layout):
+        layout.prop(self, "customEventType")
         layout.prop(self, "customEventId")
 
     def refresh(self):
         self.customEventId = self.customEventId
+
+    def gather_configuration(self, ob, variables, events, export_settings):
+        target = bpy.context.scene if self.customEventType == "scene" else ob
+        event_name = f"{target.name}_{self.customEventName}"
+        if self.customEventName == 'None':
+            print(f'WARNING: custom event node: {self.customEventName}[{event_name}],  id: "None"')
+        else:
+            print(f'custom event node: {self.customEventName}, id: {events[event_name]["id"]}')
+            return {
+                "customEventId": events[event_name]["id"]
+            }
 
 
 class BGNode_customEvent_onTriggered(BGEventNode, BGNode, Node):
     bl_label = "On Trigger"
     node_type = "customEvent/onTriggered"
 
+    customEventType: bpy.props.EnumProperty(
+        name="Variable Type",
+        description="Variable Type",
+        items=[("object", "Object", "Object"), ("scene", "Scene", "Scene")],
+        default="object"
+    )
+
     customEventName: bpy.props.StringProperty(
         name="Custom Event Name",
         description="Custom Event Name",
-        options={"HIDDEN"},
         default="None"
     )
 
@@ -469,56 +567,78 @@ class BGNode_customEvent_onTriggered(BGEventNode, BGNode, Node):
         super().init(context)
 
     def draw_buttons(self, context, layout):
+        layout.prop(self, "customEventType")
         layout.prop(self, "customEventId")
 
     def refresh(self):
         self.customEventId = self.customEventId
 
+    def gather_configuration(self, ob, variables, events, export_settings):
+        target = bpy.context.scene if self.customEventType == "scene" else ob
+        event_name = f"{target.name}_{self.customEventName}"
+        if self.customEventName == 'None':
+            print(f'WARNING: custom event node: {self.customEventName}[{event_name}],  id: "None"')
+        else:
+            print(f'custom event node: {self.customEventName}, id: {events[event_name]["id"]}')
+            return {
+                "customEventId": events[event_name]["id"]
+            }
+
 
 def get_available_networkedBehavior_properties(self, context):
+    target = get_target(self, context)
+
     result = [("None", "None", "None")]
-    if self.target:
-        for prop in self.target.hubs_component_networked_behavior.props_list:
+    if target and hasattr(target, "hubs_component_networked_behavior"):
+        for prop in target.hubs_component_networked_behavior.props_list:
             result.append((prop.name, prop.name, prop.name))
+
     return result
 
 
-def filter_on_networked_behavior(self, ob):
-    from .components.networked_behavior import NetworkedBehavior
-    return has_component(ob, NetworkedBehavior.get_name())
+def get_target(self, context):
+    target = self.inputs.get("entity").target
+    if self.inputs.get("entity").is_linked:
+        link = self.inputs.get("entity").links[0]
+        target = link.from_socket.target
+    else:
+        entity_type = self.inputs.get("entity").entity_type
+        if entity_type == "self":
+            target = context.object if context.scene.bg_node_type == 'OBJECT' else context.scene
+
+    return target
 
 
 def networkedBehavior_properties_updated(self, context):
-    if self.target:
-        has_prop = self.prop_name in self.target.hubs_component_networked_behavior.props_list
-        prop_type = self.target.hubs_component_networked_behavior.props_list[self.prop_name].type if has_prop else "None"
+    target = get_target(self, context)
+    if not target or not hasattr(target, "hubs_component_networked_behavior"):
+        return
 
-        for socket_id in ["boolean", "float", "integer", "string", "vec3"]:
-            if socket_id in self.inputs:
-                self.inputs[socket_id].hide = not prop_type or prop_type != socket_id
-            if socket_id in self.outputs:
-                self.outputs[socket_id].hide = not prop_type or prop_type != socket_id
+    has_prop = self.prop_name in target.hubs_component_networked_behavior.props_list
+    prop_type = target.hubs_component_networked_behavior.props_list[self.prop_name].type if has_prop else "None"
 
-        if self.prop_type != prop_type:
-            for output in self.outputs:
-                for link in output.links:
-                    bpy.context.object.bg_active_graph.links.remove(link)
-            for input in self.inputs:
-                for link in input.links:
-                    bpy.context.object.bg_active_graph.links.remove(link)
+    for socket_id in ["boolean", "float", "integer", "string", "vec3"]:
+        if socket_id in self.inputs:
+            self.inputs[socket_id].hide = not prop_type or prop_type != socket_id
+        if socket_id in self.outputs:
+            self.outputs[socket_id].hide = not prop_type or prop_type != socket_id
 
-        self.prop_type = prop_type
+    if self.prop_type != prop_type and (self.prop_type != "" and self.prop_type != "None"):
+        for output in self.outputs:
+            for link in output.links:
+                bpy.context.object.bg_active_graph.links.remove(link)
+        for input in self.inputs:
+            for link in input.links:
+                bpy.context.object.bg_active_graph.links.remove(link)
+
+    self.prop_type = prop_type
 
 
 class BGNode_networkedVariable_set(BGActionNode, BGNode, Node):
     bl_label = "Networked Variable Set"
     node_type = "networkedVariable/set"
 
-    target: PointerProperty(
-        name="Target",
-        type=bpy.types.Object,
-        poll=filter_on_networked_behavior
-    )
+    poll_components: StringProperty(default="networked-behavior")
 
     prop_name: bpy.props.EnumProperty(
         name="Property",
@@ -533,6 +653,7 @@ class BGNode_networkedVariable_set(BGActionNode, BGNode, Node):
     def init(self, context):
         super().init(context)
         self.color = (0.2, 0.6, 0.2)
+        self.inputs.new("BGHubsEntitySocket", "entity")
         self.inputs.new("NodeSocketBool", "boolean")
         self.inputs['boolean'].hide = True
         self.inputs.new("NodeSocketFloat", "float")
@@ -547,24 +668,32 @@ class BGNode_networkedVariable_set(BGActionNode, BGNode, Node):
         self.inputs['color'].hide = True
 
     def draw_buttons(self, context, layout):
-        layout.prop(self, "target")
-        if self.target:
-            layout.prop(self, "prop_name")
+        layout.prop(self, "prop_name")
 
     def refresh(self):
         if self.prop_name:
             self.prop_name = self.prop_name
+
+    def gather_parameters(self, ob, input_socket, export_settings):
+        if self.prop_type == input_socket.identifier:
+            return {
+                self.prop_type: {
+                    "value": get_socket_value(ob, export_settings, input_socket)
+                }
+            }
+
+    def gather_configuration(self, ob, variables, events, export_settings):
+        return {
+            "prop_name": gather_property(export_settings, self, self, "prop_name"),
+            "prop_type": gather_property(export_settings, self, self, "prop_type")
+        }
 
 
 class BGNode_networkedVariable_get(BGNode, Node):
     bl_label = "Networked Variable Get"
     node_type = "networkedVariable/get"
 
-    target: PointerProperty(
-        name="Target",
-        type=bpy.types.Object,
-        poll=filter_on_networked_behavior
-    )
+    poll_components: StringProperty(default="networked-behavior")
 
     prop_name: bpy.props.EnumProperty(
         name="Property",
@@ -579,6 +708,7 @@ class BGNode_networkedVariable_get(BGNode, Node):
     def init(self, context):
         super().init(context)
         self.color = (0.2, 0.6, 0.2)
+        self.inputs.new("BGHubsEntitySocket", "entity")
         self.outputs.new("NodeSocketBool", "boolean")
         self.outputs['boolean'].hide = True
         self.outputs.new("NodeSocketFloat", "float")
@@ -593,13 +723,25 @@ class BGNode_networkedVariable_get(BGNode, Node):
         self.outputs['color'].hide = True
 
     def draw_buttons(self, context, layout):
-        layout.prop(self, "target")
-        if self.target:
-            layout.prop(self, "prop_name")
+        layout.prop(self, "prop_name")
 
     def refresh(self):
         if self.prop_name:
             self.prop_name = self.prop_name
+
+    def gather_parameters(self, ob, input_socket, export_settings):
+        if self.prop_type == input_socket.identifier:
+            return {
+                self.prop_type: {
+                    "value": get_socket_value(ob, export_settings, input_socket)
+                }
+            }
+
+    def gather_configuration(self, ob, variables, events, export_settings):
+        return {
+            "prop_name": gather_property(export_settings, self, self, "prop_name"),
+            "prop_type": gather_property(export_settings, self, self, "prop_type")
+        }
 
 
 COMPONENTS_FILTER = [
@@ -615,24 +757,40 @@ COMPONENTS_FILTER = [
 ]
 
 
-def map_registry(component):
-    component_name, component_class = component
-    return (component_name,
-            component_class.get_display_name(),
-            component[1].get_display_name()) if component_name in COMPONENTS_FILTER else None
+def get_children(ob):
+    children = []
+    for ob in bpy.context.view_layer.objects:
+        if ob.parent == ob:
+            children.append(ob)
+    return children
+
+
+def get_all_components(ob):
+    items = []
+    items.extend(ob.hubs_component_list.items.keys())
+    for child in get_children(ob):
+        items.extend(child.hubs_component_list.items.keys())
+    return items
 
 
 def getAvailableComponents(self, context):
     from io_hubs_addon.components.components_registry import get_components_registry
     registry = get_components_registry()
-    return map(map_registry, registry.items())
+    components = [("", "None", "None")]
+    target = self.inputs.get("entity").target
+    entity_type = self.inputs.get("entity").entity_type
+    if entity_type == "self":
+        target = context.object if context.scene.bg_node_type == 'OBJECT' else context.scene
+        all_object_components = get_all_components(target)
+    for component_name, component_class in registry.items():
+        if target and component_name in COMPONENTS_FILTER + all_object_components:
+            components.append((component_name, component_class.get_display_name(), component_class.get_display_name()))
+    return components
 
 
 def component_updated(self, context):
-    self.inputs[0].component = self.component_name
-    self.inputs[1].default_value = self.component_name
-    if self.inputs[0].target is not None and not has_component(self.inputs[0].target, self.component_name):
-        self.inputs[0].target = None
+    self.inputs.get("entity").component = self.component_name
+    self.inputs.get("component").default_value = self.component_name
 
 
 class BGNode_get_component(BGNode, Node):
@@ -644,7 +802,6 @@ class BGNode_get_component(BGNode, Node):
         description="Component",
         items=getAvailableComponents,
         update=component_updated,
-        options={"HIDDEN"},
         default=0
     )
 
@@ -653,7 +810,7 @@ class BGNode_get_component(BGNode, Node):
         self.color = (0.2, 0.6, 0.2)
         self.inputs.new("BGHubsEntitySocket", "entity")
         component = self.inputs.new("NodeSocketString", "component")
-        component.hide = False
+        component.hide = True
         self.outputs.new("BGHubsEntitySocket", "entity")
 
     def draw_buttons(self, context, layout):
