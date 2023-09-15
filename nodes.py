@@ -76,10 +76,12 @@ class BGEntityPropertyNode():
     def gather_parameters(self, ob, input_socket, export_settings):
         if not self.target:
             return {
-                "value": gather_object_property(export_settings, ob)}
+                "value": gather_object_property(export_settings, ob)
+            }
         else:
             return {
-                "value": gather_object_property(export_settings, input_socket.target)}
+                "value": gather_object_property(export_settings, input_socket.target)
+            }
 
     def get_target(self):
         return self.target

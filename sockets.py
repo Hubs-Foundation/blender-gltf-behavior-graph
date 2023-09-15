@@ -85,10 +85,12 @@ class BGHubsEntitySocket(NodeSocketStandard):
     def gather_parameters(self, ob, export_settings):
         if not self.target:
             return {
-                "value": gather_object_property(export_settings, ob)}
+                "value": gather_object_property(export_settings, ob)
+            }
         else:
             return {
-                "value": gather_object_property(export_settings, self.target)}
+                "value": gather_object_property(export_settings, self.target)
+            }
 
 
 def get_choices(self, context):

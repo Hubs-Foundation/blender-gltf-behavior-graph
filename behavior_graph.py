@@ -517,7 +517,7 @@ def gather_events_and_variables(slots, export_settings):
 
 
 def gather_nodes(ob, idx, slot, export_settings, events, variables):
-    from .sockets import BGFlowSocket, BGHubsEntitySocket
+    from .sockets import BGFlowSocket
     from .nodes import BGNode
 
     nodes = []
@@ -555,22 +555,22 @@ def gather_nodes(ob, idx, slot, export_settings, events, variables):
 
             elif hasattr(input_socket, "gather_parameters") and callable(getattr(input_socket, "gather_parameters")):
                 parameters = input_socket.gather_parameters(ob, export_settings)
-                if parameters:
+                if parameters != None:
                     node_data["parameters"].update({input_socket.identifier: parameters})
 
             elif hasattr(node, "gather_parameters") and callable(getattr(node, "gather_parameters")):
                 parameters = node.gather_parameters(ob, input_socket, export_settings)
-                if parameters:
+                if parameters != None:
                     node_data["parameters"].update({input_socket.identifier: parameters})
 
             else:
                 value = get_socket_value(ob, export_settings, input_socket)
-                if value:
+                if value != None:
                     node_data["parameters"].update({input_socket.identifier: {"value": value}})
 
         if hasattr(node, "gather_configuration") and callable(getattr(node, "gather_configuration")):
             configuration = node.gather_configuration(ob, variables, events, export_settings)
-            if configuration:
+            if configuration != None:
                 node_data["configuration"] = configuration
 
         nodes.append(node_data)
