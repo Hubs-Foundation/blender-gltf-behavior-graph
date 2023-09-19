@@ -573,6 +573,12 @@ def gather_nodes(ob, idx, slot, export_settings, events, variables):
             if configuration != None:
                 node_data["configuration"] = configuration
 
+        elif hasattr(node, "__annotations__"):
+            for key in node.__annotations__.keys():
+                if not node.is_property_hidden(key):
+                    node_data["configuration"][key] = gather_property(
+                        export_settings, node, node, key)
+
         nodes.append(node_data)
 
     return nodes
