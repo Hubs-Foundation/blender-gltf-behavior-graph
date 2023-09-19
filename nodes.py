@@ -1,11 +1,10 @@
 import bpy
 from bpy.props import PointerProperty, StringProperty
 from bpy.types import Node
-from io_hubs_addon.components.utils import has_component
 from io_hubs_addon.components.definitions import text, video, audio, media_frame
 from .components import networked_animation, networked_behavior, networked_transform, rigid_body, physics_shape
 from io_hubs_addon.io.utils import gather_property
-from .utils import gather_object_property, get_socket_value
+from .utils import gather_object_property, get_socket_value, filter_on_components
 
 
 class BGNode():
@@ -38,15 +37,6 @@ class BGActionNode():
         BGFlowSocket.create(self.outputs)
 
 
-def entity_poll(self, ob):
-    result = True
-    if hasattr(self, "poll_components"):
-        components = self.poll_components.split(",")
-        for component in components:
-            result = result and has_component(ob, component)
-    return result
-
-
 class BGEntityPropertyNode():
     entity_type: bpy.props.EnumProperty(
         name="",
@@ -58,7 +48,7 @@ class BGEntityPropertyNode():
     target: PointerProperty(
         name="Target",
         type=bpy.types.Object,
-        poll=entity_poll
+        poll=filter_on_components
     )
 
     def draw_buttons(self, context, layout):
@@ -640,8 +630,6 @@ class BGNode_networkedVariable_set(BGActionNode, BGNode, Node):
     bl_label = "Networked Variable Set"
     node_type = "networkedVariable/set"
 
-    poll_components: StringProperty(default="networked-behavior")
-
     prop_name: bpy.props.EnumProperty(
         name="Property",
         description="Property",
@@ -656,6 +644,8 @@ class BGNode_networkedVariable_set(BGActionNode, BGNode, Node):
         super().init(context)
         self.color = (0.2, 0.6, 0.2)
         self.inputs.new("BGHubsEntitySocket", "entity")
+        entity = self.inputs.get("entity")
+        entity.poll_components = "networked-behavior"
         self.inputs.new("NodeSocketBool", "boolean")
         self.inputs['boolean'].hide = True
         self.inputs.new("NodeSocketFloat", "float")
@@ -711,6 +701,8 @@ class BGNode_networkedVariable_get(BGNode, Node):
         super().init(context)
         self.color = (0.2, 0.6, 0.2)
         self.inputs.new("BGHubsEntitySocket", "entity")
+        entity = self.inputs.get("entity")
+        entity.poll_components = "networked-behavior"
         self.outputs.new("NodeSocketBool", "boolean")
         self.outputs['boolean'].hide = True
         self.outputs.new("NodeSocketFloat", "float")

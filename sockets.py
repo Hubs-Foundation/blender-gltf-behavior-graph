@@ -2,7 +2,7 @@ import bpy
 from bpy.props import StringProperty, PointerProperty
 from bpy.types import NodeSocketStandard, NodeSocketInterface, NodeSocketString, NodeSocketInterfaceString
 from io_hubs_addon.components.utils import has_component
-from .utils import gather_object_property
+from .utils import gather_object_property, filter_on_components
 
 
 class BGFlowSocket(NodeSocketStandard):
@@ -40,19 +40,13 @@ class BGHubsEntitySocketInterface(NodeSocketInterface):
         return (0.2, 1.0, 0.2, 1.0)
 
 
-def filter_on_component(self, ob):
-    if self.component != "":
-        return has_component(ob, self.component)
-    return True
-
-
 class BGHubsEntitySocket(NodeSocketStandard):
     bl_label = "Hubs Entity"
 
     target: PointerProperty(
         name="Target",
         type=bpy.types.Object,
-        poll=filter_on_component
+        poll=filter_on_components
     )
 
     entity_type: bpy.props.EnumProperty(
@@ -63,7 +57,7 @@ class BGHubsEntitySocket(NodeSocketStandard):
         default=0
     )
 
-    component: bpy.props.StringProperty(
+    poll_components: bpy.props.StringProperty(
         name="Component",
         description="Component",
         options={'HIDDEN'},

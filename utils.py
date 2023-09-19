@@ -2,6 +2,7 @@ from io_hubs_addon.components.components_registry import register_component, unr
 from io_scene_gltf2.io.com.gltf2_io_constants import TextureFilter, TextureWrap
 from io_scene_gltf2.io.com import gltf2_io
 from io_hubs_addon.io.utils import gather_property, gather_image, gather_vec_property, gather_color_property
+from io_hubs_addon.components.utils import has_component
 from bpy.types import NodeSocket
 import bpy
 
@@ -169,6 +170,16 @@ def resolve_output_link(output_socket: bpy.types.NodeSocket) -> bpy.types.NodeLi
     while isinstance(output_socket.links[0].to_node, bpy.types.NodeReroute):
         output_socket = output_socket.links[0].to_node.outputs[0]
     return output_socket.links[0]
+
+
+def filter_on_components(self, ob):
+    if hasattr(self, "poll_components") and self.poll_components:
+        result = False
+        components = self.poll_components.split(",")
+        for component in components:
+            result = result or has_component(ob, component)
+        return result
+    return True
 
 
 type_to_socket = {
