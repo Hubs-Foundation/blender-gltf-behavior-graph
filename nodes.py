@@ -317,6 +317,7 @@ class BGNode_variable_get(BGNode, Node):
         name="Variable Type",
         description="Variable Type",
         items=[("object", "Object", "Object"), ("scene", "Scene", "Scene")],
+        update=update_selected_variable_output,
         default="object"
     )
 
@@ -397,6 +398,7 @@ class BGNode_variable_set(BGActionNode, BGNode, Node):
         name="Variable Type",
         description="Variable Type",
         items=[("object", "Object", "Object"), ("scene", "Scene", "Scene")],
+        update=update_selected_variable_input,
         default="object"
     )
 
