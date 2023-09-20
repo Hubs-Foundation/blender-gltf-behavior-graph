@@ -773,14 +773,14 @@ def getAvailableComponents(self, context):
     from io_hubs_addon.components.components_registry import get_components_registry
     registry = get_components_registry()
     components = [("", "None", "None")]
-    target = self.inputs.get("entity").target
-    entity_type = self.inputs.get("entity").entity_type
-    if entity_type == "self":
-        target = context.object if context.scene.bg_node_type == 'OBJECT' else context.scene
+    target = get_target(self, context)
+    if target:
         all_object_components = get_all_components(target)
-    for component_name, component_class in registry.items():
-        if target and component_name in COMPONENTS_FILTER + all_object_components:
-            components.append((component_name, component_class.get_display_name(), component_class.get_display_name()))
+        for component_name, component_class in registry.items():
+            if target and component_name in all_object_components and component_name in COMPONENTS_FILTER:
+                components.append(
+                    (component_name, component_class.get_display_name(),
+                     component_class.get_display_name()))
     return components
 
 
