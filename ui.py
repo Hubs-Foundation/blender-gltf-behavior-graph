@@ -526,7 +526,7 @@ def unregister():
     del bpy.types.Scene.bg_node_type
     del bpy.types.Scene.bg_global_variables
     del bpy.types.Scene.bg_active_global_variable_idx
-    del bpy.types.Scene.bg_custom_event
+    del bpy.types.Scene.bg_custom_events
     del bpy.types.Scene.bg_active_custom_event_idx
     bpy.utils.unregister_class(BGItem)
 
