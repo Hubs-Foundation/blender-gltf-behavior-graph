@@ -368,8 +368,10 @@ all_classes = [
     NODE_MT_behavior_graphs_subcategory_Physics
 ]
 
+extra_classes = []
+
 hardcoded_nodes = {
-    node.node_type for node in all_classes if hasattr(node, "node_type")}
+    node.node_type for node in all_classes + extra_classes if hasattr(node, "node_type")}
 
 category_colors = {
     "Event":  (0.6, 0.2, 0.2),
@@ -460,7 +462,7 @@ def read_nodespec(filename):
             if not category in behavior_graph_node_categories:
                 behavior_graph_node_categories[category] = []
             node_class = create_node_class(node_spec)
-            all_classes.append(node_class)
+            extra_classes.append(node_class)
             if node_class.__name__ not in FILTERED_NODES:
                 behavior_graph_node_categories[category].append(
                     NodeItem(node_class.__name__))
@@ -654,6 +656,9 @@ def register():
     for cls in all_classes:
         register_class(cls)
 
+    for cls in extra_classes:
+        register_class(cls)
+
     categories = []
     for category, items in behavior_graph_node_categories.items():
         if category not in FILTERED_CATEGORIES:
@@ -663,13 +668,16 @@ def register():
 
 
 def unregister():
-    global behavior_graph_node_categories
     unregister_node_categories("BEHAVIOR_GRAPH_NODES")
+
+    for cls in reversed(extra_classes):
+        unregister_class(cls)
 
     for cls in reversed(all_classes):
         unregister_class(cls)
 
-    del behavior_graph_node_categories
+    behavior_graph_node_categories.clear()
+    extra_classes.clear()
 
 
 if __name__ == "__main__":
