@@ -224,5 +224,6 @@ def do_register(ComponentClass):
 
 
 def do_unregister(ComponentClass):
-    unregister_component(ComponentClass)
-    __components_registry.pop(ComponentClass.get_name())
+    if ComponentClass.is_registered:
+        unregister_component(ComponentClass)
+        __components_registry.pop(ComponentClass.get_name())
