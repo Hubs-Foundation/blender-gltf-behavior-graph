@@ -663,9 +663,10 @@ def register():
 
 
 def unregister():
+    global behavior_graph_node_categories
     unregister_node_categories("BEHAVIOR_GRAPH_NODES")
 
-    for cls in all_classes:
+    for cls in reversed(all_classes):
         unregister_class(cls)
 
     del behavior_graph_node_categories
