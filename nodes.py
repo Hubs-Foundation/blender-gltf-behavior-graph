@@ -671,9 +671,7 @@ class BGNode_networkedVariable_set(BGActionNode, BGNode, Node):
     def gather_parameters(self, ob, input_socket, export_settings):
         if self.prop_type == input_socket.identifier:
             return {
-                self.prop_type: {
-                    "value": get_socket_value(ob, export_settings, input_socket)
-                }
+                "value": get_socket_value(ob, export_settings, input_socket)
             }
 
     def gather_configuration(self, ob, variables, events, export_settings):
@@ -728,9 +726,7 @@ class BGNode_networkedVariable_get(BGNode, Node):
     def gather_parameters(self, ob, input_socket, export_settings):
         if self.prop_type == input_socket.identifier:
             return {
-                self.prop_type: {
-                    "value": get_socket_value(ob, export_settings, input_socket)
-                }
+                "value": get_socket_value(ob, export_settings, input_socket)
             }
 
     def gather_configuration(self, ob, variables, events, export_settings):
