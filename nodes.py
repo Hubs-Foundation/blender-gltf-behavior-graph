@@ -591,14 +591,17 @@ def get_available_networkedBehavior_properties(self, context):
 
 
 def get_target(self, context):
-    target = self.inputs.get("entity").target
-    if self.inputs.get("entity").is_linked:
-        link = self.inputs.get("entity").links[0]
-        target = link.from_socket.target
-    else:
-        entity_type = self.inputs.get("entity").entity_type
-        if entity_type == "self":
-            target = context.object if context.scene.bg_node_type == 'OBJECT' else context.scene
+    target = None
+    entity_socket = self.inputs.get("entity")
+    if entity_socket:
+        target = entity_socket.target
+        if self.inputs.get("entity").is_linked and len(entity_socket.links) > 0:
+            link = entity_socket.links[0]
+            target = link.from_socket.target
+        else:
+            entity_type = entity_socket.entity_type
+            if entity_type == "self":
+                target = context.object if context.scene.bg_node_type == 'OBJECT' else context.scene
 
     return target
 
@@ -736,7 +739,7 @@ class BGNode_networkedVariable_get(BGNode, Node):
         }
 
 
-COMPONENTS_FILTER = [
+SUPPORTED_COMPONENTS = [
     video.Video.get_name(),
     audio.Audio.get_name(),
     text.Text.get_name(),
@@ -757,7 +760,7 @@ def get_children(ob):
     return children
 
 
-def get_all_components(ob):
+def get_object_components(ob):
     items = []
     items.extend(ob.hubs_component_list.items.keys())
     for child in get_children(ob):
@@ -768,15 +771,17 @@ def get_all_components(ob):
 def getAvailableComponents(self, context):
     from io_hubs_addon.components.components_registry import get_components_registry
     registry = get_components_registry()
-    components = [("", "None", "None")]
+    components = [("None", "None", "None")]
+
     target = get_target(self, context)
     if target:
-        all_object_components = get_all_components(target)
+        all_object_components = get_object_components(target)
         for component_name, component_class in registry.items():
-            if target and component_name in all_object_components and component_name in COMPONENTS_FILTER:
+            if target and component_name in all_object_components and component_name in SUPPORTED_COMPONENTS:
                 components.append(
                     (component_name, component_class.get_display_name(),
-                     component_class.get_display_name()))
+                        component_class.get_display_name()))
+
     return components
 
 
@@ -807,3 +812,187 @@ class BGNode_get_component(BGNode, Node):
 
     def draw_buttons(self, context, layout):
         layout.prop(self, "component_name")
+
+
+def getComponentId(self):
+    target = get_target(self, bpy.context)
+    if target:
+        components = [item[0] for item in getAvailableComponents(self, bpy.context)]
+        if target and self.componentName in components:
+            return components.index(self.componentName)
+    return 0
+
+
+def setComponentId(self, value):
+    target = get_target(self, bpy.context)
+    if target:
+        components = [item[0] for item in getAvailableComponents(self, bpy.context)]
+        if not target or value == 0:
+            self.componentName = 'None'
+        elif value <= len(components):
+            self.componentName = components[value]
+        else:
+            self.componentName = 'None'
+    else:
+        self.componentName = 'None'
+
+
+def getAvailableProperties(self, context):
+    from io_hubs_addon.components.components_registry import get_component_by_name
+    getAvailableProperties.cached_enum = [("None", "None", "None")]
+    if self.componentName != "None":
+        component_class = get_component_by_name(self.componentName)
+        for property_name in component_class.get_properties():
+            component_id = component_class.get_id()
+            target = get_target(self, context)
+            if target:
+                component = getattr(target, component_id)
+                property = component.bl_rna.properties[property_name]
+                if not property.is_hidden:
+                    getAvailableProperties.cached_enum.append(
+                        (property.identifier, property.name, property.description))
+    return getAvailableProperties.cached_enum
+
+
+# Bug: https://docs.blender.org/api/current/bpy.props.html#bpy.props.EnumProperty
+# Workaround: https://blender.stackexchange.com/a/216233
+getAvailableProperties.cached_enum = []
+
+
+def get_component_properties(target, componentName):
+    properties = []
+    from io_hubs_addon.components.components_registry import get_component_by_name
+    component_class = get_component_by_name(componentName)
+    if component_class:
+        for property_name in component_class.get_properties():
+            component_id = component_class.get_id()
+            component = getattr(target, component_id)
+            property = component.bl_rna.properties[property_name]
+            if not property.is_hidden:
+                properties.append(property.identifier)
+    return properties
+
+
+def getPropertyId(self):
+    target = get_target(self, bpy.context)
+    if target:
+        properties = get_component_properties(target, self.componentName)
+        if target and self.propertyName in properties and self.componentName != "None" and self.componentName in target.hubs_component_list.items:
+            return properties.index(self.propertyName) + 1
+    return 0
+
+
+def setPropertyId(self, value):
+    target = get_target(self, bpy.context)
+    if target:
+        if self.componentName not in target.hubs_component_list.items:
+            self.propertyName = 'None'
+        else:
+            properties = get_component_properties(target, self.componentName)
+            if not target or value == 0:
+                self.propertyName = 'None'
+            elif value <= len(properties):
+                self.propertyName = properties[value - 1]
+            else:
+                self.propertyName = 'None'
+    else:
+        self.propertyName = 'None'
+
+
+def update_set_component_property_variable_input(self, context):
+    # Remove previous socket
+    if self.inputs and len(self.inputs) > 2:
+        self.inputs.remove(self.inputs[2])
+
+    if not context:
+        return
+
+    target = get_target(self, context)
+    if not target or self.componentName == "None" or self.propertyName == "None" or self.componentName not in target.hubs_component_list.items:
+        return
+
+    properties = get_component_properties(target, self.componentName)
+    if self.propertyName not in properties:
+        return
+
+    from .utils import propToType, type_to_socket
+    from io_hubs_addon.components.components_registry import get_component_by_name
+
+    component_class = get_component_by_name(self.componentName)
+    component_id = component_class.get_id()
+    component = getattr(target, component_id)
+
+    property_definition = component.bl_rna.properties[self.propertyName]
+    var_type = propToType(property_definition)
+
+    # Create a new socket based on the selected variable type
+    if var_type:
+        self.inputs.new(type_to_socket[var_type], var_type)
+        if var_type == "enum":
+            socket = self.inputs.get(var_type)
+            for item in property_definition.enum_items:
+                choice = socket.choices.add()
+                choice.text = item.identifier
+                choice.value = item.name
+
+
+class BGNode_set_component_property(BGActionNode, BGNode, Node):
+    bl_label = "Set Component Property"
+    node_type = "components/setComponentProperty"
+
+    componentId: bpy.props.EnumProperty(
+        name="Component",
+        description="Component",
+        items=getAvailableComponents,
+        update=update_set_component_property_variable_input,
+        get=getComponentId,
+        set=setComponentId,
+        default=0
+    )
+
+    componentName: bpy.props.StringProperty(
+        name="Component Name",
+        description="Component Name",
+        default="None"
+    )
+
+    propertyId: bpy.props.EnumProperty(
+        name="Property",
+        description="Property",
+        items=getAvailableProperties,
+        update=update_set_component_property_variable_input,
+        get=getPropertyId,
+        set=setPropertyId,
+        default=0
+    )
+
+    propertyName: bpy.props.StringProperty(
+        name="Property Name",
+        description="Property Name",
+        default="None"
+    )
+
+    def init(self, context):
+        super().init(context)
+        self.color = (0.2, 0.6, 0.2)
+        self.inputs.new("BGHubsEntitySocket", "entity")
+
+    def draw_buttons(self, context, layout):
+        layout.prop(self, "componentId")
+        layout.prop(self, "propertyId")
+
+    def gather_parameters(self, ob, input_socket, export_settings):
+        from .utils import socket_to_type
+        return {
+            "value": get_socket_value(ob, export_settings, input_socket)
+        }
+
+    def gather_configuration(self, ob, variables, events, export_settings):
+        if len(self.inputs) > 2:
+            from .utils import socket_to_type
+            prop_type = socket_to_type[self.inputs[2].bl_idname]
+            return {
+                "component": gather_property(export_settings, self, self, "componentName"),
+                "property": gather_property(export_settings, self, self, "propertyName"),
+                "type": prop_type
+            }

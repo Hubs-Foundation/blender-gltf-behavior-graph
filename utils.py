@@ -195,7 +195,8 @@ type_to_socket = {
     "player": "BGHubsPlayerSocket",
     "material": "NodeSocketMaterial",
     "texture": "NodeSocketTexture",
-    "color": "NodeSocketColor"
+    "color": "NodeSocketColor",
+    "enum": "BGEnumSocket"
 }
 
 socket_to_type = {
@@ -216,6 +217,29 @@ socket_to_type = {
     "BGHubsPlayerSocket": "player",
     "BGCustomEventSocket": "string"
 }
+
+prop_to_type = {
+    "FloatProperty": "float",
+    "IntProperty": "integer",
+    "BoolProperty": "boolean",
+    "PointerProperty": "entity",
+    "StringProperty": "string",
+    "FloatVectorProperty": "vec3",
+    "EnumProperty": "enum"
+}
+
+
+def propToType(property_definition):
+    prop_type = property_definition.bl_rna.identifier
+    prop_subtype = property_definition.subtype
+    isArray = getattr(property_definition, 'is_array', None)
+    if isArray and property_definition.is_array:
+        if prop_subtype.startswith('COLOR'):
+            return "color"
+        else:
+            return "vec3"
+    elif prop_type in prop_to_type:
+        return prop_to_type[prop_type]
 
 
 def do_register(ComponentClass):

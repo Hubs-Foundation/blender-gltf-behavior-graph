@@ -26,7 +26,7 @@ class RigidBody(HubsComponent):
     }
 
     type: EnumProperty(
-        name="type",
+        name="Body Type",
         description="RigidBody Type",
         items=[("static", "Static", "Will not ever move."),
                ("dynamic", "Dynamic", "Effected by physics and gravity"),

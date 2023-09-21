@@ -2815,6 +2815,30 @@
     "configuration": []
   },
   {
+    "type": "components/setComponentProperty",
+    "category": "Components",
+    "label": "Set Components Property",
+    "inputs": [
+      {
+        "name": "flow",
+        "valueType": "flow"
+      },
+      {
+        "name": "entity",
+        "valueType": "entity",
+        "defaultValue": 0
+      },
+      {}
+    ],
+    "outputs": [
+      {
+        "name": "flow",
+        "valueType": "flow"
+      }
+    ],
+    "configuration": []
+  },
+  {
     "type": "hubs/material/getMap",
     "category": "Materials",
     "label": "Get Material Diffuse Map",
@@ -4851,6 +4875,11 @@
         "valueType": "flow"
       },
       {
+        "name": "entity",
+        "valueType": "entity",
+        "defaultValue": 0
+      },
+      {
         "name": "string",
         "valueType": "string",
         "defaultValue": ""
@@ -4868,7 +4897,13 @@
     "type": "networkedVariable/get",
     "category": "Components",
     "label": "Get",
-    "inputs": [],
+    "inputs": [
+      {
+        "name": "entity",
+        "valueType": "entity",
+        "defaultValue": 0
+      }
+    ],
     "outputs": [
       {
         "name": "string",

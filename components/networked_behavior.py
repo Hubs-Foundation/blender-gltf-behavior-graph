@@ -80,12 +80,15 @@ class NetworkedBehavior(HubsComponent):
     }
 
     props_list: CollectionProperty(
-        type=NetworkedPropertyType)
+        type=NetworkedPropertyType,
+        options={"HIDDEN"}
+    )
 
     active_prop_idx: IntProperty(
         name="Active property index",
         description="Active property index",
-        default=-1
+        default=-1,
+        options={"HIDDEN"}
     )
 
     def draw(self, context, layout, panel):
@@ -99,6 +102,11 @@ class NetworkedBehavior(HubsComponent):
         col.context_pointer_set('hubs_component', self)
         col.operator(NetworkedBehaviorAddProp.bl_idname, icon='ADD', text="")
         col.operator(NetworkedBehaviorRemoveProp.bl_idname, icon='REMOVE', text="")
+
+    def gather(self, export_settings, object):
+        return {
+            "networked-behavior": {}
+        }
 
 
 def register():
