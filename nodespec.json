@@ -2828,12 +2828,35 @@
         "valueType": "entity",
         "defaultValue": 0
       },
-      {}
+      {
+        "name": "string",
+        "valueType": "string",
+        "defaultValue": ""
+      }
     ],
     "outputs": [
       {
         "name": "flow",
         "valueType": "flow"
+      }
+    ],
+    "configuration": []
+  },
+  {
+    "type": "components/getComponentProperty",
+    "category": "Components",
+    "label": "Get Components Property",
+    "inputs": [
+      {
+        "name": "entity",
+        "valueType": "entity",
+        "defaultValue": 0
+      }
+    ],
+    "outputs": [
+      {
+        "name": "string",
+        "valueType": "string"
       }
     ],
     "configuration": []

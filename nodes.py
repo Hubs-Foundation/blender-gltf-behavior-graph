@@ -837,6 +837,32 @@ def setComponentId(self, value):
         self.componentName = 'None'
 
 
+SUPPORTED_PROPERTY_COMPONENTS = [
+    video.Video.get_name(),
+    audio.Audio.get_name(),
+    text.Text.get_name(),
+    rigid_body.RigidBody.get_name(),
+    media_frame.MediaFrame.get_name()
+]
+
+
+def getPropertyComponents(self, context):
+    from io_hubs_addon.components.components_registry import get_components_registry
+    registry = get_components_registry()
+    components = [("None", "None", "None")]
+
+    target = get_target(self, context)
+    if target:
+        all_object_components = get_object_components(target)
+        for component_name, component_class in registry.items():
+            if target and component_name in all_object_components and component_name in SUPPORTED_PROPERTY_COMPONENTS:
+                components.append(
+                    (component_name, component_class.get_display_name(),
+                        component_class.get_display_name()))
+
+    return components
+
+
 def getAvailableProperties(self, context):
     from io_hubs_addon.components.components_registry import get_component_by_name
     getAvailableProperties.cached_enum = [("None", "None", "None")]
@@ -899,7 +925,7 @@ def setPropertyId(self, value):
         self.propertyName = 'None'
 
 
-def update_set_component_property_variable_input(self, context):
+def update_set_component_property(self, context):
     # Remove previous socket
     if self.inputs and len(self.inputs) > 2:
         self.inputs.remove(self.inputs[2])
@@ -927,13 +953,18 @@ def update_set_component_property_variable_input(self, context):
 
     # Create a new socket based on the selected variable type
     if var_type:
-        self.inputs.new(type_to_socket[var_type], var_type)
+        prop_value = getattr(component, self.propertyName)
         if var_type == "enum":
-            socket = self.inputs.get(var_type)
+            self.inputs.new(type_to_socket[var_type], "string")
+            socket = self.inputs.get("string")
             for item in property_definition.enum_items:
                 choice = socket.choices.add()
                 choice.text = item.identifier
                 choice.value = item.name
+        else:
+            self.inputs.new(type_to_socket[var_type], var_type)
+            socket = self.inputs.get(var_type)
+            socket.default_value = prop_value
 
 
 class BGNode_set_component_property(BGActionNode, BGNode, Node):
@@ -943,8 +974,8 @@ class BGNode_set_component_property(BGActionNode, BGNode, Node):
     componentId: bpy.props.EnumProperty(
         name="Component",
         description="Component",
-        items=getAvailableComponents,
-        update=update_set_component_property_variable_input,
+        items=getPropertyComponents,
+        update=update_set_component_property,
         get=getComponentId,
         set=setComponentId,
         default=0
@@ -960,7 +991,7 @@ class BGNode_set_component_property(BGActionNode, BGNode, Node):
         name="Property",
         description="Property",
         items=getAvailableProperties,
-        update=update_set_component_property_variable_input,
+        update=update_set_component_property,
         get=getPropertyId,
         set=setPropertyId,
         default=0
@@ -982,7 +1013,6 @@ class BGNode_set_component_property(BGActionNode, BGNode, Node):
         layout.prop(self, "propertyId")
 
     def gather_parameters(self, ob, input_socket, export_settings):
-        from .utils import socket_to_type
         return {
             "value": get_socket_value(ob, export_settings, input_socket)
         }
@@ -991,6 +1021,104 @@ class BGNode_set_component_property(BGActionNode, BGNode, Node):
         if len(self.inputs) > 2:
             from .utils import socket_to_type
             prop_type = socket_to_type[self.inputs[2].bl_idname]
+            return {
+                "component": gather_property(export_settings, self, self, "componentName"),
+                "property": gather_property(export_settings, self, self, "propertyName"),
+                "type": prop_type
+            }
+
+
+def update_get_component_property(self, context):
+    # Remove previous socket
+    if self.outputs and len(self.outputs) > 1:
+        self.outputs.remove(self.outputs[1])
+
+    if not context:
+        return
+
+    target = get_target(self, context)
+    if not target or self.componentName == "None" or self.propertyName == "None" or self.componentName not in target.hubs_component_list.items:
+        return
+
+    properties = get_component_properties(target, self.componentName)
+    if self.propertyName not in properties:
+        return
+
+    from .utils import propToType, type_to_socket
+    from io_hubs_addon.components.components_registry import get_component_by_name
+
+    component_class = get_component_by_name(self.componentName)
+    component_id = component_class.get_id()
+    component = getattr(target, component_id)
+
+    property_definition = component.bl_rna.properties[self.propertyName]
+    var_type = propToType(property_definition)
+
+    # Create a new socket based on the selected variable type
+    if var_type:
+        prop_value = getattr(component, self.propertyName)
+        if var_type == "enum":
+            self.outputs.new(type_to_socket[var_type], "string")
+            socket = self.outputs.get("string")
+            for item in property_definition.enum_items:
+                choice = socket.choices.add()
+                choice.text = item.identifier
+                choice.value = item.name
+        else:
+            self.outputs.new(type_to_socket[var_type], var_type)
+            socket = self.outputs.get(var_type)
+            socket.default_value = prop_value
+
+
+class BGNode_get_component_property(BGNode, Node):
+    bl_label = "Get Component Property"
+    node_type = "components/getComponentProperty"
+
+    componentId: bpy.props.EnumProperty(
+        name="Component",
+        description="Component",
+        items=getPropertyComponents,
+        update=update_get_component_property,
+        get=getComponentId,
+        set=setComponentId,
+        default=0
+    )
+
+    componentName: bpy.props.StringProperty(
+        name="Component Name",
+        description="Component Name",
+        default="None"
+    )
+
+    propertyId: bpy.props.EnumProperty(
+        name="Property",
+        description="Property",
+        items=getAvailableProperties,
+        update=update_get_component_property,
+        get=getPropertyId,
+        set=setPropertyId,
+        default=0
+    )
+
+    propertyName: bpy.props.StringProperty(
+        name="Property Name",
+        description="Property Name",
+        default="None"
+    )
+
+    def init(self, context):
+        super().init(context)
+        self.color = (0.2, 0.6, 0.2)
+        self.inputs.new("BGHubsEntitySocket", "entity")
+
+    def draw_buttons(self, context, layout):
+        layout.prop(self, "componentId")
+        layout.prop(self, "propertyId")
+
+    def gather_configuration(self, ob, variables, events, export_settings):
+        if len(self.outputs) > 0:
+            from .utils import socket_to_type
+            prop_type = socket_to_type[self.outputs[0].bl_idname]
             return {
                 "component": gather_property(export_settings, self, self, "componentName"),
                 "property": gather_property(export_settings, self, self, "propertyName"),
