@@ -297,6 +297,8 @@ behavior_graph_node_categories = {
         NodeItem("BGNode_flow_sequence"),
     ],
     "Components": [
+        NodeItem("BGNode_set_component_property"),
+        NodeItem("BGNode_get_component_property"),
         BGSubcategory(f"BEHAVIOR_GRAPH_Subcategory_Networked_Behavior", label="Networked Behavior"),
         BGSubcategory(f"BEHAVIOR_GRAPH_Subcategory_Media", label="Media"),
         BGSubcategory(f"BEHAVIOR_GRAPH_Subcategory_Text", label="Text"),
@@ -365,7 +367,10 @@ all_classes = [
     NODE_MT_behavior_graphs_subcategory_Lifecycle_Events,
     NODE_MT_behavior_graphs_subcategory_Custom_Tags,
     NODE_MT_behavior_graphs_subcategory_Media_Frame,
-    NODE_MT_behavior_graphs_subcategory_Physics
+    NODE_MT_behavior_graphs_subcategory_Physics,
+
+    BGNode_set_component_property,
+    BGNode_get_component_property
 ]
 
 extra_classes = []
