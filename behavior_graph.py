@@ -504,17 +504,23 @@ def get_object_custom_events(ob, events, export_settings):
     for event in ob.bg_custom_events:
         events[f"{ob.name}_{event.name}"] = {
             "name": f"{ob.name}_{event.name}",
-            "id": list(ob.bg_custom_events).index(event)
+            "id": len(events)
         }
 
 
-def gather_events_and_variables(slots, export_settings):
+def gather_events_and_variables(export_settings):
     events = {}
     variables = {}
+
+    for graph in bpy.data.node_groups:
+        get_object_variables(graph, variables, export_settings)
 
     get_object_variables(bpy.context.scene, variables, export_settings)
     for ob in bpy.context.view_layer.objects:
         get_object_variables(ob, variables, export_settings)
+
+    for graph in bpy.data.node_groups:
+        get_object_custom_events(graph, events, export_settings)
 
     get_object_custom_events(bpy.context.scene, events, export_settings)
     for ob in bpy.context.view_layer.objects:
@@ -608,7 +614,7 @@ class glTF2ExportUserExtension:
         for ob in list(bpy.data.scenes) + list(bpy.context.view_layer.objects):
             slots.append({"ob": ob, "slots": list(ob.bg_slots)})
 
-        glob_events, glob_variables = gather_events_and_variables(slots, export_settings)
+        glob_events, glob_variables = gather_events_and_variables(export_settings)
 
         variables = []
         customEvents = []

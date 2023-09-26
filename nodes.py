@@ -263,9 +263,24 @@ class BGNode_flow_sequence(BGNode, Node):
         layout.prop(self, "numOutputs")
 
 
+def get_variable_target(node, context, ob=None):
+    if node.variableType == "object":
+        target = ob if ob else context.object
+    elif node.variableType == "scene":
+        target = context.scene
+    elif node.variableType == "graph":
+        if context.scene.bg_node_type == 'OBJECT':
+            target = context.object.bg_active_graph
+        else:
+            target = context.scene.bg_active_graph
+
+    return target
+
+
 def get_available_variables(self, context):
     result = [("None", "None", "None")]
-    target = context.scene if self.variableType == "scene" else context.object
+
+    target = get_variable_target(self, context)
     if target:
         for var in target.bg_global_variables:
             result.append((var.name, var.name, var.name))
@@ -280,7 +295,11 @@ def update_selected_variable_output(self, context):
     if not context:
         return
 
-    target = context.scene if self.variableType == "scene" else context.object
+    target = get_variable_target(self, context)
+
+    if not target:
+        return
+
     has_var = self.variableName in target.bg_global_variables
     var_type = target.bg_global_variables.get(self.variableName).type if has_var else "None"
 
@@ -293,14 +312,14 @@ def update_selected_variable_output(self, context):
 
 
 def getVariableId(self):
-    target = bpy.context.scene if self.variableType == "scene" else bpy.context.object
+    target = get_variable_target(self, bpy.context)
     if target and self.variableName in target.bg_global_variables:
         return target.bg_global_variables.find(self.variableName) + 1
     return 0
 
 
 def setVariableId(self, value):
-    target = bpy.context.scene if self.variableType == "scene" else bpy.context.object
+    target = get_variable_target(self, bpy.context)
     if not target or value == 0:
         self.variableName = 'None'
     elif value <= len(target.bg_global_variables):
@@ -316,7 +335,7 @@ class BGNode_variable_get(BGNode, Node):
     variableType: bpy.props.EnumProperty(
         name="Variable Type",
         description="Variable Type",
-        items=[("object", "Object", "Object"), ("scene", "Scene", "Scene")],
+        items=[("object", "Object", "Object"), ("scene", "Scene", "Scene"), ("graph", "Graph", "Graph")],
         update=update_selected_variable_output,
         default="object"
     )
@@ -347,7 +366,7 @@ class BGNode_variable_get(BGNode, Node):
 
     def refresh(self):
         from .utils import socket_to_type
-        target = bpy.context.scene if self.variableType == "scene" else bpy.context.object
+        target = get_variable_target(self, bpy.context)
         has_var = self.variableName in target.bg_global_variables
         var_type = target.bg_global_variables.get(self.variableName).type if has_var else "None"
         cur_type = socket_to_type[self.outputs[0].bl_idname] if self.outputs and len(self.outputs) > 0 else 'None'
@@ -361,9 +380,9 @@ class BGNode_variable_get(BGNode, Node):
                     target.bg_active_graph.links.remove(self.outputs[0].links[0])
 
     def gather_configuration(self, ob, variables, events, export_settings):
-        target = bpy.context.scene if self.variableType == "scene" else ob
+        target = get_variable_target(self, bpy.context, ob)
         var_name = f"{target.name}_{self.variableName}"
-        if self.variableName == 'None':
+        if self.variableName == 'None' or var_name not in variables:
             print(f'WARNING: variable node: {self.variableName}[{var_name}],  id: "None"')
         else:
             print(f'variable node: {self.variableName}, id: {variables[var_name]["id"]}')
@@ -380,7 +399,11 @@ def update_selected_variable_input(self, context):
     if not context:
         return
 
-    target = context.scene if self.variableType == "scene" else context.object
+    target = get_variable_target(self, context)
+
+    if not target:
+        return
+
     has_var = self.variableName in target.bg_global_variables
     var_type = target.bg_global_variables.get(self.variableName).type if has_var else "None"
 
@@ -397,7 +420,7 @@ class BGNode_variable_set(BGActionNode, BGNode, Node):
     variableType: bpy.props.EnumProperty(
         name="Variable Type",
         description="Variable Type",
-        items=[("object", "Object", "Object"), ("scene", "Scene", "Scene")],
+        items=[("object", "Object", "Object"), ("scene", "Scene", "Scene"), ("graph", "Graph", "Graph")],
         update=update_selected_variable_input,
         default="object"
     )
@@ -428,22 +451,26 @@ class BGNode_variable_set(BGActionNode, BGNode, Node):
 
     def refresh(self):
         from .utils import socket_to_type
-        has_var = self.variableName in bpy.context.scene.bg_global_variables
-        var_type = bpy.context.scene.bg_global_variables.get(self.variableName).type if has_var else "None"
+        target = get_variable_target(self, bpy.context)
+        if not target:
+            return
+
+        has_var = self.variableName in target.bg_global_variables
+        var_type = target.bg_global_variables.get(self.variableName).type if has_var else "None"
         cur_type = socket_to_type[self.inputs[1].bl_idname] if self.inputs and len(self.inputs) > 1 else 'None'
         if not has_var or var_type != cur_type:
             update_selected_variable_input(self, bpy.context)
-            if bpy.context.scene and len(self.inputs) > 1 and len(self.inputs[1].links) > 0:
-                has_var = self.variableId in bpy.context.scene.bg_global_variables
-                var_type = bpy.context.scene.bg_global_variables.get(
+            if target and len(self.inputs) > 1 and len(self.inputs[1].links) > 0:
+                has_var = self.variableId in target.bg_global_variables
+                var_type = target.bg_global_variables.get(
                     self.variableId).type if has_var else "None"
                 if self.inputs[1] != None and var_type != socket_to_type[self.inputs[1].bl_idname]:
-                    bpy.context.scene.bg_active_graph.links.remove(self.inputs[1].links[0])
+                    target.bg_active_graph.links.remove(self.inputs[1].links[0])
 
     def gather_configuration(self, ob, variables, events, export_settings):
-        target = bpy.context.scene if self.variableType == "scene" else ob
+        target = get_variable_target(self, bpy.context, ob)
         var_name = f"{target.name}_{self.variableName}"
-        if self.variableName == 'None':
+        if self.variableName == 'None' or var_name not in variables:
             print(f'WARNING: variable node: {self.variableName}[{var_name}],  id: "None"')
         else:
             print(f'variable node: {self.variableName}, id: {variables[var_name]["id"]}')
@@ -452,9 +479,23 @@ class BGNode_variable_set(BGActionNode, BGNode, Node):
             }
 
 
+def get_event_target(node, context, ob=None):
+    if node.customEventType == "object":
+        target = ob if ob else context.object
+    elif node.customEventType == "scene":
+        target = context.scene
+    elif node.customEventType == "graph":
+        if context.scene.bg_node_type == 'OBJECT':
+            target = context.object.bg_active_graph
+        else:
+            target = context.scene.bg_active_graph
+
+    return target
+
+
 def get_available_custom_events(self, context):
     result = [("None", "None", "None")]
-    target = context.scene if self.customEventType == "scene" else context.object
+    target = get_event_target(self, context)
     if target:
         for var in target.bg_custom_events:
             result.append((var.name, var.name, var.name))
@@ -462,14 +503,14 @@ def get_available_custom_events(self, context):
 
 
 def getCustomEventId(self):
-    target = bpy.context.scene if self.customEventType == "scene" else bpy.context.object
+    target = get_event_target(self, bpy.context)
     if target and self.customEventName in target.bg_custom_events:
         return target.bg_custom_events.find(self.customEventName) + 1
     return 0
 
 
 def setCustomEventId(self, value):
-    target = bpy.context.scene if self.customEventType == "scene" else bpy.context.object
+    target = get_event_target(self, bpy.context)
     if not target or value == 0:
         self.customEventName = 'None'
     elif value <= len(target.bg_custom_events):
@@ -485,14 +526,14 @@ class BGNode_customEvent_trigger(BGActionNode, BGNode, Node):
     customEventType: bpy.props.EnumProperty(
         name="Variable Type",
         description="Variable Type",
-        items=[("object", "Object", "Object"), ("scene", "Scene", "Scene")],
+        items=[("object", "Object", "Object"), ("scene", "Scene", "Scene"), ("graph", "Graph", "Graph")],
         default="object"
     )
 
     customEventType: bpy.props.EnumProperty(
         name="Variable Type",
         description="Variable Type",
-        items=[("object", "Object", "Object"), ("scene", "Scene", "Scene")],
+        items=[("object", "Object", "Object"), ("scene", "Scene", "Scene"), ("graph", "Graph", "Graph")],
         default="object"
     )
 
@@ -521,9 +562,9 @@ class BGNode_customEvent_trigger(BGActionNode, BGNode, Node):
         self.customEventId = self.customEventId
 
     def gather_configuration(self, ob, variables, events, export_settings):
-        target = bpy.context.scene if self.customEventType == "scene" else ob
+        target = get_event_target(self, bpy.context, ob)
         event_name = f"{target.name}_{self.customEventName}"
-        if self.customEventName == 'None':
+        if self.customEventName == 'None' or event_name not in events:
             print(f'WARNING: custom event node: {self.customEventName}[{event_name}],  id: "None"')
         else:
             print(f'custom event node: {self.customEventName}, id: {events[event_name]["id"]}')
@@ -539,7 +580,7 @@ class BGNode_customEvent_onTriggered(BGEventNode, BGNode, Node):
     customEventType: bpy.props.EnumProperty(
         name="Variable Type",
         description="Variable Type",
-        items=[("object", "Object", "Object"), ("scene", "Scene", "Scene")],
+        items=[("object", "Object", "Object"), ("scene", "Scene", "Scene"), ("graph", "Graph", "Graph")],
         default="object"
     )
 
@@ -568,9 +609,9 @@ class BGNode_customEvent_onTriggered(BGEventNode, BGNode, Node):
         self.customEventId = self.customEventId
 
     def gather_configuration(self, ob, variables, events, export_settings):
-        target = bpy.context.scene if self.customEventType == "scene" else ob
+        target = get_event_target(self, bpy.context, ob)
         event_name = f"{target.name}_{self.customEventName}"
-        if self.customEventName == 'None':
+        if self.customEventName == 'None' or event_name not in events:
             print(f'WARNING: custom event node: {self.customEventName}[{event_name}],  id: "None"')
         else:
             print(f'custom event node: {self.customEventName}, id: {events[event_name]["id"]}')

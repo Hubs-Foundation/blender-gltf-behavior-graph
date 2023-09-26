@@ -334,7 +334,7 @@ class BGCustomEventAdd(bpy.types.Operator):
     def execute(self, context):
         target = context.target
         new_event = target.bg_custom_events.add()
-        new_event.name = f"prop{len(target.bg_custom_events)}"
+        new_event.name = f"event{len(target.bg_custom_events)}"
 
         update_nodes(self, context)
 
@@ -434,6 +434,45 @@ def bg_active_slot_update(self, context):
         self.bg_active_slot_idx = idx
 
 
+class BGGraphPanel(bpy.types.Panel):
+    bl_space_type = "NODE_EDITOR"
+    bl_region_type = "UI"
+    bl_label = "Behavior Graphs"
+    bl_category = "Behavior Graphs"
+    bl_context = "scene"
+
+    def draw(self, context):
+        layout = self.layout
+
+        if context.scene.bg_node_type == 'OBJECT':
+            target = context.active_object
+        else:
+            target = context.scene
+
+        if not target.bg_active_graph:
+            return
+
+        row = layout.row()
+        row.label(text="Variables:")
+        row = layout.row()
+        row.template_list(BGGlobalVariablesList.bl_idname, "", target.bg_active_graph,
+                          "bg_global_variables", target.bg_active_graph, "bg_active_global_variable_idx", rows=5)
+        col = row.column(align=True)
+        col.context_pointer_set('target', target.bg_active_graph)
+        col.operator(BGGlobalVariableAdd.bl_idname, icon='ADD', text="")
+        col.operator(BGGlobalVariableRemove.bl_idname, icon='REMOVE', text="")
+
+        row = layout.row()
+        row.label(text="Events:")
+        row = layout.row()
+        row.template_list(BGCustomEventsList.bl_idname, "", target.bg_active_graph,
+                          "bg_custom_events", target.bg_active_graph, "bg_active_custom_event_idx", rows=5)
+        col = row.column(align=True)
+        col.context_pointer_set('target', target.bg_active_graph)
+        col.operator(BGCustomEventAdd.bl_idname, icon='ADD', text="")
+        col.operator(BGCustomEventRemove.bl_idname, icon='REMOVE', text="")
+
+
 class BGItem(PropertyGroup):
     graph: PointerProperty(type=NodeTree)
 
@@ -453,6 +492,7 @@ def register():
     bpy.utils.register_class(BGCustomEventAdd)
     bpy.utils.register_class(BGCustomEventRemove)
     bpy.utils.register_class(BGCustomEventsList)
+    bpy.utils.register_class(BGGraphPanel)
 
     bpy.utils.register_class(BGItem)
     bpy.types.Object.bg_slots = CollectionProperty(type=BGItem)
@@ -496,10 +536,22 @@ def register():
         description="Active Custom Event index",
         default=-1)
 
+    bpy.types.NodeTree.bg_global_variables = CollectionProperty(type=BGGlobalVariableType)
+    bpy.types.NodeTree.bg_active_global_variable_idx = IntProperty(
+        name="Active Global Variable index",
+        description="Active Global Variable index",
+        default=-1)
+    bpy.types.NodeTree.bg_custom_events = CollectionProperty(type=BGCustomEventType)
+    bpy.types.NodeTree.bg_active_custom_event_idx = IntProperty(
+        name="Active Custom Event index",
+        description="Active Custom Event index",
+        default=-1)
+
     bpy.types.NODE_HT_header.draw = draw_header
 
 
 def unregister():
+    bpy.utils.unregister_class(BGGraphPanel)
     bpy.utils.unregister_class(BGNew)
     bpy.utils.unregister_class(BGRemove)
     bpy.utils.unregister_class(BGAddSlot)
