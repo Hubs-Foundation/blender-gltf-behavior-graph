@@ -830,6 +830,9 @@ def component_updated(self, context):
     self.inputs.get("entity").component = self.component_name
     self.inputs.get("component").default_value = self.component_name
 
+    target = get_target(self, context)
+    self.outputs.get("entity").target = target
+
 
 class BGNode_get_component(BGNode, Node):
     bl_label = "Get Component"
