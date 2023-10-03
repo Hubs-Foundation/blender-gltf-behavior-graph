@@ -147,7 +147,7 @@ class BGObjectPanel(bpy.types.Panel):
         row.template_ID(context.object, "bg_active_graph", new=BGNew.bl_idname, unlink=BGRemove.bl_idname)
 
         row = layout.row()
-        row.label(text="Global Variables:")
+        row.label(text="Variables:")
         row = layout.row()
         row.template_list(BGGlobalVariablesList.bl_idname, "", context.object,
                           "bg_global_variables", context.object, "bg_active_global_variable_idx", rows=5)
@@ -294,7 +294,7 @@ class BGGlobalVariableRemove(bpy.types.Operator):
 
 class BGGlobalVariablesList(bpy.types.UIList):
     bl_idname = "BG_UL_GlobalVariables_list"
-    bl_label = "Global Variables"
+    bl_label = "Variables"
 
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
         split = layout.split(align=True)
@@ -386,7 +386,7 @@ class BGScenePanel(bpy.types.Panel):
         row.template_ID(context.scene, "bg_active_graph", new=BGNew.bl_idname, unlink=BGRemove.bl_idname)
 
         row = layout.row()
-        row.label(text="Global Variables:")
+        row.label(text="Variables:")
         row = layout.row()
         row.template_list(BGGlobalVariablesList.bl_idname, "", context.scene,
                           "bg_global_variables", context.scene, "bg_active_global_variable_idx", rows=5)
