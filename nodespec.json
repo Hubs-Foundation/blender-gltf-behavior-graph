@@ -2124,15 +2124,15 @@
     ],
     "outputs": [
       {
+        "name": "0",
+        "valueType": "flow"
+      },
+      {
         "name": "1",
         "valueType": "flow"
       },
       {
         "name": "2",
-        "valueType": "flow"
-      },
-      {
-        "name": "3",
         "valueType": "flow"
       }
     ],
