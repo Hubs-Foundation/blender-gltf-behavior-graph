@@ -243,10 +243,10 @@ class BGGlobalVariableType(PropertyGroup):
         default=(0.0, 0.0, 0.0)
     )
 
-    defaultAnimationAction: StringProperty(
+    defaultAnimationAction: IntProperty(
         name="default",
         description="Default Value",
-        default=""
+        default=0
     )
 
     defaultColor: FloatVectorProperty(
@@ -310,8 +310,6 @@ class BGGlobalVariablesList(bpy.types.UIList):
             split.prop(item, "defaultString", text="", emboss=True, icon='NONE')
         elif item.type == "vec3":
             split.prop(item, "defaultVec3", text="", emboss=True, icon='NONE')
-        elif item.type == "animationAction":
-            split.prop(item, "defaultAnimationAction", text="", emboss=True, icon='NONE')
         elif item.type == "color":
             split.prop(item, "defaultColor", text="", emboss=True, icon='NONE')
         elif item.type == "entity":
