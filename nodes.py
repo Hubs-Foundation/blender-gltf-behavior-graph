@@ -278,13 +278,19 @@ def get_variable_target(node, context, ob=None):
 
 
 def get_available_variables(self, context):
-    result = [("None", "None", "None")]
+    get_available_variables.cached_enum = [("None", "None", "None")]
 
     target = get_variable_target(self, context)
     if target:
         for var in target.bg_global_variables:
-            result.append((var.name, var.name, var.name))
-    return result
+            get_available_variables.cached_enum.append((var.name, var.name, var.name))
+
+    return get_available_variables.cached_enum
+
+
+# Bug: https://docs.blender.org/api/current/bpy.props.html#bpy.props.EnumProperty
+# Workaround: https://blender.stackexchange.com/a/216233
+get_available_variables.cached_enum = []
 
 
 def update_selected_variable_output(self, context):
@@ -494,12 +500,18 @@ def get_event_target(node, context, ob=None):
 
 
 def get_available_custom_events(self, context):
-    result = [("None", "None", "None")]
+    get_available_custom_events.cached_enum = [("None", "None", "None")]
     target = get_event_target(self, context)
     if target:
         for var in target.bg_custom_events:
-            result.append((var.name, var.name, var.name))
-    return result
+            get_available_custom_events.cached_enum.append((var.name, var.name, var.name))
+
+    return get_available_custom_events.cached_enum
+
+
+# Bug: https://docs.blender.org/api/current/bpy.props.html#bpy.props.EnumProperty
+# Workaround: https://blender.stackexchange.com/a/216233
+get_available_custom_events.cached_enum = []
 
 
 def getCustomEventId(self):
@@ -623,12 +635,17 @@ class BGNode_customEvent_onTriggered(BGEventNode, BGNode, Node):
 def get_available_networkedBehavior_properties(self, context):
     target = get_target(self, context)
 
-    result = [("None", "None", "None")]
+    get_available_networkedBehavior_properties.cached_enum = [("None", "None", "None")]
     if target and hasattr(target, "hubs_component_networked_behavior"):
         for prop in target.hubs_component_networked_behavior.props_list:
-            result.append((prop.name, prop.name, prop.name))
+            get_available_networkedBehavior_properties.cached_enum.append((prop.name, prop.name, prop.name))
 
-    return result
+    return get_available_networkedBehavior_properties.cached_enum
+
+
+# Bug: https://docs.blender.org/api/current/bpy.props.html#bpy.props.EnumProperty
+# Workaround: https://blender.stackexchange.com/a/216233
+get_available_networkedBehavior_properties.cached_enum = []
 
 
 def get_target(self, context):
@@ -812,18 +829,23 @@ def get_object_components(ob):
 def getAvailableComponents(self, context):
     from io_hubs_addon.components.components_registry import get_components_registry
     registry = get_components_registry()
-    components = [("None", "None", "None")]
+    getAvailableComponents.cached_enum = [("None", "None", "None")]
 
     target = get_target(self, context)
     if target:
         all_object_components = get_object_components(target)
         for component_name, component_class in registry.items():
             if target and component_name in all_object_components and component_name in SUPPORTED_COMPONENTS:
-                components.append(
+                getAvailableComponents.cached_enum.append(
                     (component_name, component_class.get_display_name(),
                         component_class.get_display_name()))
 
-    return components
+    return getAvailableComponents.cached_enum
+
+
+# Bug: https://docs.blender.org/api/current/bpy.props.html#bpy.props.EnumProperty
+# Workaround: https://blender.stackexchange.com/a/216233
+getAvailableComponents.cached_enum = []
 
 
 def component_updated(self, context):
@@ -893,18 +915,23 @@ SUPPORTED_PROPERTY_COMPONENTS = [
 def getPropertyComponents(self, context):
     from io_hubs_addon.components.components_registry import get_components_registry
     registry = get_components_registry()
-    components = [("None", "None", "None")]
+    getPropertyComponents.cached_enum = [("None", "None", "None")]
 
     target = get_target(self, context)
     if target:
         all_object_components = get_object_components(target)
         for component_name, component_class in registry.items():
             if target and component_name in all_object_components and component_name in SUPPORTED_PROPERTY_COMPONENTS:
-                components.append(
+                getPropertyComponents.cached_enum.append(
                     (component_name, component_class.get_display_name(),
                         component_class.get_display_name()))
 
-    return components
+    return getPropertyComponents.cached_enum
+
+
+# Bug: https://docs.blender.org/api/current/bpy.props.html#bpy.props.EnumProperty
+# Workaround: https://blender.stackexchange.com/a/216233
+getPropertyComponents.cached_enum = []
 
 
 def getAvailableProperties(self, context):
@@ -921,6 +948,7 @@ def getAvailableProperties(self, context):
                 if not property.is_hidden:
                     getAvailableProperties.cached_enum.append(
                         (property.identifier, property.name, property.description))
+
     return getAvailableProperties.cached_enum
 
 
