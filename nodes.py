@@ -4,7 +4,7 @@ from bpy.types import Node
 from io_hubs_addon.components.definitions import text, video, audio, media_frame
 from .components import networked_animation, networked_behavior, networked_transform, rigid_body, physics_shape
 from io_hubs_addon.io.utils import gather_property
-from .utils import gather_object_property, get_socket_value, filter_on_components
+from .utils import gather_object_property, get_socket_value, filter_on_components, filter_entity_type, ExportException
 
 
 class BGNode():
@@ -41,7 +41,7 @@ class BGEntityPropertyNode():
     entity_type: bpy.props.EnumProperty(
         name="",
         description="Target Entity",
-        items=[("self", "Self", "Self"), ("other", "Other", "Other")],
+        items=filter_entity_type,
         default=0
     )
 
@@ -59,15 +59,21 @@ class BGEntityPropertyNode():
     def gather_configuration(self, ob, variables, events, export_settings):
         from .behavior_graph import gather_object_property
         target = ob if self.entity_type == "self" else self.target
-        return {
-            "target": gather_object_property(export_settings, target)
-        }
+        if not self.target and type(ob) == bpy.types.Scene:
+            raise ExportException('Empty entity cannot be used for Scene objects in this context')
+        else:
+            return {
+                "target": gather_object_property(export_settings, target)
+            }
 
     def gather_parameters(self, ob, input_socket, export_settings):
         if not self.target:
-            return {
-                "value": gather_object_property(export_settings, ob)
-            }
+            if type(ob) == bpy.types.Scene:
+                raise ExportException('Empty entity cannot be used for Scene objects in this context')
+            else:
+                return {
+                    "value": gather_object_property(export_settings, ob)
+                }
         else:
             return {
                 "value": gather_object_property(export_settings, input_socket.target)

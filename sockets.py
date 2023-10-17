@@ -1,8 +1,7 @@
 import bpy
 from bpy.props import StringProperty, PointerProperty
 from bpy.types import NodeSocketStandard, NodeSocketInterface, NodeSocketString, NodeSocketInterfaceString
-from io_hubs_addon.components.utils import has_component
-from .utils import gather_object_property, filter_on_components
+from .utils import gather_object_property, filter_on_components, filter_entity_type, ExportException
 
 
 class BGFlowSocket(NodeSocketStandard):
@@ -52,7 +51,7 @@ class BGHubsEntitySocket(NodeSocketStandard):
     entity_type: bpy.props.EnumProperty(
         name="",
         description="Target Entity",
-        items=[("self", "Self", "Self"), ("other", "Other", "Other")],
+        items=filter_entity_type,
         options={'HIDDEN'},
         default=0
     )
@@ -78,9 +77,12 @@ class BGHubsEntitySocket(NodeSocketStandard):
 
     def gather_parameters(self, ob, export_settings):
         if not self.target:
-            return {
-                "value": gather_object_property(export_settings, ob)
-            }
+            if type(ob) == bpy.types.Scene:
+                raise ExportException('Empty entity cannot be used for Scene objects in this context')
+            else:
+                return {
+                    "value": gather_object_property(export_settings, ob)
+                }
         else:
             return {
                 "value": gather_object_property(export_settings, self.target)

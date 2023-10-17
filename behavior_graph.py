@@ -529,7 +529,7 @@ def gather_events_and_variables(export_settings):
     return (events, variables)
 
 
-def gather_nodes(ob, idx, slot, export_settings, events, variables):
+def gather_nodes(ob, idx, slot, export_settings, events, variables, export_report):
     from .sockets import BGFlowSocket
     from .nodes import BGNode
 
@@ -567,24 +567,36 @@ def gather_nodes(ob, idx, slot, export_settings, events, variables):
                 }
 
             elif hasattr(input_socket, "gather_parameters") and callable(getattr(input_socket, "gather_parameters")):
-                parameters = input_socket.gather_parameters(ob, export_settings)
-                if parameters != None:
-                    node_data["parameters"].update({input_socket.identifier: parameters})
+                try:
+                    parameters = input_socket.gather_parameters(ob, export_settings)
+                    if parameters != None:
+                        node_data["parameters"].update({input_socket.identifier: parameters})
+                except ExportException as e:
+                    export_report.append(f'{ob.name}/{slot.graph.name}/{node.name}: {e}')
 
             elif hasattr(node, "gather_parameters") and callable(getattr(node, "gather_parameters")):
-                parameters = node.gather_parameters(ob, input_socket, export_settings)
-                if parameters != None:
-                    node_data["parameters"].update({input_socket.identifier: parameters})
+                try:
+                    parameters = node.gather_parameters(ob, input_socket, export_settings)
+                    if parameters != None:
+                        node_data["parameters"].update({input_socket.identifier: parameters})
+                except ExportException as e:
+                    export_report.append(f'{ob.name}/{slot.graph.name}/{node.name}: {e}')
 
             else:
-                value = get_socket_value(ob, export_settings, input_socket)
-                if value != None:
-                    node_data["parameters"].update({input_socket.identifier: {"value": value}})
+                try:
+                    value = get_socket_value(ob, export_settings, input_socket)
+                    if value != None:
+                        node_data["parameters"].update({input_socket.identifier: {"value": value}})
+                except ExportException as e:
+                    export_report.append(f'{ob.name}/{slot.graph.name}/{node.name}: {e}')
 
         if hasattr(node, "gather_configuration") and callable(getattr(node, "gather_configuration")):
-            configuration = node.gather_configuration(ob, variables, events, export_settings)
-            if configuration != None:
-                node_data["configuration"] = configuration
+            try:
+                configuration = node.gather_configuration(ob, variables, events, export_settings)
+                if configuration != None:
+                    node_data["configuration"] = configuration
+            except ExportException as e:
+                export_report.append(f'{ob.name}/{slot.graph.name}/{node.name}: {e}')
 
         elif hasattr(node, "__annotations__"):
             for key in node.__annotations__.keys():
@@ -609,6 +621,8 @@ class glTF2ExportUserExtension:
     def gather_gltf_extensions_hook(self, gltf2_object, export_settings):
         print("GATHERING BG")
 
+        export_report = []
+
         # This is a hack to allow multi-graph while we have proper per gltf node graph support
         slots = []
         for ob in list(bpy.data.scenes) + list(bpy.context.view_layer.objects):
@@ -630,7 +644,8 @@ class glTF2ExportUserExtension:
             for slot in slots:
                 if slot is not None:
                     idx = slots.index(slot)
-                    nodes.extend(gather_nodes(ob, idx, slot, export_settings, glob_events, glob_variables))
+                    nodes.extend(gather_nodes(ob, idx, slot, export_settings,
+                                 glob_events, glob_variables, export_report))
 
         if nodes:
             if gltf2_object.extensions is None:
@@ -646,6 +661,10 @@ class glTF2ExportUserExtension:
                 },
                 required=False
             )
+
+        if len(export_report) > 0:
+            bpy.ops.wm.hubs_report_viewer('INVOKE_DEFAULT', title="Behavior Graphs export report",
+                                          report_string='\n\n'.join(export_report))
 
 
 def get_category(category, items):

@@ -149,7 +149,10 @@ def get_socket_value(ob, export_settings, socket: NodeSocket):
     elif socket_type == "material":
         return gather_material_property(export_settings, socket, socket, "default_value")
     elif socket_type == "texture":
-        return gather_texture_property(export_settings, socket, socket, "default_value")
+        if socket.is_linked:
+            return gather_texture_property(export_settings, socket, socket, "default_value")
+        else:
+            raise ExportException("Linked textures not yet supported")
     elif socket_type == "color":
         return gather_color_property(export_settings, socket, socket, "default_value", "COLOR_GAMMA")
     elif socket_type == "vec3":
@@ -240,6 +243,19 @@ def propToType(property_definition):
             return "vec3"
     elif prop_type in prop_to_type:
         return prop_to_type[prop_type]
+
+
+def filter_entity_type(self, context):
+    types = [("other", "Other", "Other")]
+
+    if bpy.context.scene.bg_node_type != 'SCENE':
+        types.insert(0, ("self", "Self", "Self"))
+
+    return types
+
+
+class ExportException(Exception):
+    pass
 
 
 def do_register(ComponentClass):
