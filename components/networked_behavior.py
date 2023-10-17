@@ -70,7 +70,7 @@ class NetworkedBehaviorPropList(bpy.types.UIList):
 class NetworkedBehavior(HubsComponent):
     _definition = {
         'name': 'networked-behavior',
-        'display_name': 'BG Networked Behavior',
+        'display_name': 'BG Networked Variables',
         'category': Category.OBJECT,
         'node_type': NodeType.NODE,
         'panel_type': [PanelType.OBJECT],
@@ -93,7 +93,7 @@ class NetworkedBehavior(HubsComponent):
 
     def draw(self, context, layout, panel):
         row = layout.row()
-        row.label(text="Networked Properties:")
+        row.label(text="Networked Variables:")
         row = layout.row()
         row.context_pointer_set('panel', panel)
         row.template_list(NetworkedBehaviorPropList.bl_idname, "", self,
