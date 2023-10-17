@@ -1,4 +1,4 @@
-from . import custom_tags, grabbable, rigid_body, physics_shape, networked_behavior, networked_transform, networked_animation, capturable, networked_material, networked_object_material
+from . import custom_tags, grabbable, rigid_body, physics_shape, networked_behavior, networked_transform, networked_animation, capturable, networked_material, networked_object_material, networked_object_properties
 
 
 def register():
@@ -11,6 +11,7 @@ def register():
     networked_animation.register()
     networked_material.register()
     networked_object_material.register()
+    networked_object_properties.register()
     capturable.register()
 
 
@@ -25,3 +26,4 @@ def unregister():
     physics_shape.unregister()
     grabbable.unregister()
     custom_tags.unregister()
+    networked_object_properties.unregister()
