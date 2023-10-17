@@ -163,7 +163,10 @@ class NetworkedBehavior(HubsComponent):
     def gather(self, export_settings, object):
         variables = {}
         for prop in self.props_list:
-            variables[prop.name] = get_value(prop, export_settings)
+            variables[prop.name] = {
+                "type": prop.type,
+                "value": get_value(prop, export_settings)
+            }
 
         return variables
 
