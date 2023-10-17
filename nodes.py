@@ -1,7 +1,7 @@
 import bpy
 from bpy.props import PointerProperty, StringProperty
 from bpy.types import Node
-from io_hubs_addon.components.definitions import text, video, audio, media_frame
+from io_hubs_addon.components.definitions import text, video, audio, media_frame, visible
 from .components import networked_animation, networked_behavior, networked_transform, rigid_body, physics_shape
 from io_hubs_addon.io.utils import gather_property
 from .utils import gather_object_property, get_socket_value, filter_on_components, filter_entity_type, ExportException
@@ -812,7 +812,8 @@ SUPPORTED_COMPONENTS = [
     physics_shape.PhysicsShape.get_name(),
     networked_transform.NetworkedTransform.get_name(),
     networked_behavior.NetworkedBehavior.get_name(),
-    media_frame.MediaFrame.get_name()
+    media_frame.MediaFrame.get_name(),
+    visible.Visible.get_name()
 ]
 
 
@@ -914,7 +915,8 @@ SUPPORTED_PROPERTY_COMPONENTS = [
     audio.Audio.get_name(),
     text.Text.get_name(),
     rigid_body.RigidBody.get_name(),
-    media_frame.MediaFrame.get_name()
+    media_frame.MediaFrame.get_name(),
+    visible.Visible.get_name(),
 ]
 
 
