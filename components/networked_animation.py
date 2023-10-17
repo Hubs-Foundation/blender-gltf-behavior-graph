@@ -15,6 +15,10 @@ class NetworkedAnimation(HubsComponent):
         'deps': ['networked']
     }
 
+    def draw(self, context, layout, panel):
+        row = layout.row()
+        row.label(text="Network animation updates on this object.")
+
 
 def register():
     do_register(NetworkedAnimation)
