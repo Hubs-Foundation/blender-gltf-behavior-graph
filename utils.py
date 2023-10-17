@@ -19,7 +19,7 @@ def gather_material_property(export_settings, blender_object, target, property_n
     blender_material = getattr(target, property_name)
     if blender_material:
         material = gltf2_blender_gather_materials.gather_material(
-            blender_material, -1, export_settings)
+            blender_material, 0, export_settings)
         return {
             "__mhc_link_type": "material",
             "index": material
