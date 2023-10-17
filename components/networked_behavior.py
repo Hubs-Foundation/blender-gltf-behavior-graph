@@ -1,8 +1,9 @@
 import bpy
 from bpy.types import PropertyGroup
-from bpy.props import EnumProperty, CollectionProperty, StringProperty, IntProperty
+from bpy.props import EnumProperty, CollectionProperty, StringProperty, IntProperty, FloatProperty, BoolProperty, FloatVectorProperty
 from io_hubs_addon.components.hubs_component import HubsComponent
 from io_hubs_addon.components.types import Category, NodeType, PanelType
+from io_hubs_addon.io.utils import gather_property, gather_vec_property, gather_color_property
 from ..utils import do_register, do_unregister
 from ..ui import update_nodes
 
@@ -30,6 +31,37 @@ class NetworkedPropertyType(PropertyGroup):
         default="integer"
     )
 
+    defaultInt: IntProperty(
+        name="default",
+        description="Default Value",
+        default=0
+    )
+
+    defaultFloat: FloatProperty(
+        name="default",
+        description="Default Value",
+        default=0.0
+    )
+
+    defaultString: StringProperty(
+        name="default",
+        description="Default Value",
+        default=""
+    )
+
+    defaultBoolean: BoolProperty(
+        name="default",
+        description="Default Value",
+        default=False
+    )
+
+    defaultVec3: FloatVectorProperty(
+        name="default",
+        description="Default Value",
+        subtype="XYZ",
+        default=(0.0, 0.0, 0.0)
+    )
+
 
 class NetworkedBehaviorAddProp(bpy.types.Operator):
     bl_idname = "ui.bg_add_networked_behavior_prop"
@@ -39,7 +71,7 @@ class NetworkedBehaviorAddProp(bpy.types.Operator):
     def execute(self, context):
         hubs_component = context.hubs_component
         new_prop = hubs_component.props_list.add()
-        new_prop.name = f"prop{len(hubs_component.props_list)   }"
+        new_prop.name = f"prop{len(hubs_component.props_list)}"
         new_prop.type = "integer"
 
         return {'FINISHED'}
@@ -65,6 +97,31 @@ class NetworkedBehaviorPropList(bpy.types.UIList):
         split = layout.split(align=True)
         split.prop(item, "name", text="", emboss=False, icon='NONE')
         split.prop(item, "type", text="", emboss=False, icon='NONE')
+        if item.type == "integer":
+            split.prop(item, "defaultInt", text="", emboss=True, slider=False, icon='NONE')
+        elif item.type == "boolean":
+            split.prop(item, "defaultBoolean", text="", toggle=True, emboss=True, icon='NONE')
+        elif item.type == "float":
+            split.prop(item, "defaultFloat", text="", emboss=True, slider=False, icon='NONE')
+        elif item.type == "string":
+            split.prop(item, "defaultString", text="", emboss=True, icon='NONE')
+        elif item.type == "vec3":
+            split.prop(item, "defaultVec3", text="", emboss=True, icon='NONE')
+
+
+def get_value(prop, export_settings):
+    if prop.type == "integer":
+        value = prop.defaultInt
+    elif prop.type == "boolean":
+        value = prop.defaultBoolean
+    elif prop.type == "float":
+        value = prop.defaultFloat
+    elif prop.type == "string":
+        value = prop.defaultString
+    elif prop.type == "vec3":
+        value = gather_vec_property(export_settings, prop, prop, "defaultVec3")
+
+    return value
 
 
 class NetworkedBehavior(HubsComponent):
@@ -104,9 +161,11 @@ class NetworkedBehavior(HubsComponent):
         col.operator(NetworkedBehaviorRemoveProp.bl_idname, icon='REMOVE', text="")
 
     def gather(self, export_settings, object):
-        return {
-            "networked-behavior": {}
-        }
+        variables = {}
+        for prop in self.props_list:
+            variables[prop.name] = get_value(prop, export_settings)
+
+        return variables
 
 
 def register():
