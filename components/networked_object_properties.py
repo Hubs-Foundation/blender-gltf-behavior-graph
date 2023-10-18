@@ -4,7 +4,7 @@ from ..utils import do_register, do_unregister
 import bpy
 
 
-class NetworkedTObjectProperties(HubsComponent):
+class NetworkedObjectProperties(HubsComponent):
     _definition = {
         'name': 'networked-object-properties',
         'display_name': 'BG Networked Object Properties',
@@ -24,8 +24,8 @@ class NetworkedTObjectProperties(HubsComponent):
 
 
 def register():
-    do_register(NetworkedTObjectProperties)
+    do_register(NetworkedObjectProperties)
 
 
 def unregister():
-    do_unregister(NetworkedTObjectProperties)
+    do_unregister(NetworkedObjectProperties)
