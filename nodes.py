@@ -270,15 +270,29 @@ class BGNode_flow_sequence(BGNode, Node):
 
 
 def get_variable_target(node, context, ob=None):
-    if node.variableType == "object":
-        target = ob if ob else context.object
-    elif node.variableType == "scene":
-        target = context.scene
-    elif node.variableType == "graph":
-        if context.scene.bg_node_type == 'OBJECT':
-            target = context.object.bg_active_graph
+    target = None
+    entity_socket = node.inputs.get("entity")
+    if entity_socket:
+        target = entity_socket.target
+        if node.inputs.get("entity").is_linked and len(entity_socket.links) > 0:
+            link = entity_socket.links[0]
+            # When copying entities the variable is updated in the networked behavior  list
+            # but not on the socket so we pull the variable value directly from the list
+            node = link.from_socket.node
+            if node.bl_idname == "BGNode_variable_get" and ob:
+                target = ob.bg_global_variables.get(node.variableName).defaultEntity
+            else:
+                target = link.from_socket.target
         else:
-            target = context.scene.bg_active_graph
+            if entity_socket.entity_type == "object":
+                target = ob if ob else context.object
+            elif entity_socket.entity_type == "scene":
+                target = context.scene
+            elif entity_socket.entity_type == "graph":
+                if context.scene.bg_node_type == 'OBJECT':
+                    target = context.object.bg_active_graph
+                else:
+                    target = context.scene.bg_active_graph
 
     return target
 
@@ -344,14 +358,6 @@ class BGNode_variable_get(BGNode, Node):
     bl_label = "Get Variable"
     node_type = "variable/get"
 
-    variableType: bpy.props.EnumProperty(
-        name="Variable Type", description="Variable Type",
-        items=[("object", "Self", "Self"),
-               ("scene", "Scene", "Scene"),
-               ("graph", "Graph", "Graph"),
-               ("other", "Other", "Other")],
-        update=update_selected_variable_output, default="object")
-
     variableName: bpy.props.StringProperty(
         name="Variable Name",
         description="Variable Name",
@@ -367,22 +373,16 @@ class BGNode_variable_get(BGNode, Node):
         set=setVariableId,
     )
 
-    target: PointerProperty(
-        name="Target",
-        type=bpy.types.Object,
-        poll=filter_on_components
-    )
-
     def init(self, context):
         super().init(context)
         self.color = (0.2, 0.6, 0.2)
+        self.inputs.new("BGHubsEntitySocket", "entity")
+        entity = self.inputs.get("entity")
+        entity.custom_type = "event_variable"
+        entity.export = False
         update_selected_variable_output(self, context)
 
     def draw_buttons(self, context, layout):
-        layout.prop(self, "variableType")
-        if self.variableType == "other":
-            col = layout.column()
-            col.prop(self, "target", text="Target")
         layout.prop(self, "variableId")
 
     def refresh(self):
@@ -392,7 +392,6 @@ class BGNode_variable_get(BGNode, Node):
         var_type = target.bg_global_variables.get(self.variableName).type if has_var else "None"
         cur_type = socket_to_type[self.outputs[0].bl_idname] if self.outputs and len(self.outputs) > 0 else 'None'
         if not has_var or var_type != cur_type:
-            update_selected_variable_output(self, bpy.context)
             if target and len(self.outputs) > 0 and len(self.outputs[0].links) > 0:
                 has_var = self.variableId in target.bg_global_variables
                 var_type = target.bg_global_variables.get(
@@ -414,8 +413,8 @@ class BGNode_variable_get(BGNode, Node):
 
 def update_selected_variable_input(self, context):
     # Remove previous socket
-    if self.inputs and len(self.inputs) > 1:
-        self.inputs.remove(self.inputs[1])
+    if self.inputs and len(self.inputs) > 2:
+        self.inputs.remove(self.inputs[2])
 
     if not context:
         return
@@ -438,14 +437,6 @@ class BGNode_variable_set(BGActionNode, BGNode, Node):
     bl_label = "Set Variable"
     node_type = "variable/set"
 
-    variableType: bpy.props.EnumProperty(
-        name="Variable Type", description="Variable Type",
-        items=[("object", "Self", "Self"),
-               ("scene", "Scene", "Scene"),
-               ("graph", "Graph", "Graph"),
-               ("other", "Other", "Other")],
-        update=update_selected_variable_input, default="object")
-
     variableName: bpy.props.StringProperty(
         name="Variable Name",
         description="Variable Name",
@@ -461,22 +452,16 @@ class BGNode_variable_set(BGActionNode, BGNode, Node):
         set=setVariableId,
     )
 
-    target: PointerProperty(
-        name="Target",
-        type=bpy.types.Object,
-        poll=filter_on_components
-    )
-
     def init(self, context):
         super().init(context)
         self.color = (0.2, 0.6, 0.2)
+        self.inputs.new("BGHubsEntitySocket", "entity")
+        entity = self.inputs.get("entity")
+        entity.custom_type = "event_variable"
+        entity.export = False
         update_selected_variable_input(self, context)
 
     def draw_buttons(self, context, layout):
-        layout.prop(self, "variableType")
-        if self.variableType == "other":
-            col = layout.column()
-            col.prop(self, "target", text="Target")
         layout.prop(self, "variableId")
 
     def refresh(self):
@@ -509,25 +494,9 @@ class BGNode_variable_set(BGActionNode, BGNode, Node):
             }
 
 
-def get_event_target(node, context, ob=None):
-    if node.customEventType == "object":
-        target = ob if ob else context.object
-    elif node.customEventType == "scene":
-        target = context.scene
-    elif node.customEventType == "graph":
-        if context.scene.bg_node_type == 'OBJECT':
-            target = context.object.bg_active_graph
-        else:
-            target = context.scene.bg_active_graph
-    elif node.customEventType == "other":
-        target = node.target
-
-    return target
-
-
 def get_available_custom_events(self, context):
     get_available_custom_events.cached_enum = [("None", "None", "None")]
-    target = get_event_target(self, context)
+    target = get_variable_target(self, context)
     if target:
         for var in target.bg_custom_events:
             get_available_custom_events.cached_enum.append((var.name, var.name, var.name))
@@ -541,14 +510,14 @@ get_available_custom_events.cached_enum = []
 
 
 def getCustomEventId(self):
-    target = get_event_target(self, bpy.context)
+    target = get_variable_target(self, bpy.context)
     if target and self.customEventName in target.bg_custom_events:
         return target.bg_custom_events.find(self.customEventName) + 1
     return 0
 
 
 def setCustomEventId(self, value):
-    target = get_event_target(self, bpy.context)
+    target = get_variable_target(self, bpy.context)
     if not target or value == 0:
         self.customEventName = 'None'
     elif value <= len(target.bg_custom_events):
@@ -560,14 +529,6 @@ def setCustomEventId(self, value):
 class BGNode_customEvent_trigger(BGActionNode, BGNode, Node):
     bl_label = "Trigger"
     node_type = "customEvent/trigger"
-
-    customEventType: bpy.props.EnumProperty(
-        name="Variable Type", description="Variable Type",
-        items=[("object", "Self", "Self"),
-               ("scene", "Scene", "Scene"),
-               ("graph", "Graph", "Graph"),
-               ("other", "Other", "Other")],
-        default="object")
 
     customEventName: bpy.props.StringProperty(
         name="Custom Event Name",
@@ -583,27 +544,21 @@ class BGNode_customEvent_trigger(BGActionNode, BGNode, Node):
         set=setCustomEventId,
     )
 
-    target: PointerProperty(
-        name="Target",
-        type=bpy.types.Object,
-        poll=filter_on_components
-    )
-
     def init(self, context):
         super().init(context)
+        self.inputs.new("BGHubsEntitySocket", "entity")
+        entity = self.inputs.get("entity")
+        entity.custom_type = "event_variable"
+        entity.export = False
 
     def draw_buttons(self, context, layout):
-        layout.prop(self, "customEventType")
-        if self.customEventType == "other":
-            col = layout.column()
-            col.prop(self, "target", text="Target")
         layout.prop(self, "customEventId")
 
     def refresh(self):
         self.customEventId = self.customEventId
 
     def gather_configuration(self, ob, variables, events, export_settings):
-        target = get_event_target(self, bpy.context, ob)
+        target = get_variable_target(self, bpy.context, ob)
         event_name = f"{target.name}_{self.customEventName}"
         if self.customEventName == 'None' or event_name not in events:
             print(f'WARNING: custom event node: {self.customEventName}[{event_name}],  id: "None"')
@@ -618,14 +573,6 @@ class BGNode_customEvent_onTriggered(BGEventNode, BGNode, Node):
     bl_label = "On Trigger"
     node_type = "customEvent/onTriggered"
 
-    customEventType: bpy.props.EnumProperty(
-        name="Variable Type", description="Variable Type",
-        items=[("object", "Self", "Self"),
-               ("scene", "Scene", "Scene"),
-               ("graph", "Graph", "Graph"),
-               ("other", "Other", "Other")],
-        default="object")
-
     customEventName: bpy.props.StringProperty(
         name="Custom Event Name",
         description="Custom Event Name",
@@ -640,27 +587,21 @@ class BGNode_customEvent_onTriggered(BGEventNode, BGNode, Node):
         set=setCustomEventId,
     )
 
-    target: PointerProperty(
-        name="Target",
-        type=bpy.types.Object,
-        poll=filter_on_components
-    )
-
     def init(self, context):
         super().init(context)
+        self.inputs.new("BGHubsEntitySocket", "entity")
+        entity = self.inputs.get("entity")
+        entity.custom_type = "event_variable"
+        entity.export = False
 
     def draw_buttons(self, context, layout):
-        layout.prop(self, "customEventType")
-        if self.customEventType == "other":
-            col = layout.column()
-            col.prop(self, "target", text="Target")
         layout.prop(self, "customEventId")
 
     def refresh(self):
         self.customEventId = self.customEventId
 
     def gather_configuration(self, ob, variables, events, export_settings):
-        target = get_event_target(self, bpy.context, ob)
+        target = get_variable_target(self, bpy.context, ob)
         event_name = f"{target.name}_{self.customEventName}"
         if self.customEventName == 'None' or event_name not in events:
             print(f'WARNING: custom event node: {self.customEventName}[{event_name}],  id: "None"')

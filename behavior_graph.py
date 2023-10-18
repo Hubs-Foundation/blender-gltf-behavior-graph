@@ -557,7 +557,8 @@ def gather_nodes(ob, idx, slot, export_settings, events, variables, export_repor
                 }
 
         for input_socket in node.inputs:
-            if input_socket.is_linked and not input_socket.hide:
+            export = True if not hasattr(input_socket, "export") else input_socket.export
+            if input_socket.is_linked and not input_socket.hide and export:
                 link = resolve_input_link(input_socket)
                 node_data["parameters"][input_socket.identifier] = {
                     "link": {

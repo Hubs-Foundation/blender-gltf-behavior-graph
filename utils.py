@@ -246,10 +246,16 @@ def propToType(property_definition):
 
 
 def filter_entity_type(self, context):
-    types = [("other", "Other", "Other")]
+    if not hasattr(self, "custom_type") or self.custom_type == "default":
+        types = [("other", "Other", "Other")]
 
-    if bpy.context.scene.bg_node_type != 'SCENE':
-        types.insert(0, ("self", "Self", "Self"))
+        if bpy.context.scene.bg_node_type != 'SCENE':
+            types.insert(0, ("self", "Self", "Self"))
+    elif self.custom_type == "event_variable":
+        types = [("object", "Self", "Self"),
+                 ("scene", "Scene", "Scene"),
+                 ("graph", "Graph", "Graph"),
+                 ("other", "Other", "Other")]
 
     return types
 

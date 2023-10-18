@@ -63,30 +63,45 @@ class BGHubsEntitySocket(NodeSocketStandard):
         default=""
     )
 
+    custom_type: bpy.props.EnumProperty(
+        name="",
+        description="Target Entity",
+        items=[("default", "Default", "Default"), ("event_variable", "Event/Variable", "Event/Variable")],
+        options={'HIDDEN'},
+        default=0
+    )
+
+    export: bpy.props.BoolProperty(default=True)
+
     def draw(self, context, layout, node, text):
         if self.is_output or self.is_linked:
             layout.label(text=text)
         else:
             col = layout.column()
             col.prop(self, "entity_type")
-            if self.entity_type != "self":
-                col.prop(self, "target", text=text)
+            if not hasattr(self, "custom_type") or self.custom_type == "default":
+                if self.entity_type != "self":
+                    col.prop(self, "target", text=text)
+            elif self.custom_type == "event_variable":
+                if self.entity_type == "other":
+                    col.prop(self, "target", text=text)
 
     def draw_color(self, context, node):
         return (0.2, 1.0, 0.2, 1.0)
 
     def gather_parameters(self, ob, export_settings):
-        if not self.target:
-            if type(ob) == bpy.types.Scene:
-                raise ExportException('Empty entity cannot be used for Scene objects in this context')
+        if not hasattr(self, "custom_type") or self.custom_type == "default":
+            if not self.target:
+                if type(ob) == bpy.types.Scene:
+                    raise ExportException('Empty entity cannot be used for Scene objects in this context')
+                else:
+                    return {
+                        "value": gather_object_property(export_settings, ob)
+                    }
             else:
                 return {
-                    "value": gather_object_property(export_settings, ob)
+                    "value": gather_object_property(export_settings, self.target)
                 }
-        else:
-            return {
-                "value": gather_object_property(export_settings, self.target)
-            }
 
 
 def get_choices(self, context):
