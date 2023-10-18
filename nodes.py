@@ -345,12 +345,12 @@ class BGNode_variable_get(BGNode, Node):
     node_type = "variable/get"
 
     variableType: bpy.props.EnumProperty(
-        name="Variable Type",
-        description="Variable Type",
-        items=[("object", "Object", "Object"), ("scene", "Scene", "Scene"), ("graph", "Graph", "Graph")],
-        update=update_selected_variable_output,
-        default="object"
-    )
+        name="Variable Type", description="Variable Type",
+        items=[("object", "Self", "Self"),
+               ("scene", "Scene", "Scene"),
+               ("graph", "Graph", "Graph"),
+               ("other", "Other", "Other")],
+        update=update_selected_variable_output, default="object")
 
     variableName: bpy.props.StringProperty(
         name="Variable Name",
@@ -367,6 +367,12 @@ class BGNode_variable_get(BGNode, Node):
         set=setVariableId,
     )
 
+    target: PointerProperty(
+        name="Target",
+        type=bpy.types.Object,
+        poll=filter_on_components
+    )
+
     def init(self, context):
         super().init(context)
         self.color = (0.2, 0.6, 0.2)
@@ -374,6 +380,9 @@ class BGNode_variable_get(BGNode, Node):
 
     def draw_buttons(self, context, layout):
         layout.prop(self, "variableType")
+        if self.variableType == "other":
+            col = layout.column()
+            col.prop(self, "target", text="Target")
         layout.prop(self, "variableId")
 
     def refresh(self):
@@ -430,12 +439,12 @@ class BGNode_variable_set(BGActionNode, BGNode, Node):
     node_type = "variable/set"
 
     variableType: bpy.props.EnumProperty(
-        name="Variable Type",
-        description="Variable Type",
-        items=[("object", "Object", "Object"), ("scene", "Scene", "Scene"), ("graph", "Graph", "Graph")],
-        update=update_selected_variable_input,
-        default="object"
-    )
+        name="Variable Type", description="Variable Type",
+        items=[("object", "Self", "Self"),
+               ("scene", "Scene", "Scene"),
+               ("graph", "Graph", "Graph"),
+               ("other", "Other", "Other")],
+        update=update_selected_variable_input, default="object")
 
     variableName: bpy.props.StringProperty(
         name="Variable Name",
@@ -452,6 +461,12 @@ class BGNode_variable_set(BGActionNode, BGNode, Node):
         set=setVariableId,
     )
 
+    target: PointerProperty(
+        name="Target",
+        type=bpy.types.Object,
+        poll=filter_on_components
+    )
+
     def init(self, context):
         super().init(context)
         self.color = (0.2, 0.6, 0.2)
@@ -459,6 +474,9 @@ class BGNode_variable_set(BGActionNode, BGNode, Node):
 
     def draw_buttons(self, context, layout):
         layout.prop(self, "variableType")
+        if self.variableType == "other":
+            col = layout.column()
+            col.prop(self, "target", text="Target")
         layout.prop(self, "variableId")
 
     def refresh(self):
@@ -501,6 +519,8 @@ def get_event_target(node, context, ob=None):
             target = context.object.bg_active_graph
         else:
             target = context.scene.bg_active_graph
+    elif node.customEventType == "other":
+        target = node.target
 
     return target
 
@@ -542,18 +562,12 @@ class BGNode_customEvent_trigger(BGActionNode, BGNode, Node):
     node_type = "customEvent/trigger"
 
     customEventType: bpy.props.EnumProperty(
-        name="Variable Type",
-        description="Variable Type",
-        items=[("object", "Object", "Object"), ("scene", "Scene", "Scene"), ("graph", "Graph", "Graph")],
-        default="object"
-    )
-
-    customEventType: bpy.props.EnumProperty(
-        name="Variable Type",
-        description="Variable Type",
-        items=[("object", "Object", "Object"), ("scene", "Scene", "Scene"), ("graph", "Graph", "Graph")],
-        default="object"
-    )
+        name="Variable Type", description="Variable Type",
+        items=[("object", "Self", "Self"),
+               ("scene", "Scene", "Scene"),
+               ("graph", "Graph", "Graph"),
+               ("other", "Other", "Other")],
+        default="object")
 
     customEventName: bpy.props.StringProperty(
         name="Custom Event Name",
@@ -569,11 +583,20 @@ class BGNode_customEvent_trigger(BGActionNode, BGNode, Node):
         set=setCustomEventId,
     )
 
+    target: PointerProperty(
+        name="Target",
+        type=bpy.types.Object,
+        poll=filter_on_components
+    )
+
     def init(self, context):
         super().init(context)
 
     def draw_buttons(self, context, layout):
         layout.prop(self, "customEventType")
+        if self.customEventType == "other":
+            col = layout.column()
+            col.prop(self, "target", text="Target")
         layout.prop(self, "customEventId")
 
     def refresh(self):
@@ -596,11 +619,12 @@ class BGNode_customEvent_onTriggered(BGEventNode, BGNode, Node):
     node_type = "customEvent/onTriggered"
 
     customEventType: bpy.props.EnumProperty(
-        name="Variable Type",
-        description="Variable Type",
-        items=[("object", "Object", "Object"), ("scene", "Scene", "Scene"), ("graph", "Graph", "Graph")],
-        default="object"
-    )
+        name="Variable Type", description="Variable Type",
+        items=[("object", "Self", "Self"),
+               ("scene", "Scene", "Scene"),
+               ("graph", "Graph", "Graph"),
+               ("other", "Other", "Other")],
+        default="object")
 
     customEventName: bpy.props.StringProperty(
         name="Custom Event Name",
@@ -616,11 +640,20 @@ class BGNode_customEvent_onTriggered(BGEventNode, BGNode, Node):
         set=setCustomEventId,
     )
 
+    target: PointerProperty(
+        name="Target",
+        type=bpy.types.Object,
+        poll=filter_on_components
+    )
+
     def init(self, context):
         super().init(context)
 
     def draw_buttons(self, context, layout):
         layout.prop(self, "customEventType")
+        if self.customEventType == "other":
+            col = layout.column()
+            col.prop(self, "target", text="Target")
         layout.prop(self, "customEventId")
 
     def refresh(self):
