@@ -91,17 +91,21 @@ class BGHubsEntitySocket(NodeSocketStandard):
 
     def gather_parameters(self, ob, export_settings):
         if not hasattr(self, "custom_type") or self.custom_type == "default":
-            if not self.target:
+            if self.entity_type == "self":
+                return {
+                    "value": gather_object_property(export_settings, ob)
+                }
+            elif self.target:
+                return {
+                    "value": gather_object_property(export_settings, self.target)
+                }
+            else:
                 if type(ob) == bpy.types.Scene:
                     raise ExportException('Empty entity cannot be used for Scene objects in this context')
                 else:
                     return {
                         "value": gather_object_property(export_settings, ob)
                     }
-            else:
-                return {
-                    "value": gather_object_property(export_settings, self.target)
-                }
 
 
 def get_choices(self, context):
