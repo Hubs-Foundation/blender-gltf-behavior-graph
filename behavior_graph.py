@@ -648,14 +648,18 @@ class glTF2ExportUserExtension:
                     # If we don't select and activate the object, the node properties
                     # that reference cached enums are empty sometimes. Very strange but for now
                     #  this works.
-                    was_selected = ob in bpy.context.selected_objects
-                    previous_active_ob = bpy.context.active_object
-                    ob.select_set(True)
-                    bpy.context.view_layer.objects.active = ob
+                    if type(ob) != bpy.types.Scene:
+                        was_selected = ob in bpy.context.selected_objects
+                        previous_active_ob = bpy.context.active_object
+                        ob.select_set(True)
+                        bpy.context.view_layer.objects.active = ob
+
                     nodes.extend(gather_nodes(ob, idx, slot, export_settings,
-                                 glob_events, glob_variables, export_report))
-                    ob.select_set(was_selected)
-                    bpy.context.view_layer.objects.active = previous_active_ob
+                                              glob_events, glob_variables, export_report))
+
+                    if type(ob) != bpy.types.Scene:
+                        ob.select_set(was_selected)
+                        bpy.context.view_layer.objects.active = previous_active_ob
 
         if nodes:
             if gltf2_object.extensions is None:
