@@ -447,7 +447,7 @@ class BGGraphPanel(bpy.types.Panel):
         else:
             target = context.scene
 
-        if not target.bg_active_graph:
+        if not hasattr(target, "bg_active_graph") or not target.bg_active_graph:
             return
 
         row = layout.row()
