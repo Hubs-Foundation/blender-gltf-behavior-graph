@@ -536,76 +536,70 @@ def gather_nodes(ob, idx, slot, export_settings, events, variables, export_repor
     nodes = []
 
     for node in slot.graph.nodes:
-        if not isinstance(node, BGNode):
-            continue
+        try:
+            if not isinstance(node, BGNode):
+                continue
 
-        prefix = f"{ob.name}_{slot.graph.name}_{idx}"
-        node_data = {
-            "id": f"{prefix}_{node.name}",
-            "type": node.node_type,
-            "parameters": {},
-            "configuration": {},
-            "flows": {}
-        }
+            print(f'Gathering {ob.name}-{slot.graph.name}-{node.name}')
 
-        for output_socket in node.outputs:
-            if isinstance(output_socket, BGFlowSocket) and output_socket.is_linked:
-                link = resolve_output_link(output_socket)
-                node_data["flows"][output_socket.identifier] = {
-                    "nodeId": f"{prefix}_{link.to_node.name}",
-                    "socket": link.to_socket.identifier
-                }
+            prefix = f"{ob.name}_{slot.graph.name}_{idx}"
+            node_data = {
+                "id": f"{prefix}_{node.name}",
+                "type": node.node_type,
+                "parameters": {},
+                "configuration": {},
+                "flows": {}
+            }
 
-        for input_socket in node.inputs:
-            export = True if not hasattr(input_socket, "export") else input_socket.export
-            if input_socket.is_linked and not input_socket.hide and export:
-                link = resolve_input_link(input_socket)
-                node_data["parameters"][input_socket.identifier] = {
-                    "link": {
-                        "nodeId": f"{prefix}_{link.from_node.name}",
-                        "socket": link.from_socket.identifier
+            for output_socket in node.outputs:
+                if isinstance(output_socket, BGFlowSocket) and output_socket.is_linked:
+                    link = resolve_output_link(output_socket)
+                    node_data["flows"][output_socket.identifier] = {
+                        "nodeId": f"{prefix}_{link.to_node.name}",
+                        "socket": link.to_socket.identifier
                     }
-                }
 
-            elif hasattr(input_socket, "gather_parameters") and callable(getattr(input_socket, "gather_parameters")):
-                try:
+            for input_socket in node.inputs:
+                export = True if not hasattr(input_socket, "export") else input_socket.export
+                if input_socket.is_linked and not input_socket.hide and export:
+                    link = resolve_input_link(input_socket)
+                    node_data["parameters"][input_socket.identifier] = {
+                        "link": {
+                            "nodeId": f"{prefix}_{link.from_node.name}",
+                            "socket": link.from_socket.identifier
+                        }
+                    }
+
+                elif hasattr(input_socket, "gather_parameters") and callable(getattr(input_socket, "gather_parameters")):
                     parameters = input_socket.gather_parameters(ob, export_settings)
                     if parameters != None:
                         node_data["parameters"].update({input_socket.identifier: parameters})
-                except ExportException as e:
-                    export_report.append(f'{ob.name}/{slot.graph.name}/{node.name}: {e}')
 
-            elif hasattr(node, "gather_parameters") and callable(getattr(node, "gather_parameters")):
-                try:
+                elif hasattr(node, "gather_parameters") and callable(getattr(node, "gather_parameters")):
                     parameters = node.gather_parameters(ob, input_socket, export_settings)
                     if parameters != None:
                         node_data["parameters"].update({input_socket.identifier: parameters})
-                except ExportException as e:
-                    export_report.append(f'{ob.name}/{slot.graph.name}/{node.name}: {e}')
 
-            else:
-                try:
+                else:
                     value = get_socket_value(ob, export_settings, input_socket)
                     if value != None:
                         node_data["parameters"].update({input_socket.identifier: {"value": value}})
-                except ExportException as e:
-                    export_report.append(f'{ob.name}/{slot.graph.name}/{node.name}: {e}')
 
-        if hasattr(node, "gather_configuration") and callable(getattr(node, "gather_configuration")):
-            try:
+            if hasattr(node, "gather_configuration") and callable(getattr(node, "gather_configuration")):
                 configuration = node.gather_configuration(ob, variables, events, export_settings)
                 if configuration != None:
                     node_data["configuration"] = configuration
-            except ExportException as e:
-                export_report.append(f'{ob.name}/{slot.graph.name}/{node.name}: {e}')
 
-        elif hasattr(node, "__annotations__"):
-            for key in node.__annotations__.keys():
-                if not node.is_property_hidden(key):
-                    node_data["configuration"][key] = gather_property(
-                        export_settings, node, node, key)
+            elif hasattr(node, "__annotations__"):
+                for key in node.__annotations__.keys():
+                    if not node.is_property_hidden(key):
+                        node_data["configuration"][key] = gather_property(
+                            export_settings, node, node, key)
 
-        nodes.append(node_data)
+            nodes.append(node_data)
+
+        except Exception as e:
+            export_report.append(f'ERROR: {ob.name}/{slot.graph.name}/{node.name}: {e}')
 
     return nodes
 

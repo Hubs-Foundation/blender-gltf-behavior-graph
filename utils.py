@@ -260,10 +260,6 @@ def filter_entity_type(self, context):
     return types
 
 
-class ExportException(Exception):
-    pass
-
-
 def do_register(ComponentClass):
     register_component(ComponentClass)
     __components_registry[ComponentClass.get_name()] = ComponentClass

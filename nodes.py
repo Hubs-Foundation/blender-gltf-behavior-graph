@@ -4,7 +4,7 @@ from bpy.types import Node
 from io_hubs_addon.components.definitions import text, video, audio, media_frame, visible
 from .components import networked_animation, networked_behavior, networked_transform, rigid_body, physics_shape
 from io_hubs_addon.io.utils import gather_property
-from .utils import gather_object_property, get_socket_value, filter_on_components, filter_entity_type, ExportException
+from .utils import gather_object_property, get_socket_value, filter_on_components, filter_entity_type
 
 
 class BGNode():
@@ -60,7 +60,7 @@ class BGEntityPropertyNode():
         from .behavior_graph import gather_object_property
         target = ob if self.entity_type == "self" else self.target
         if not self.target and type(ob) == bpy.types.Scene:
-            raise ExportException('Empty entity cannot be used for Scene objects in this context')
+            raise Exception('Empty entity cannot be used for Scene objects in this context')
         else:
             return {
                 "target": gather_object_property(export_settings, target)
@@ -69,7 +69,7 @@ class BGEntityPropertyNode():
     def gather_parameters(self, ob, input_socket, export_settings):
         if not self.target:
             if type(ob) == bpy.types.Scene:
-                raise ExportException('Empty entity cannot be used for Scene objects in this context')
+                raise Exception('Empty entity cannot be used for Scene objects in this context')
             else:
                 return {
                     "value": gather_object_property(export_settings, ob)
@@ -397,13 +397,16 @@ class BGNode_variable_get(BGNode, Node):
                 var_type = target.bg_global_variables.get(
                     self.variableId).type if has_var else "None"
                 if self.outputs[0] != None and var_type != socket_to_type[self.outputs[0].bl_idname]:
-                    target.bg_active_graph.links.remove(self.outputs[0].links[0])
+                    try:
+                        target.bg_active_graph.links.remove(self.outputs[0].links[0])
+                    except Exception as e:
+                        print(e)
 
     def gather_configuration(self, ob, variables, events, export_settings):
         target = get_variable_target(self, bpy.context, ob)
         var_name = f"{target.name}_{self.variableName}"
         if self.variableName == 'None' or var_name not in variables:
-            print(f'WARNING: variable node: {self.variableName}[{var_name}],  id: "None"')
+            raise Exception(f'variable node: {self.variableName}[{var_name}],  id: "None"')
         else:
             print(f'variable node: {self.variableName}, id: {variables[var_name]["id"]}')
             return {
@@ -486,7 +489,7 @@ class BGNode_variable_set(BGActionNode, BGNode, Node):
         target = get_variable_target(self, bpy.context, ob)
         var_name = f"{target.name}_{self.variableName}"
         if self.variableName == 'None' or var_name not in variables:
-            print(f'WARNING: variable node: {self.variableName}[{var_name}],  id: "None"')
+            raise Exception(f'variable node: {self.variableName}[{var_name}],  id: "None"')
         else:
             print(f'variable node: {self.variableName}, id: {variables[var_name]["id"]}')
             return {
@@ -561,7 +564,7 @@ class BGNode_customEvent_trigger(BGActionNode, BGNode, Node):
         target = get_variable_target(self, bpy.context, ob)
         event_name = f"{target.name}_{self.customEventName}"
         if self.customEventName == 'None' or event_name not in events:
-            print(f'WARNING: custom event node: {self.customEventName}[{event_name}],  id: "None"')
+            raise Exception(f' custom event node: {self.variableName}[{event_name}],  id: "None"')
         else:
             print(f'custom event node: {self.customEventName}, id: {events[event_name]["id"]}')
             return {
@@ -604,7 +607,7 @@ class BGNode_customEvent_onTriggered(BGEventNode, BGNode, Node):
         target = get_variable_target(self, bpy.context, ob)
         event_name = f"{target.name}_{self.customEventName}"
         if self.customEventName == 'None' or event_name not in events:
-            print(f'WARNING: custom event node: {self.customEventName}[{event_name}],  id: "None"')
+            raise Exception(f' custom event node: {self.variableName}[{event_name}],  id: "None"')
         else:
             print(f'custom event node: {self.customEventName}, id: {events[event_name]["id"]}')
             return {
