@@ -152,7 +152,7 @@ def get_socket_value(ob, export_settings, socket: NodeSocket):
         if socket.is_linked:
             return gather_texture_property(export_settings, socket, socket, "default_value")
         else:
-            raise ExportException("Linked textures not yet supported")
+            raise Exception("Linked textures not yet supported")
     elif socket_type == "color":
         return gather_color_property(export_settings, socket, socket, "default_value", "COLOR_GAMMA")
     elif socket_type == "vec3":
@@ -249,8 +249,13 @@ def filter_entity_type(self, context):
     if not hasattr(self, "custom_type") or self.custom_type == "default":
         types = [("other", "Other", "Other")]
 
-        if bpy.context.scene.bg_node_type != 'SCENE':
+        if hasattr(self, "export_type") and self.export_type != "none":
+            if self.export_type == "object":
+                types.insert(0, ("self", "Self", "Self"))
+
+        elif context.scene.bg_node_type != 'SCENE':
             types.insert(0, ("self", "Self", "Self"))
+
     elif self.custom_type == "event_variable":
         types = [("object", "Self", "Self"),
                  ("scene", "Scene", "Scene"),

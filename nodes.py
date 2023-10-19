@@ -51,17 +51,27 @@ class BGEntityPropertyNode():
         poll=filter_on_components
     )
 
+    export_type: bpy.props.EnumProperty(
+        name="Entity Type",
+        description="Entity Type",
+        items=[("none", "None", "None"), ("object", "Object", "Object"), ("scene", "Scene", "Scene")],
+        options={'HIDDEN'},
+    )
+
     def draw_buttons(self, context, layout):
         layout.prop(self, "entity_type")
         if self.entity_type != "self":
             layout.prop(self, "target")
 
     def gather_configuration(self, ob, variables, events, export_settings):
+        self.export_type = "object" if type(ob) == bpy.types.Object else "scene"
         from .behavior_graph import gather_object_property
         target = ob if self.entity_type == "self" else self.target
         if not self.target and type(ob) == bpy.types.Scene:
+            self.export_type = "none"
             raise Exception('Empty entity cannot be used for Scene objects in this context')
         else:
+            self.export_type = "none"
             return {
                 "target": gather_object_property(export_settings, target)
             }

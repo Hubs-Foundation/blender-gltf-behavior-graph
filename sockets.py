@@ -1,7 +1,7 @@
 import bpy
 from bpy.props import StringProperty, PointerProperty
 from bpy.types import NodeSocketStandard, NodeSocketInterface, NodeSocketString, NodeSocketInterfaceString
-from .utils import gather_object_property, filter_on_components, filter_entity_type, ExportException
+from .utils import gather_object_property, filter_on_components, filter_entity_type
 
 
 class BGFlowSocket(NodeSocketStandard):
@@ -64,11 +64,18 @@ class BGHubsEntitySocket(NodeSocketStandard):
     )
 
     custom_type: bpy.props.EnumProperty(
-        name="",
+        name="Target Entity",
         description="Target Entity",
         items=[("default", "Default", "Default"), ("event_variable", "Event/Variable", "Event/Variable")],
         options={'HIDDEN'},
         default=0
+    )
+
+    export_type: bpy.props.EnumProperty(
+        name="Entity Type",
+        description="Entity Type",
+        items=[("none", "None", "None"), ("object", "Object", "Object"), ("scene", "Scene", "Scene")],
+        options={'HIDDEN'},
     )
 
     export: bpy.props.BoolProperty(default=True)
@@ -90,18 +97,27 @@ class BGHubsEntitySocket(NodeSocketStandard):
         return (0.2, 1.0, 0.2, 1.0)
 
     def gather_parameters(self, ob, export_settings):
-        if not hasattr(self, "custom_type") or self.custom_type == "default":
+        if not hasattr(self, "custom_type") or self.custom_type == "default" and self.export:
+            self.export_type = "object" if type(ob) == bpy.types.Object else "scene"
+
+            if not self.entity_type:
+                self.export_type = "none"
+                raise Exception('Entity type not correctly set')
+
             if self.entity_type == "self":
+                self.export_type = "none"
                 return {
                     "value": gather_object_property(export_settings, ob)
                 }
             elif self.target:
+                self.export_type = "none"
                 return {
                     "value": gather_object_property(export_settings, self.target)
                 }
             else:
+                self.export_type = "none"
                 if type(ob) == bpy.types.Scene:
-                    raise ExportException('Empty entity cannot be used for Scene objects in this context')
+                    raise Exception('Empty entity cannot be used for Scene objects in this context')
                 else:
                     return {
                         "value": gather_object_property(export_settings, ob)
