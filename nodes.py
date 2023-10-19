@@ -400,15 +400,16 @@ class BGNode_variable_get(BGNode, Node):
         target = get_variable_target(self, bpy.context)
         has_var = self.variableName in target.bg_global_variables
         var_type = target.bg_global_variables.get(self.variableName).type if has_var else "None"
-        cur_type = socket_to_type[self.outputs[0].bl_idname] if self.outputs and len(self.outputs) > 0 else 'None'
+        cur_type = socket_to_type[self.outputs.get(
+            "value").bl_idname] if self.outputs and len(self.outputs) > 1 else 'None'
         if not has_var or var_type != cur_type:
-            if target and len(self.outputs) > 0 and len(self.outputs[0].links) > 0:
+            if target and len(self.outputs) > 1 and len(self.outputs.get("value").links) > 0:
                 has_var = self.variableId in target.bg_global_variables
                 var_type = target.bg_global_variables.get(
                     self.variableId).type if has_var else "None"
-                if self.outputs[0] != None and var_type != socket_to_type[self.outputs[0].bl_idname]:
+                if self.outputs.get("value") != None and var_type != socket_to_type[self.outputs.get("value").bl_idname]:
                     try:
-                        target.bg_active_graph.links.remove(self.outputs[0].links[0])
+                        target.bg_active_graph.links.remove(self.outputs.get("value").links[0])
                     except Exception as e:
                         print(e)
 
@@ -485,15 +486,19 @@ class BGNode_variable_set(BGActionNode, BGNode, Node):
 
         has_var = self.variableName in target.bg_global_variables
         var_type = target.bg_global_variables.get(self.variableName).type if has_var else "None"
-        cur_type = socket_to_type[self.inputs[1].bl_idname] if self.inputs and len(self.inputs) > 1 else 'None'
+        cur_type = socket_to_type[self.inputs.get(
+            "value").bl_idname] if self.inputs and len(self.inputs) > 2 else 'None'
         if not has_var or var_type != cur_type:
             update_selected_variable_input(self, bpy.context)
-            if target and len(self.inputs) > 1 and len(self.inputs[1].links) > 0:
+            if target and len(self.inputs) > 2 and len(self.inputs.get("value").links) > 0:
                 has_var = self.variableId in target.bg_global_variables
                 var_type = target.bg_global_variables.get(
                     self.variableId).type if has_var else "None"
-                if self.inputs[1] != None and var_type != socket_to_type[self.inputs[1].bl_idname]:
-                    target.bg_active_graph.links.remove(self.inputs[1].links[0])
+                if self.inputs.get("value") != None and var_type != socket_to_type[self.inputs.get("value").bl_idname]:
+                    try:
+                        target.bg_active_graph.links.remove(self.inputs.get("value").links[0])
+                    except Exception as e:
+                        print(e)
 
     def gather_configuration(self, ob, variables, events, export_settings):
         target = get_variable_target(self, bpy.context, ob)

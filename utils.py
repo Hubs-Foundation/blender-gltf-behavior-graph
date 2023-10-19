@@ -257,10 +257,12 @@ def filter_entity_type(self, context):
             types.insert(0, ("self", "Self", "Self"))
 
     elif self.custom_type == "event_variable":
-        types = [("object", "Self", "Self"),
-                 ("scene", "Scene", "Scene"),
+        types = [("scene", "Scene", "Scene"),
                  ("graph", "Graph", "Graph"),
                  ("other", "Other", "Other")]
+
+        if context.scene.bg_node_type != 'SCENE':
+            types.insert(0, ("object", "Object", "Object"))
 
     return types
 
