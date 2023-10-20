@@ -10,6 +10,8 @@ bl_info = {
 }
 
 glTF2ExportUserExtension = behavior_graph.glTF2ExportUserExtension
+glTF2_pre_export_callback = behavior_graph.glTF2_pre_export_callback
+glTF2_post_export_callback = behavior_graph.glTF2_post_export_callback
 
 
 def register():

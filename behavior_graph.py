@@ -648,8 +648,11 @@ class glTF2ExportUserExtension:
                         ob.select_set(True)
                         bpy.context.view_layer.objects.active = ob
 
+                    bpy.context.scene.bg_export_type = "object" if type(ob) == bpy.types.Object else "scene"
                     nodes.extend(gather_nodes(ob, idx, slot, export_settings,
                                               glob_events, glob_variables, export_report))
+                    bpy.context.scene.bg_export_type = ob
+                    bpy.context.scene.bg_export_type = "none"
 
                     if type(ob) != bpy.types.Scene:
                         ob.select_set(was_selected)
@@ -687,7 +690,25 @@ FILTERED_CATEGORIES = ["Media", "Text",  "String Math",
                        "Bool Math", "Int Math", "Float Math", "Vec3 Math", "Euler Math", "Physics", "Media Frame"]
 
 
+# We need to make sure that the bg_export_type property is reset to none after
+# exporting, otherwise filter_entity_type will always return the wrong items :S
+def glTF2_pre_export_callback(export_settings):
+    bpy.context.scene.bg_export_type = "none"
+
+
+def glTF2_post_export_callback(export_settings):
+    bpy.context.scene.bg_export_type = "none"
+
+
 def register():
+    # This property is used to keep track of the current exported object types. See filter_entity_type for more info.
+    bpy.types.Scene.bg_export_type = bpy.props.EnumProperty(
+        name="Object Export Type",
+        description="Type of the object that is currently being exported",
+        items=[("none", "None", "None"), ("object", "Object", "Object"), ("scene", "Scene", "Scene")],
+        options={'HIDDEN'},
+        default="none")
+
     read_nodespec(os.path.join(os.path.dirname(
         os.path.abspath(__file__)), "nodespec.json"))
 
@@ -716,6 +737,8 @@ def unregister():
 
     behavior_graph_node_categories.clear()
     extra_classes.clear()
+
+    del bpy.types.Scene.bg_export_type
 
 
 if __name__ == "__main__":

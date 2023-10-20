@@ -245,23 +245,43 @@ def propToType(property_definition):
         return prop_to_type[prop_type]
 
 
+# This function is used by several node entity_type properties and
+# it returns different values based on the node type (custom_type) and the
+# object that it's attached to. We decide what type of object it's attached to by
+# checking context.scene.bg_node_type but when exporting we can't trust
+# context.scene.bg_node_type as that will point to the currently selected graph node type
+# not to the actual object that's being exported.
+# To workaround that we use context.scene.bg_export_type that will be set to
+# the object type that is currently being exported.
+# Quite a hack for so far I didn't find a better workaround.
+
 def filter_entity_type(self, context):
+    # Used for general nodes that have an entity socket
     if not hasattr(self, "custom_type") or self.custom_type == "default":
         types = [("other", "Other", "Other")]
 
-        if hasattr(self, "export_type") and self.export_type != "none":
-            if self.export_type == "object":
+        # If bg_export_type is not None, it's export time
+        if context.scene.bg_export_type != "none":
+            if context.scene.bg_export_type != "scene":
                 types.insert(0, ("self", "Self", "Self"))
 
+        #  Execution time, bg_node_type will be set to the type of the current object
         elif context.scene.bg_node_type != 'SCENE':
             types.insert(0, ("self", "Self", "Self"))
 
+    # Used for custom variables and events entity sockets
     elif self.custom_type == "event_variable":
         types = [("scene", "Scene", "Scene"),
                  ("graph", "Graph", "Graph"),
                  ("other", "Other", "Other")]
 
-        if context.scene.bg_node_type != 'SCENE':
+        # If bg_export_type is not None, it's export time
+        if context.scene.bg_export_type != "none":
+            if context.scene.bg_export_type != "scene":
+                types.insert(0, ("object", "Object", "Object"))
+
+        #  Execution time, bg_node_type will be set to the type of the current object
+        elif context.scene.bg_node_type != 'SCENE':
             types.insert(0, ("object", "Object", "Object"))
 
     return types
