@@ -651,7 +651,6 @@ class glTF2ExportUserExtension:
                     bpy.context.scene.bg_export_type = "object" if type(ob) == bpy.types.Object else "scene"
                     nodes.extend(gather_nodes(ob, idx, slot, export_settings,
                                               glob_events, glob_variables, export_report))
-                    bpy.context.scene.bg_export_type = ob
                     bpy.context.scene.bg_export_type = "none"
 
                     if type(ob) != bpy.types.Scene:
