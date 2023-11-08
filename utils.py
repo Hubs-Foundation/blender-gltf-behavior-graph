@@ -129,6 +129,48 @@ def gather_object_property(export_settings, blender_object):
         return None
 
 
+def get_hubs_ext(export_settings):
+    exts = export_settings["gltf_user_extensions"]
+    for ext in exts:
+        import io_hubs_addon
+        if type(ext) == io_hubs_addon.io.gltf_exporter.glTF2ExportUserExtension:
+            return ext
+
+
+def add_component_to_node(gltf2_object, dep, value, export_settings):
+    from io_hubs_addon.io.gltf_exporter import hubs_config
+    hubs_ext = get_hubs_ext(export_settings)
+    hubs_ext_name = hubs_config["gltfExtensionName"]
+    if gltf2_object.extensions is None:
+        gltf2_object.extensions = {}
+    if hubs_ext_name not in gltf2_object.extensions:
+        gltf2_object.extensions[hubs_ext_name] = {dep.get_name(): value}
+    else:
+        if hasattr(gltf2_object.extensions[hubs_ext_name], "extension"):
+            if not dep.get_name() in gltf2_object.extensions[hubs_ext_name].extension:
+                gltf2_object.extensions[hubs_ext_name].extension.update({dep.get_name(): value})
+            else:
+                gltf2_object.extensions[hubs_ext_name].extension[dep.get_name()].update(value)
+        else:
+            gltf2_object.extensions[hubs_ext_name].update({dep.get_name(): value})
+
+
+def update_gltf_network_dependencies(node, export_settings, blender_object, dep, value={"networked": "true"}):
+    if type(blender_object) == bpy.types.Object:
+        vtree = export_settings['vtree']
+        vnode = vtree.nodes[next((uuid for uuid in vtree.nodes if (
+            vtree.nodes[uuid].blender_object == blender_object)), None)]
+        gltf_object = vnode.node or gltf2_blender_gather_nodes.gather_node(
+            vnode,
+            export_settings
+        )
+        add_component_to_node(gltf_object, dep, value, export_settings)
+    elif type(blender_object) == bpy.types.Material:
+        gltf_object = gltf2_blender_gather_materials.gather_material(
+            blender_object, 0, export_settings)
+        add_component_to_node(gltf_object, dep, value, export_settings)
+
+
 def get_socket_value(ob, export_settings, socket: NodeSocket):
     if hasattr(socket, "bl_socket_idname"):
         socket_idname = socket.bl_socket_idname
@@ -145,9 +187,17 @@ def get_socket_value(ob, export_settings, socket: NodeSocket):
         if socket.entity_type == "self":
             return gather_object_property(export_settings, ob)
         else:
-            return gather_property(export_settings, socket, socket, "target")
+            entity = gather_property(export_settings, socket, socket, "target")
+            if entity:
+                return entity
+            else:
+                raise Exception(f"Input socket {socket.name} not set")
     elif socket_type == "material":
-        return gather_material_property(export_settings, socket, socket, "default_value")
+        mat = gather_material_property(export_settings, socket, socket, "default_value")
+        if mat:
+            return mat
+        else:
+            raise Exception(f"Input socket {socket.name} not set")
     elif socket_type == "texture":
         if socket.is_linked:
             return gather_texture_property(export_settings, socket, socket, "default_value")
@@ -161,6 +211,31 @@ def get_socket_value(ob, export_settings, socket: NodeSocket):
         return gather_property(export_settings, socket, socket, "default_value")
     else:
         return None
+
+
+def get_variable_value(var, export_settings):
+    value = None
+    if var.type == "integer":
+        value = var.defaultInt
+    elif var.type == "boolean":
+        value = var.defaultBoolean
+    elif var.type == "float":
+        value = var.defaultFloat
+    elif var.type == "string":
+        value = var.defaultString
+    elif var.type == "vec3":
+        default = gather_vec_property(export_settings, var, var, "defaultVec3")
+    elif var.type == "animationAction":
+        value = var.defaultAnimationAction
+    elif var.type == "color":
+        value = gather_color_property(export_settings, var, var, "defaultColor", "COLOR_GAMMA")
+    elif var.type == "entity":
+        if var.defaultEntity.name not in bpy.context.view_layer.objects:
+            raise Exception(f"Entity {var.defaultEntity.name} does not exist")
+        else:
+            value = gather_property(export_settings, var, var, "defaultEntity")
+
+    return value
 
 
 def resolve_input_link(input_socket: bpy.types.NodeSocket) -> bpy.types.NodeLink:
@@ -278,13 +353,52 @@ def filter_entity_type(self, context):
         # If bg_export_type is not None, it's export time
         if context.scene.bg_export_type != "none":
             if context.scene.bg_export_type != "scene":
-                types.insert(0, ("object", "Object", "Object"))
+                types.insert(0, ("object", "Self", "Self"))
 
         #  Execution time, bg_node_type will be set to the type of the current object
         elif context.scene.bg_node_type != 'SCENE':
-            types.insert(0, ("object", "Object", "Object"))
+            types.insert(0, ("object", "Self", "Self"))
 
     return types
+
+
+def update_nodes(self, context):
+    if context.scene.bg_node_type == 'OBJECT':
+        if hasattr(context.object, "bg_active_graph") and context.object.bg_active_graph != None:
+            for node in context.object.bg_active_graph.nodes:
+                if hasattr(node, "refresh") and callable(getattr(node, "refresh")):
+                    node.refresh()
+    else:
+        if hasattr(context.scene, "bg_active_graph") and context.scene.bg_active_graph != None:
+            for node in context.scene.bg_active_graph.nodes:
+                if hasattr(node, "refresh") and callable(getattr(node, "refresh")):
+                    node.refresh()
+
+
+def update_graphs(self, context):
+    if hasattr(context.object, "bg_active_graph") and context.object.bg_active_graph != None:
+        context.object.bg_active_graph.update()
+    if hasattr(context.scene, "bg_active_graph") and context.scene.bg_active_graph != None:
+        context.scene.bg_active_graph.update()
+
+
+def get_graph_from_node(node):
+    return node.id_data
+
+
+def object_exists(ob):
+    from .behavior_graph import BGTree
+    if type(ob) == bpy.types.Scene:
+        return ob.name in bpy.data.scenes
+    elif type(ob) == BGTree:
+        return ob.name in bpy.data.node_groups
+    elif type(ob) == bpy.types.Object:
+        return ob.name in bpy.context.view_layer.objects
+    return False
+
+
+def get_prefs():
+    return bpy.context.preferences.addons[__package__].preferences
 
 
 def do_register(ComponentClass):

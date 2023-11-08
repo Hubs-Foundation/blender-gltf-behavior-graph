@@ -2,10 +2,9 @@ import bpy
 from bpy.types import PropertyGroup
 from bpy.props import EnumProperty, CollectionProperty, StringProperty, IntProperty, FloatProperty, BoolProperty, FloatVectorProperty
 from io_hubs_addon.components.hubs_component import HubsComponent
-from io_hubs_addon.components.types import Category, NodeType, PanelType
-from io_hubs_addon.io.utils import gather_property, gather_vec_property, gather_color_property
-from ..utils import do_register, do_unregister
-from ..ui import update_nodes
+from io_hubs_addon.components.types import NodeType, PanelType
+from io_hubs_addon.io.utils import gather_vec_property
+from ..utils import do_register, do_unregister, gather_object_property, update_nodes
 
 NETWORKED_TYPES = [
     ("boolean", "Boolean", "Boolean"),
@@ -110,6 +109,7 @@ class NetworkedBehaviorPropList(bpy.types.UIList):
 
 
 def get_value(prop, export_settings):
+    value = None
     if prop.type == "integer":
         value = prop.defaultInt
     elif prop.type == "boolean":
@@ -120,6 +120,10 @@ def get_value(prop, export_settings):
         value = prop.defaultString
     elif prop.type == "vec3":
         value = gather_vec_property(export_settings, prop, prop, "defaultVec3")
+    elif prop.type == "entity":
+        value = gather_object_property(export_settings, prop.defaultEntity)
+    elif prop.type == "animationAction":
+        value = prop.defaultAnimationAction
 
     return value
 
@@ -128,12 +132,10 @@ class NetworkedBehavior(HubsComponent):
     _definition = {
         'name': 'networked-behavior',
         'display_name': 'BG Networked Behavior',
-        'category': Category.OBJECT,
         'node_type': NodeType.NODE,
         'panel_type': [PanelType.OBJECT],
         'icon': 'NODETREE',
-        'version': (1, 0, 0),
-        'deps': ['networked']
+        'version': (1, 0, 0)
     }
 
     props_list: CollectionProperty(

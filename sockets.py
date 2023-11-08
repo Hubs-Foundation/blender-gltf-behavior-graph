@@ -1,7 +1,7 @@
 import bpy
 from bpy.props import StringProperty, PointerProperty
 from bpy.types import NodeSocketStandard, NodeSocketInterface, NodeSocketString, NodeSocketInterfaceString
-from .utils import gather_object_property, filter_on_components, filter_entity_type
+from .utils import gather_object_property, filter_on_components, filter_entity_type, update_nodes
 
 
 class BGFlowSocket(NodeSocketStandard):
@@ -39,20 +39,28 @@ class BGHubsEntitySocketInterface(NodeSocketInterface):
         return (0.2, 1.0, 0.2, 1.0)
 
 
+def update_entity_socket(self, context):
+    if self.refresh:
+        update_nodes(self, context)
+
+
 class BGHubsEntitySocket(NodeSocketStandard):
     bl_label = "Hubs Entity"
 
     target: PointerProperty(
-        name="Target",
+        name="Target Entity",
+        description="Target Entity",
         type=bpy.types.Object,
-        poll=filter_on_components
+        poll=filter_on_components,
+        update=update_entity_socket
     )
 
     entity_type: bpy.props.EnumProperty(
-        name="",
-        description="Target Entity",
+        name="Entity Type",
+        description="Entity Type",
         items=filter_entity_type,
         options={'HIDDEN'},
+        update=update_entity_socket,
         default=0
     )
 
@@ -64,14 +72,15 @@ class BGHubsEntitySocket(NodeSocketStandard):
     )
 
     custom_type: bpy.props.EnumProperty(
-        name="Target Entity",
-        description="Target Entity",
-        items=[("default", "Default", "Default"), ("event_variable", "Event/Variable", "Event/Variable")],
+        name="Custom Type", description="Custom Type",
+        items=[("default", "Default", "Default"),
+               ("event_variable", "Event/Variable", "Event/Variable")],
         options={'HIDDEN'},
-        default=0
-    )
+        default=0)
 
     export: bpy.props.BoolProperty(default=True)
+
+    refresh: bpy.props.BoolProperty(default=True)
 
     def draw(self, context, layout, node, text):
         if self.is_output or self.is_linked:
@@ -99,9 +108,12 @@ class BGHubsEntitySocket(NodeSocketStandard):
                     "value": gather_object_property(export_settings, ob)
                 }
             elif self.target:
-                return {
-                    "value": gather_object_property(export_settings, self.target)
-                }
+                if self.target.name not in bpy.context.view_layer.objects:
+                    raise Exception(f"Entity {self.target.name} does not exist")
+                else:
+                    return {
+                        "value": gather_object_property(export_settings, self.target)
+                    }
             else:
                 if type(ob) == bpy.types.Scene:
                     raise Exception('Empty entity cannot be used for Scene objects in this context')

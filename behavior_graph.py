@@ -7,8 +7,9 @@ from bpy.props import StringProperty
 from bpy.types import Node, NodeTree, NodeReroute, NodeSocketString
 from bpy.utils import register_class, unregister_class
 from nodeitems_utils import NodeCategory, NodeItem, register_node_categories, unregister_node_categories
-from io_hubs_addon.io.utils import gather_property, gather_vec_property, gather_color_property
-from .utils import get_socket_value, type_to_socket, resolve_input_link, resolve_output_link
+from io_hubs_addon.io.utils import gather_property
+from .utils import get_socket_value, type_to_socket, resolve_input_link, resolve_output_link, get_variable_value
+from .consts import CUSTOM_CATEGORY_NODES, DEPRECATED_NODES, CATEGORY_COLORS
 
 auto_casts = {
     ("BGHubsEntitySocket", "NodeSocketString"): "BGNode_hubs_entity_toString",
@@ -35,6 +36,10 @@ auto_casts = {
     ("NodeSocketVectorXYZ", "NodeSocketFloat"): "BGNode_math_toFloat_vec3",
     ("NodeSocketFloat", "NodeSocketVectorXYZ"): "BGNode_math_toVec3_float",
 }
+
+
+def get_node_class_name(node_type):
+    return "BGNode_" + node_type.replace("/", "_")
 
 
 class BGTree(NodeTree):
@@ -114,17 +119,6 @@ class NODE_MT_behavior_graphs_subcategory_Text(bpy.types.Menu):
         layout = self.layout
         from bl_ui import node_add_menu
         node_add_menu.add_node_type(layout, "BGNode_text_setTextProperties")
-
-
-class NODE_MT_behavior_graphs_subcategory_Networked_Behavior(bpy.types.Menu):
-    bl_idname = "NODE_MT_behavior_graphs_subcategory_Networked_Behavior"
-    bl_label = "Networked Behavior"
-
-    def draw(self, context):
-        layout = self.layout
-        from bl_ui import node_add_menu
-        node_add_menu.add_node_type(layout, "BGNode_networkedVariable_get")
-        node_add_menu.add_node_type(layout, "BGNode_networkedVariable_set")
 
 
 class NODE_MT_behavior_graphs_subcategory_Custom_Tags(bpy.types.Menu):
@@ -277,7 +271,7 @@ class BGSubcategory(NodeItem):
         layout.menu(f"NODE_MT_behavior_graphs_subcategory_{suffix}", text=self.label)
 
 
-behavior_graph_node_categories = {
+CUSTOM_CATEGORIES = {
     "Event": [
         BGSubcategory(f"BEHAVIOR_GRAPH_Subcategory_Events_Lifecycle", label="Lifecycle Events"),
         BGSubcategory(f"BEHAVIOR_GRAPH_Subcategory_Events_Entity", label="Entity Events"),
@@ -290,8 +284,8 @@ behavior_graph_node_categories = {
         NodeItem("BGNode_get_component"),
     ],
     "Variables": [
-        NodeItem("BGNode_variable_get"),
-        NodeItem("BGNode_variable_set"),
+        NodeItem("BGNode_networkedVariable_get"),
+        NodeItem("BGNode_networkedVariable_set"),
     ],
     "Flow": [
         NodeItem("BGNode_flow_sequence"),
@@ -299,12 +293,9 @@ behavior_graph_node_categories = {
     "Components": [
         NodeItem("BGNode_set_component_property"),
         NodeItem("BGNode_get_component_property"),
-        BGSubcategory(f"BEHAVIOR_GRAPH_Subcategory_Networked_Behavior", label="Networked Behavior"),
         BGSubcategory(f"BEHAVIOR_GRAPH_Subcategory_Media", label="Media"),
-        BGSubcategory(f"BEHAVIOR_GRAPH_Subcategory_Text", label="Text"),
         BGSubcategory(f"BEHAVIOR_GRAPH_Subcategory_Custom_Tags", label="Custom Tags"),
-        BGSubcategory(f"BEHAVIOR_GRAPH_Subcategory_Media_Frame", label="Media Frame"),
-        BGSubcategory(f"BEHAVIOR_GRAPH_Subcategory_Physics", label="Physics")
+        BGSubcategory(f"BEHAVIOR_GRAPH_Subcategory_Media_Frame", label="Media Frame")
     ],
     "Math": [
         BGSubcategory(f"BEHAVIOR_GRAPH_Subcategory_String_Math", label="String Math"),
@@ -313,8 +304,22 @@ behavior_graph_node_categories = {
         BGSubcategory(f"BEHAVIOR_GRAPH_Subcategory_Float_Math", label="Float Math"),
         BGSubcategory(f"BEHAVIOR_GRAPH_Subcategory_Vec3_Math", label="Vec3 Math"),
         BGSubcategory(f"BEHAVIOR_GRAPH_Subcategory_Euler_Math", label="Euler Math")
+    ],
+    "Materials": [
+        NodeItem("BGNode_get_material_property"),
+        NodeItem("BGNode_set_material_property"),
+        NodeItem("BGNode_set_material")
+    ],
+    "Animation": [
+        NodeItem("BGNode_animation_createAnimationAction"),
+        NodeItem("BGNode_animation_play"),
+        NodeItem("BGNode_animation_stop"),
+        NodeItem("BGNode_animation_crossfadeTo"),
+        NodeItem("BGNode_three_animation_setTimescale")
     ]
 }
+
+behavior_graph_node_categories = {}
 
 
 all_classes = [
@@ -351,11 +356,23 @@ all_classes = [
     BGNode_networkedVariable_get,
     BGNode_networkedVariable_set,
 
+    BGNode_media_mediaPlayback,
     BGNode_media_onMediaEvent,
+
+    BGNode_media_frame_setMediaFrameProperty,
+
+    BGNode_set_material,
+    BGNode_set_material_property,
+    BGNode_get_material_property,
+
+    BGNode_animation_createAnimationAction,
+    BGNode_animation_play,
+    BGNode_animation_stop,
+    BGNode_animation_crossfadeTo,
+    BGNode_three_animation_setTimescale,
 
     NODE_MT_behavior_graphs_subcategory_Media,
     NODE_MT_behavior_graphs_subcategory_Text,
-    NODE_MT_behavior_graphs_subcategory_Networked_Behavior,
     NODE_MT_behavior_graphs_subcategory_String_Math,
     NODE_MT_behavior_graphs_subcategory_Bool_Math,
     NODE_MT_behavior_graphs_subcategory_Int_Math,
@@ -375,15 +392,9 @@ all_classes = [
 
 extra_classes = []
 
-hardcoded_nodes = {
-    node.node_type for node in all_classes + extra_classes if hasattr(node, "node_type")}
-
-category_colors = {
-    "Event":  (0.6, 0.2, 0.2),
-    "Flow":  (0.2, 0.2, 0.2),
-    "Time":  (0.3, 0.3, 0.3),
-    "Action":  (0.2, 0.2, 0.6),
-    "None": (0.6, 0.6, 0.2)
+# Nodes that we don't want to load from the spec because we want to use the hardcoded one
+HARDCODED_NODES = {
+    node.node_type for node in all_classes + extra_classes if hasattr(node, "node_type")
 }
 
 
@@ -402,10 +413,10 @@ def create_node_class(node_data):
         def init(self, context):
             super().init(context)
 
-            if node_data["category"] in category_colors:
-                self.color = category_colors[node_data["category"]]
+            if node_data["category"] in CATEGORY_COLORS:
+                self.color = CATEGORY_COLORS[node_data["category"]]
             else:
-                self.color = category_colors["None"]
+                self.color = CATEGORY_COLORS["None"]
 
             for input_data in node_data["inputs"]:
 
@@ -443,24 +454,18 @@ def create_node_class(node_data):
                 if "description" in output_data:
                     sock.description = output_data["description"]
 
-    CustomNode.__name__ = "BGNode_" + node_data['type'].replace("/", "_")
+    CustomNode.__name__ = get_node_class_name(node_data['type'])
     print(CustomNode.__name__)
 
     return CustomNode
 
 
-FILTERED_NODES = ["BGNode_hubs_onPlayerJoined", "BGNode_hubs_onPlayerLeft", "BGNode_lifecycle_onStart",
-                  "BGNode_lifecycle_onEnd", "BGNode_lifecycle_onTick",
-                  "BGNode_hubs_entity_components_custom_tags_removeTag",
-                  "BGNode_hubs_entity_components_custom_tags_addTag",
-                  "BGNode_hubs_entity_components_custom_tags_hasTag"]
-
-
 def read_nodespec(filename):
     with open(filename, "r") as file:
         nodes = json.load(file)
+        nodes.sort(key=lambda item: item["label"])
         for node_spec in nodes:
-            if node_spec["type"] in hardcoded_nodes:
+            if node_spec["type"] in HARDCODED_NODES or node_spec["type"] in HARDCODED_NODES:
                 print("SKIP", node_spec["type"])
                 continue
             category = node_spec["category"]
@@ -468,36 +473,21 @@ def read_nodespec(filename):
                 behavior_graph_node_categories[category] = []
             node_class = create_node_class(node_spec)
             extra_classes.append(node_class)
-            if node_class.__name__ not in FILTERED_NODES:
+            if (node_class.__name__ not in CUSTOM_CATEGORY_NODES) and (node_class.__name__ not in DEPRECATED_NODES):
                 behavior_graph_node_categories[category].append(
                     NodeItem(node_class.__name__))
 
 
 def get_object_variables(ob, variables, export_settings):
     for var in ob.bg_global_variables:
-        default = None
-        if var.type == "integer":
-            default = var.defaultInt
-        elif var.type == "boolean":
-            default = var.defaultBoolean
-        elif var.type == "float":
-            default = var.defaultFloat
-        elif var.type == "string":
-            default = var.defaultString
-        elif var.type == "vec3":
-            default = gather_vec_property(export_settings, var, var, "defaultVec3")
-        elif var.type == "animationAction":
-            default = var.defaultAnimationAction
-        elif var.type == "color":
-            default = gather_color_property(export_settings, var, var, "defaultColor", "COLOR_GAMMA")
-        elif var.type == "entity":
-            default = gather_property(export_settings, var, var, "defaultEntity")
-        variables[f"{ob.name}_{var.name}"] = {
-            "name": f"{ob.name}_{var.name}",
-            "id": len(variables),
-            "valueTypeName": var.type,
-            "initialValue": default
-        }
+        if not var.networked:
+            value = get_variable_value(var, export_settings)
+            variables[f"{ob.name}_{var.name}"] = {
+                "name": f"{ob.name}_{var.name}",
+                "id": len(variables),
+                "valueTypeName": var.type,
+                "initialValue": value
+            }
 
 
 def get_object_custom_events(ob, events, export_settings):
@@ -595,6 +585,9 @@ def gather_nodes(ob, idx, slot, export_settings, events, variables, export_repor
                     if not node.is_property_hidden(key):
                         node_data["configuration"][key] = gather_property(
                             export_settings, node, node, key)
+
+            if hasattr(node, "update_network_dependencies") and callable(getattr(node, "update_network_dependencies")):
+                node.update_network_dependencies(ob, export_settings)
 
             nodes.append(node_data)
 
@@ -694,6 +687,12 @@ FILTERED_CATEGORIES = ["Media", "Text",  "String Math",
 def glTF2_pre_export_callback(export_settings):
     bpy.context.scene.bg_export_type = "none"
 
+    exts = export_settings["gltf_user_extensions"]
+    for ext in exts:
+        import io_hubs_addon
+        if type(ext) == io_hubs_addon.io.gltf_exporter.glTF2ExportUserExtension:
+            ext.was_used = True
+
 
 def glTF2_post_export_callback(export_settings):
     bpy.context.scene.bg_export_type = "none"
@@ -707,6 +706,8 @@ def register():
         items=[("none", "None", "None"), ("object", "Object", "Object"), ("scene", "Scene", "Scene")],
         options={'HIDDEN'},
         default="none")
+
+    behavior_graph_node_categories.update(CUSTOM_CATEGORIES)
 
     read_nodespec(os.path.join(os.path.dirname(
         os.path.abspath(__file__)), "nodespec.json"))

@@ -10,8 +10,7 @@ class NetworkedTransform(HubsComponent):
         'node_type': NodeType.NODE,
         'panel_type': [PanelType.OBJECT],
         'icon': 'EMPTY_AXIS',
-        'version': (1, 0, 0),
-        'deps': ['networked']
+        'version': (1, 0, 0)
     }
 
 

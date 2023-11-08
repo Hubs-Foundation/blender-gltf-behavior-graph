@@ -21,7 +21,7 @@ class RigidBody(HubsComponent):
         'node_type': NodeType.NODE,
         'panel_type': [PanelType.OBJECT],
         'icon': 'PHYSICS',
-        'deps': ['physics-shape', 'networked'],
+        'deps': ['physics-shape'],
         'version': (1, 0, 0)
     }
 
