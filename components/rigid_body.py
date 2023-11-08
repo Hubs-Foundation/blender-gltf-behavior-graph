@@ -136,6 +136,10 @@ class RigidBody(HubsComponent):
         layout.prop(self, "angularFactor")
         layout.prop(self, "gravity")
 
+    @classmethod
+    def init(cls, obj):
+        obj.hubs_component_list.items.get('physics-shape').isDependency = True
+
 
 def register():
     do_register(RigidBody)

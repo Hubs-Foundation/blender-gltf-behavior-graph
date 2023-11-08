@@ -24,6 +24,8 @@ class Grabbable(HubsComponent):
 
     @classmethod
     def init(cls, obj):
+        obj.hubs_component_list.items.get('rigidbody').isDependency = True
+        obj.hubs_component_list.items.get('networked-object-properties').isDependency = True
         from .networked_object_properties import NetworkedObjectProperties
         cmp = getattr(obj, NetworkedObjectProperties.get_id())
         cmp.transform = True
