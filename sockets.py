@@ -107,6 +107,18 @@ class BGHubsEntitySocket(NodeSocketStandard):
                 return {
                     "value": gather_object_property(export_settings, ob)
                 }
+            elif self.entity_type == "other":
+                if self.target:
+                    if self.target.name not in bpy.context.view_layer.objects:
+                        raise Exception(f"Entity {self.target.name} does not exist")
+                    else:
+                        return {
+                            "value": gather_object_property(export_settings, self.target)
+                        }
+                else:
+                    return {
+                        "value": gather_object_property(export_settings, self.target)
+                    }
             elif self.target:
                 if self.target.name not in bpy.context.view_layer.objects:
                     raise Exception(f"Entity {self.target.name} does not exist")
