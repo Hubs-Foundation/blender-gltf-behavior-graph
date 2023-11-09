@@ -224,7 +224,7 @@ def get_variable_value(var, export_settings):
     elif var.type == "string":
         value = var.defaultString
     elif var.type == "vec3":
-        default = gather_vec_property(export_settings, var, var, "defaultVec3")
+        value = gather_vec_property(export_settings, var, var, "defaultVec3")
     elif var.type == "animationAction":
         value = var.defaultAnimationAction
     elif var.type == "color":
