@@ -502,17 +502,25 @@ def gather_events_and_variables(export_settings):
     events = {}
     variables = {}
 
+    # Graph variables
     for graph in bpy.data.node_groups:
         get_object_variables(graph, variables, export_settings)
 
+    # Scene variables
     get_object_variables(bpy.context.scene, variables, export_settings)
+
+    # Object variables
     for ob in bpy.context.view_layer.objects:
         get_object_variables(ob, variables, export_settings)
 
+    # Graph Custom Events
     for graph in bpy.data.node_groups:
         get_object_custom_events(graph, events, export_settings)
 
+    # Scene Custom Events
     get_object_custom_events(bpy.context.scene, events, export_settings)
+
+    # Object Custom Events
     for ob in bpy.context.view_layer.objects:
         get_object_custom_events(ob, events, export_settings)
 

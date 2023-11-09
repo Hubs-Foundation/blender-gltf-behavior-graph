@@ -206,7 +206,7 @@ class BGGlobalVariableType(PropertyGroup):
 
     networked: BoolProperty(
         name="networked",
-        description="Networked",
+        description="If checked this variable will be Networked",
         update=update_nodes,
         default=False
     )
