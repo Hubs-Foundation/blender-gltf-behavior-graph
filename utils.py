@@ -213,7 +213,7 @@ def get_socket_value(ob, export_settings, socket: NodeSocket):
         return None
 
 
-def get_variable_value(var, export_settings):
+def get_variable_value(ob, var, export_settings):
     value = None
     if var.type == "integer":
         value = var.defaultInt
@@ -230,10 +230,12 @@ def get_variable_value(var, export_settings):
     elif var.type == "color":
         value = gather_color_property(export_settings, var, var, "defaultColor", "COLOR_GAMMA")
     elif var.type == "entity":
-        if var.defaultEntity.name not in bpy.context.view_layer.objects:
-            raise Exception(f"Entity {var.defaultEntity.name} does not exist")
-        else:
-            value = gather_property(export_settings, var, var, "defaultEntity")
+        if var.defaultEntity:
+            if var.defaultEntity.name in bpy.context.view_layer.objects:
+                value = gather_property(export_settings, var, var, "defaultEntity")
+            else:
+                raise Exception(
+                    f"Variable {ob.name}/{var.name} entity {var.defaultEntity.name} does not exist in the scene")
 
     return value
 

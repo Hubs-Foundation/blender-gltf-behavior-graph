@@ -861,7 +861,7 @@ class BGNode_networkedVariable_set(BGNetworked, BGActionNode, BGNode, Node):
             value = {
                 self.prop_name: {
                     "type": prop.type,
-                    "value": get_variable_value(prop, export_settings)
+                    "value": get_variable_value(target, prop, export_settings)
                 }
             }
             update_gltf_network_dependencies(self, export_settings, target, NetworkedBehavior, value)

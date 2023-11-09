@@ -481,7 +481,7 @@ def read_nodespec(filename):
 def get_object_variables(ob, variables, export_settings):
     for var in ob.bg_global_variables:
         if not var.networked:
-            value = get_variable_value(var, export_settings)
+            value = get_variable_value(ob, var, export_settings)
             variables[f"{ob.name}_{var.name}"] = {
                 "name": f"{ob.name}_{var.name}",
                 "id": len(variables),
@@ -624,54 +624,58 @@ class glTF2ExportUserExtension:
         for ob in list(bpy.data.scenes) + list(bpy.context.view_layer.objects):
             slots.append({"ob": ob, "slots": list(ob.bg_slots)})
 
-        glob_events, glob_variables = gather_events_and_variables(export_settings)
+        try:
+            glob_events, glob_variables = gather_events_and_variables(export_settings)
 
-        variables = []
-        customEvents = []
-        for var in glob_variables:
-            variables.append(glob_variables[var])
-        for event in glob_events:
-            customEvents.append(glob_events[event])
+            variables = []
+            customEvents = []
+            for var in glob_variables:
+                variables.append(glob_variables[var])
+            for event in glob_events:
+                customEvents.append(glob_events[event])
 
-        nodes = []
-        for item in slots:
-            ob = item["ob"]
-            slots = item["slots"]
-            for slot in slots:
-                if slot is not None:
-                    idx = slots.index(slot)
-                    # If we don't select and activate the object, the node properties
-                    # that reference cached enums are empty sometimes. Very strange but for now
-                    #  this works.
-                    if type(ob) != bpy.types.Scene:
-                        was_selected = ob in bpy.context.selected_objects
-                        previous_active_ob = bpy.context.active_object
-                        ob.select_set(True)
-                        bpy.context.view_layer.objects.active = ob
+            nodes = []
+            for item in slots:
+                ob = item["ob"]
+                slots = item["slots"]
+                for slot in slots:
+                    if slot is not None:
+                        idx = slots.index(slot)
+                        # If we don't select and activate the object, the node properties
+                        # that reference cached enums are empty sometimes. Very strange but for now
+                        #  this works.
+                        if type(ob) != bpy.types.Scene:
+                            was_selected = ob in bpy.context.selected_objects
+                            previous_active_ob = bpy.context.active_object
+                            ob.select_set(True)
+                            bpy.context.view_layer.objects.active = ob
 
-                    bpy.context.scene.bg_export_type = "object" if type(ob) == bpy.types.Object else "scene"
-                    nodes.extend(gather_nodes(ob, idx, slot, export_settings,
-                                              glob_events, glob_variables, export_report))
-                    bpy.context.scene.bg_export_type = "none"
+                        bpy.context.scene.bg_export_type = "object" if type(ob) == bpy.types.Object else "scene"
+                        nodes.extend(gather_nodes(ob, idx, slot, export_settings,
+                                                  glob_events, glob_variables, export_report))
+                        bpy.context.scene.bg_export_type = "none"
 
-                    if type(ob) != bpy.types.Scene:
-                        ob.select_set(was_selected)
-                        bpy.context.view_layer.objects.active = previous_active_ob
+                        if type(ob) != bpy.types.Scene:
+                            ob.select_set(was_selected)
+                            bpy.context.view_layer.objects.active = previous_active_ob
 
-        if nodes:
-            if gltf2_object.extensions is None:
-                gltf2_object.extensions = {}
-            gltf2_object.extensions["MOZ_behavior"] = self.Extension(
-                name="MOZ_behavior",
-                extension={
-                    "behaviors": [{
-                        "customEvents": customEvents,
-                        "variables": variables,
-                        "nodes": nodes
-                    }]
-                },
-                required=False
-            )
+            if nodes:
+                if gltf2_object.extensions is None:
+                    gltf2_object.extensions = {}
+                gltf2_object.extensions["MOZ_behavior"] = self.Extension(
+                    name="MOZ_behavior",
+                    extension={
+                        "behaviors": [{
+                            "customEvents": customEvents,
+                            "variables": variables,
+                            "nodes": nodes
+                        }]
+                    },
+                    required=False
+                )
+
+        except Exception as e:
+            export_report.append(f'ERROR: {e}')
 
         if len(export_report) > 0:
             bpy.ops.wm.hubs_report_viewer('INVOKE_DEFAULT', title="Behavior Graphs export report",
