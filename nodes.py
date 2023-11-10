@@ -660,15 +660,17 @@ def get_input_entity(node, context, ob=None):
         target = entity_socket.target
         if node.inputs.get("entity").is_linked and len(entity_socket.links) > 0:
             link = entity_socket.links[0]
-            # When copying entities the variable is updated in the networked behavior list
-            # but not on the socket so we pull the variable value directly from the list
             from_node = link.from_socket.node
             # This case should go away when we remove BGNode_variable_get
             if from_node.bl_idname == "BGNode_variable_get":
                 from_target = get_input_entity(from_node, context, ob)
+                # When copying entities the variable is updated in the variables list
+                # but not on the socket so we pull the variable value directly from the list
                 target = from_target.bg_global_variables.get(from_node.variableName).defaultEntity
             elif from_node.bl_idname == "BGNode_networkedVariable_get":
                 from_target = get_input_entity(from_node, context, ob)
+                # When copying entities the variable is updated in the variables list
+                # but not on the socket so we pull the variable value directly from the list
                 target = from_target.bg_global_variables.get(from_node.prop_name).defaultEntity
             elif from_node.bl_idname == "BGNode_hubs_entity_properties":
                 from_target = get_input_entity(from_node, context, ob)
@@ -683,10 +685,17 @@ def get_input_entity(node, context, ob=None):
             elif entity_socket.entity_type == "scene":
                 target = context.scene
             elif entity_socket.entity_type == "graph":
-                if context.scene.bg_node_type == 'OBJECT':
-                    target = context.object.bg_active_graph
+                # When exporting we use the current exporting object as the target object
+                if ob:
+                    if type(ob) == bpy.types.Object:
+                        target = context.object.bg_active_graph
+                    else:
+                        target = context.scene.bg_active_graph
                 else:
-                    target = context.scene.bg_active_graph
+                    if context.scene.bg_node_type == 'OBJECT':
+                        target = context.object.bg_active_graph
+                    else:
+                        target = context.scene.bg_active_graph
 
     return target
 
