@@ -7,7 +7,7 @@ from .consts import MATERIAL_PROPERTIES_ENUM, MATERIAL_PROPERTIES_TO_TYPES, SUPP
 
 
 def update_networked_color(self, context):
-    if hasattr(self, "networked") and self.networked:
+    if hasattr(self, "networked") and self.networked or self.category == "Networking":
         self.color = get_prefs().network_node_color
     else:
         self.color = (0.2, 0.6, 0.2)
@@ -17,8 +17,14 @@ class BGNode():
     bl_label = "Behavior Graph Node"
     bl_icon = "NODE"
 
+    category: bpy.props.StringProperty()
+
     def init(self, context):
         self.use_custom_color = True
+
+    def refresh(self):
+        if self.category == "Networking":
+            update_networked_color(self, bpy.context)
 
     @classmethod
     def poll(cls, ntree):
@@ -53,7 +59,7 @@ class BGNetworked():
 
     def refresh(self):
         if hasattr(super(), "refresh") and callable(getattr(super(), "refresh")):
-            super().refresh(self)
+            super().refresh()
         update_networked_color(self, bpy.context)
 
     def gather_configuration(self, ob, variables, events, export_settings):

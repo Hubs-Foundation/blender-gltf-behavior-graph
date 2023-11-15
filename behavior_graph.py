@@ -8,7 +8,7 @@ from bpy.types import Node, NodeTree, NodeReroute, NodeSocketString
 from bpy.utils import register_class, unregister_class
 from nodeitems_utils import NodeCategory, NodeItem, register_node_categories, unregister_node_categories
 from io_hubs_addon.io.utils import gather_property
-from .utils import get_socket_value, type_to_socket, resolve_input_link, resolve_output_link, get_variable_value
+from .utils import get_socket_value, type_to_socket, resolve_input_link, resolve_output_link, get_variable_value, get_prefs
 from .consts import CUSTOM_CATEGORY_NODES, DEPRECATED_NODES, CATEGORY_COLORS
 
 auto_casts = {
@@ -413,10 +413,15 @@ def create_node_class(node_data):
         def init(self, context):
             super().init(context)
 
-            if node_data["category"] in CATEGORY_COLORS:
-                self.color = CATEGORY_COLORS[node_data["category"]]
+            self.category = node_data["category"]
+            if self.category == "Networking":
+                self.color = get_prefs().network_node_color
             else:
-                self.color = CATEGORY_COLORS["None"]
+                if self.category in CATEGORY_COLORS:
+                    self.color = CATEGORY_COLORS[self.category]
+                else:
+                    self.color = CATEGORY_COLORS["None"]
+
 
             for input_data in node_data["inputs"]:
 
