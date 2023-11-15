@@ -1500,7 +1500,11 @@ class BGNode_animation_createAnimationAction(BGNetworked, BGActionNode, BGNode, 
         self.inputs.new("NodeSocketBool", "loop")
         self.inputs.new("NodeSocketBool", "clampWhenFinished")
         self.inputs.new("NodeSocketFloat", "weight")
+        weight = self.inputs.get("weight")
+        weight.default_value = 1
         self.inputs.new("NodeSocketFloat", "timeScale")
+        timeScale = self.inputs.get("timeScale")
+        timeScale.default_value = 1
         self.inputs.new("NodeSocketBool", "additiveBlending")
         self.outputs.new("BGHubsAnimationActionSocket", "action")
 
@@ -1570,6 +1574,8 @@ class BGNode_three_animation_setTimescale(BGNetworked, BGActionNode, BGNode, Nod
         super().init(context)
         self.inputs.new("BGHubsAnimationActionSocket", "action")
         self.inputs.new("NodeSocketFloat", "timeScale")
+        timeScale = self.inputs.get("timeScale")
+        timeScale.default_value = 1
 
     def draw_buttons(self, context, layout):
         layout.prop(self, "networked")
