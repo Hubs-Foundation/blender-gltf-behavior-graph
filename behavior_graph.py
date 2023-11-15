@@ -538,7 +538,8 @@ def gather_nodes(ob, ob_idx, slot, slot_idx, export_settings, events, variables,
             if not isinstance(node, BGNode):
                 continue
 
-            print(f'Gathering {ob.name}-{slot.graph.name}-{node.name}')
+            node_name = node.name if not node.label else node.label
+            print(f'Gathering {ob.name}-{slot.graph.name}-{node_name}')
 
             prefix = f"{ob.name}_{ob_idx}_{slot.graph.name}_{slot_idx}"
             node_data = {
@@ -600,7 +601,7 @@ def gather_nodes(ob, ob_idx, slot, slot_idx, export_settings, events, variables,
             nodes.append(node_data)
 
         except Exception as e:
-            export_report.append(f'ERROR: {ob.name}/{slot.graph.name}/{node.name}: {e}')
+            export_report.append(f'ERROR: {ob.name}/{slot.graph.name}/{node_name}: {e}')
 
     return nodes
 
