@@ -1443,7 +1443,6 @@ class BGNode_get_material_property(BGNode, Node):
 
     def gather_configuration(self, ob, variables, events, export_settings):
         return {
-            "networked": self.networked,
             "property": gather_property(export_settings, self, self, "property_name"),
             "type": MATERIAL_PROPERTIES_TO_TYPES[self.property_name]
         }
