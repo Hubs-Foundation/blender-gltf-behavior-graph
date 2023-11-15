@@ -527,7 +527,7 @@ def gather_events_and_variables(export_settings):
     return (events, variables)
 
 
-def gather_nodes(ob, idx, slot, export_settings, events, variables, export_report):
+def gather_nodes(ob, ob_idx, slot, slot_idx, export_settings, events, variables, export_report):
     from .sockets import BGFlowSocket
     from .nodes import BGNode
 
@@ -540,7 +540,7 @@ def gather_nodes(ob, idx, slot, export_settings, events, variables, export_repor
 
             print(f'Gathering {ob.name}-{slot.graph.name}-{node.name}')
 
-            prefix = f"{ob.name}_{slot.graph.name}_{idx}"
+            prefix = f"{ob.name}_{ob_idx}_{slot.graph.name}_{slot_idx}"
             node_data = {
                 "id": f"{prefix}_{node.name}",
                 "type": node.node_type,
@@ -612,7 +612,13 @@ class glTF2ExportUserExtension:
         from io_scene_gltf2.io.com.gltf2_io_extensions import Extension
 
         self.Extension = Extension
-        self.delayed_gathers = []
+        self.nodes = []
+
+    def gather_scene_hook(self, gltf2_scene, blender_scene, export_settings):
+        self.nodes.append(blender_scene)
+
+    def gather_node_hook(self, gltf2_object, blender_object, export_settings):
+        self.nodes.append(blender_object)
 
     def gather_gltf_extensions_hook(self, gltf2_object, export_settings):
         print("GATHERING BG")
@@ -621,8 +627,8 @@ class glTF2ExportUserExtension:
 
         # This is a hack to allow multi-graph while we have proper per gltf node graph support
         slots = []
-        for ob in list(bpy.data.scenes) + list(bpy.context.view_layer.objects):
-            slots.append({"ob": ob, "slots": list(ob.bg_slots)})
+        for idx, ob in enumerate(self.nodes):
+            slots.append({"ob": ob, "idx": idx, "slots": list(ob.bg_slots)})
 
         try:
             glob_events, glob_variables = gather_events_and_variables(export_settings)
@@ -637,10 +643,11 @@ class glTF2ExportUserExtension:
             nodes = []
             for item in slots:
                 ob = item["ob"]
+                ob_idx = item["idx"]
                 slots = item["slots"]
                 for slot in slots:
                     if slot is not None:
-                        idx = slots.index(slot)
+                        slot_idx = slots.index(slot)
                         # If we don't select and activate the object, the node properties
                         # that reference cached enums are empty sometimes. Very strange but for now
                         #  this works.
@@ -651,7 +658,7 @@ class glTF2ExportUserExtension:
                             bpy.context.view_layer.objects.active = ob
 
                         bpy.context.scene.bg_export_type = "object" if type(ob) == bpy.types.Object else "scene"
-                        nodes.extend(gather_nodes(ob, idx, slot, export_settings,
+                        nodes.extend(gather_nodes(ob, ob_idx, slot, slot_idx, export_settings,
                                                   glob_events, glob_variables, export_report))
                         bpy.context.scene.bg_export_type = "none"
 
