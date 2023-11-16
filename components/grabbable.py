@@ -12,7 +12,7 @@ class Grabbable(HubsComponent):
         'node_type': NodeType.NODE,
         'panel_type': [PanelType.OBJECT],
         'icon': 'VIEW_PAN',
-        'deps': ['rigidbody', 'networked-transform'],
+        'deps': ['rigidbody', 'networked-object-properties'],
         'version': (1, 0, 0)
     }
 
@@ -21,6 +21,14 @@ class Grabbable(HubsComponent):
 
     hand: BoolProperty(
         name="By Hand", description="Can be grabbed by VR hands", default=True)
+
+    @classmethod
+    def init(cls, obj):
+        obj.hubs_component_list.items.get('rigidbody').isDependency = True
+        obj.hubs_component_list.items.get('networked-object-properties').isDependency = True
+        from .networked_object_properties import NetworkedObjectProperties
+        cmp = getattr(obj, NetworkedObjectProperties.get_id())
+        cmp.transform = True
 
 
 def register():

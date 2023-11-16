@@ -21,7 +21,7 @@ class RigidBody(HubsComponent):
         'node_type': NodeType.NODE,
         'panel_type': [PanelType.OBJECT],
         'icon': 'PHYSICS',
-        'deps': ['physics-shape', 'networked'],
+        'deps': ['physics-shape'],
         'version': (1, 0, 0)
     }
 
@@ -135,6 +135,10 @@ class RigidBody(HubsComponent):
         layout.prop(self, "angularSleepingThreshold")
         layout.prop(self, "angularFactor")
         layout.prop(self, "gravity")
+
+    @classmethod
+    def init(cls, obj):
+        obj.hubs_component_list.items.get('physics-shape').isDependency = True
 
 
 def register():

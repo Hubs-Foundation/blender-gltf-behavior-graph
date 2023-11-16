@@ -4903,7 +4903,7 @@
         "defaultValue": 0
       },
       {
-        "name": "string",
+        "name": "value",
         "valueType": "string",
         "defaultValue": ""
       }
@@ -4929,7 +4929,7 @@
     ],
     "outputs": [
       {
-        "name": "string",
+        "name": "value",
         "valueType": "string"
       }
     ],
@@ -5546,6 +5546,81 @@
           "y": -9.8,
           "z": 0
         }
+      }
+    ],
+    "outputs": [
+      {
+        "name": "flow",
+        "valueType": "flow"
+      }
+    ],
+    "configuration": []
+  },
+  {
+    "type": "material/property/set",
+    "category": "Materials",
+    "label": "Set Material Property",
+    "inputs": [
+      {
+        "name": "flow",
+        "valueType": "flow"
+      },
+      {
+        "name": "material",
+        "valueType": "material",
+        "defaultValue": null
+      },
+      {
+        "name": "string",
+        "valueType": "string",
+        "defaultValue": ""
+      }
+    ],
+    "outputs": [
+      {
+        "name": "flow",
+        "valueType": "flow"
+      }
+    ],
+    "configuration": []
+  },
+  {
+    "type": "material/property/get",
+    "category": "Materials",
+    "label": "Get Material Property",
+    "inputs": [
+      {
+        "name": "material",
+        "valueType": "material",
+        "defaultValue": null
+      }
+    ],
+    "outputs": [
+      {
+        "name": "string",
+        "valueType": "string"
+      }
+    ],
+    "configuration": []
+  },
+  {
+    "type": "material/set",
+    "category": "Materials",
+    "label": "Set Material",
+    "inputs": [
+      {
+        "name": "flow",
+        "valueType": "flow"
+      },
+      {
+        "name": "entity",
+        "valueType": "entity",
+        "defaultValue": 0
+      },
+      {
+        "name": "material",
+        "valueType": "material",
+        "defaultValue": null
       }
     ],
     "outputs": [

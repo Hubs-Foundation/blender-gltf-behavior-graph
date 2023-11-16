@@ -1,7 +1,9 @@
 import bpy
 from bpy.types import PropertyGroup, NodeTree
 from bpy.props import PointerProperty, CollectionProperty, IntProperty, EnumProperty, StringProperty, FloatProperty, BoolProperty, FloatVectorProperty
-from bpy.app.handlers import persistent
+from bpy.types import AddonPreferences
+from .consts import CATEGORY_COLORS
+from .utils import update_nodes, get_prefs
 
 original_NODE_HT_header_draw = bpy.types.NODE_HT_header.draw
 
@@ -126,47 +128,6 @@ class BGAddSlot(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class BGObjectPanel(bpy.types.Panel):
-    bl_label = "Behavior Graphs"
-    bl_idname = "OBJECT_PT_BG"
-    bl_space_type = 'PROPERTIES'
-    bl_region_type = 'WINDOW'
-    bl_context = "object"
-
-    def draw(self, context):
-        layout = self.layout
-        row = layout.row()
-        row.template_list(BGNodeTreeList.bl_idname, "", context.object,
-                          "bg_slots", context.object, "bg_active_slot_idx", rows=5)
-        col = row.column(align=True)
-        col.context_pointer_set('target', context.object)
-        col.operator(BGAddSlot.bl_idname, icon='ADD', text="")
-        col.operator(BGRemove.bl_idname, icon='REMOVE', text="")
-        row = layout.row()
-        row.context_pointer_set("target", context.object)
-        row.template_ID(context.object, "bg_active_graph", new=BGNew.bl_idname, unlink=BGRemove.bl_idname)
-
-        row = layout.row()
-        row.label(text="Variables:")
-        row = layout.row()
-        row.template_list(BGGlobalVariablesList.bl_idname, "", context.object,
-                          "bg_global_variables", context.object, "bg_active_global_variable_idx", rows=5)
-        col = row.column(align=True)
-        col.context_pointer_set('target', context.object)
-        col.operator(BGGlobalVariableAdd.bl_idname, icon='ADD', text="")
-        col.operator(BGGlobalVariableRemove.bl_idname, icon='REMOVE', text="")
-
-        row = layout.row()
-        row.label(text="Custom Events:")
-        row = layout.row()
-        row.template_list(BGCustomEventsList.bl_idname, "", context.object,
-                          "bg_custom_events", context.object, "bg_active_custom_event_idx", rows=5)
-        col = row.column(align=True)
-        col.context_pointer_set('target', context.object)
-        col.operator(BGCustomEventAdd.bl_idname, icon='ADD', text="")
-        col.operator(BGCustomEventRemove.bl_idname, icon='REMOVE', text="")
-
-
 GLOBAL_VARIABLES_TYPES = [
     ("boolean", "Boolean", "Boolean"),
     ("float", "Float", "Float"),
@@ -177,24 +138,6 @@ GLOBAL_VARIABLES_TYPES = [
     ("entity", "Entity", "Entity"),
     ("color", "Color", "Color"),
 ]
-
-
-def update_nodes(self, context):
-    if hasattr(context.object, "bg_active_graph") and context.object.bg_active_graph != None:
-        for node in context.object.bg_active_graph.nodes:
-            if hasattr(node, "refresh") and callable(getattr(node, "refresh")):
-                node.refresh()
-    if hasattr(context.scene, "bg_active_graph") and context.scene.bg_active_graph != None:
-        for node in context.scene.bg_active_graph.nodes:
-            if hasattr(node, "refresh") and callable(getattr(node, "refresh")):
-                node.refresh()
-
-
-def update_graphs(self, context):
-    if hasattr(context.object, "bg_active_graph") and context.object.bg_active_graph != None:
-        context.object.bg_active_graph.update()
-    if hasattr(context.scene, "bg_active_graph") and context.scene.bg_active_graph != None:
-        context.scene.bg_active_graph.update()
 
 
 class BGGlobalVariableType(PropertyGroup):
@@ -243,10 +186,10 @@ class BGGlobalVariableType(PropertyGroup):
         default=(0.0, 0.0, 0.0)
     )
 
-    defaultAnimationAction: IntProperty(
+    defaultAnimationAction: StringProperty(
         name="default",
         description="Default Value",
-        default=0
+        default=""
     )
 
     defaultColor: FloatVectorProperty(
@@ -260,6 +203,13 @@ class BGGlobalVariableType(PropertyGroup):
     )
 
     defaultEntity: PointerProperty(name="default", type=bpy.types.Object)
+
+    networked: BoolProperty(
+        name="networked",
+        description="If checked this variable will be Networked",
+        update=update_nodes,
+        default=False
+    )
 
 
 class BGGlobalVariableAdd(bpy.types.Operator):
@@ -297,7 +247,11 @@ class BGGlobalVariablesList(bpy.types.UIList):
     bl_label = "Variables"
 
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
-        split = layout.split(align=True)
+        disable_networked = False
+        from .behavior_graph import BGTree
+        if type(data) == bpy.types.Scene or type(data) == BGTree:
+            disable_networked = True
+        split = layout.split(align=False)
         split.prop(item, "name", text="", emboss=False, icon='NONE')
         split.prop(item, "type", text="", emboss=False, icon='NONE')
         if item.type == "integer":
@@ -314,6 +268,12 @@ class BGGlobalVariablesList(bpy.types.UIList):
             split.prop(item, "defaultColor", text="", emboss=True, icon='NONE')
         elif item.type == "entity":
             split.prop(item, "defaultEntity", text="", emboss=True, icon='NONE')
+        elif item.type == "animationAction":
+            split.prop(item, "defaultAnimationAction", text="", emboss=True, icon='NONE')
+        split = layout.split(align=False)
+        split.prop(item, "networked", text="", emboss=True, icon='NONE')
+        if item.type == "entity" or disable_networked:
+            split.enabled = False
 
 
 class BGCustomEventType(PropertyGroup):
@@ -362,6 +322,80 @@ class BGCustomEventsList(bpy.types.UIList):
         split.prop(item, "name", text="", emboss=False, icon='NONE')
 
 
+def draw_bg_panel(self, target):
+    layout = self.layout
+
+    if type(target) in [bpy.types.Object, bpy.types.Scene]:
+        row = layout.row()
+        row.template_list(BGNodeTreeList.bl_idname, "", target,
+                          "bg_slots", target, "bg_active_slot_idx", rows=5)
+        col = row.column(align=True)
+        col.context_pointer_set('target', target)
+        col.operator(BGAddSlot.bl_idname, icon='ADD', text="")
+        col.operator(BGRemove.bl_idname, icon='REMOVE', text="")
+        row = layout.row()
+        row.context_pointer_set("target", target)
+        row.template_ID(target, "bg_active_graph", new=BGNew.bl_idname, unlink=BGRemove.bl_idname)
+
+    row = layout.row()
+    col = row.column(align=True)
+    op = col.operator(BGSetNetworkGraph.bl_idname, text="Network Graph")
+    op.set = True
+    op.all = False
+    col = row.column(align=True)
+    op = col.operator(BGSetNetworkGraph.bl_idname, text="De-Network Graph")
+    op.set = False
+    op.all = False
+    row = layout.row()
+    col = row.column(align=True)
+    op = col.operator(BGSetNetworkGraph.bl_idname, text="Network All Graphs")
+    op.set = True
+    op.all = True
+    col = row.column(align=True)
+    op = col.operator(BGSetNetworkGraph.bl_idname, text="De-Network All Graphs")
+    op.set = False
+    op.all = True
+
+    row = layout.row()
+    row.label(text="Node colors:")
+    box = layout.box()
+    row = box.row()
+    row.prop(get_prefs(), "network_node_color")
+    row = box.row()
+    row.operator(BGUpdateNodeColors.bl_idname, text="Update Graph Node Colors")
+
+    row = layout.row()
+    row.label(text="Variables:")
+    row = layout.row()
+    row.template_list(BGGlobalVariablesList.bl_idname, "", target,
+                      "bg_global_variables", target, "bg_active_global_variable_idx", rows=5)
+    col = row.column(align=True)
+    col.context_pointer_set('target', target)
+    col.operator(BGGlobalVariableAdd.bl_idname, icon='ADD', text="")
+    col.operator(BGGlobalVariableRemove.bl_idname, icon='REMOVE', text="")
+
+    row = layout.row()
+    row.label(text="Custom Events:")
+    row = layout.row()
+    row.template_list(BGCustomEventsList.bl_idname, "", target,
+                      "bg_custom_events", target, "bg_active_custom_event_idx", rows=5)
+    col = row.column(align=True)
+    col.context_pointer_set('target', target)
+    col.operator(BGCustomEventAdd.bl_idname, icon='ADD', text="")
+    col.operator(BGCustomEventRemove.bl_idname, icon='REMOVE', text="")
+
+
+class BGObjectPanel(bpy.types.Panel):
+    bl_label = "Behavior Graphs"
+    bl_idname = "OBJECT_PT_BG"
+    bl_space_type = 'PROPERTIES'
+    bl_region_type = 'WINDOW'
+    bl_context = "object"
+
+    def draw(self, context):
+        draw_bg_panel(self, context.object)
+
+
 class BGScenePanel(bpy.types.Panel):
     bl_label = 'Behavior Graphs'
     bl_idname = "SCENE_PT_BG"
@@ -370,38 +404,22 @@ class BGScenePanel(bpy.types.Panel):
     bl_context = 'scene'
 
     def draw(self, context):
-        layout = self.layout
+        draw_bg_panel(self, context.scene)
 
-        row = layout.row()
-        row.template_list(BGNodeTreeList.bl_idname, "", context.scene,
-                          "bg_slots", context.scene, "bg_active_slot_idx", rows=5)
-        col = row.column(align=True)
-        col.context_pointer_set('target', context.scene)
-        col.operator(BGAddSlot.bl_idname, icon='ADD', text="")
-        col.operator(BGRemove.bl_idname, icon='REMOVE', text="")
-        row = layout.row()
-        row.context_pointer_set("target", context.scene)
-        row.template_ID(context.scene, "bg_active_graph", new=BGNew.bl_idname, unlink=BGRemove.bl_idname)
 
-        row = layout.row()
-        row.label(text="Variables:")
-        row = layout.row()
-        row.template_list(BGGlobalVariablesList.bl_idname, "", context.scene,
-                          "bg_global_variables", context.scene, "bg_active_global_variable_idx", rows=5)
-        col = row.column(align=True)
-        col.context_pointer_set('target', context.scene)
-        col.operator(BGGlobalVariableAdd.bl_idname, icon='ADD', text="")
-        col.operator(BGGlobalVariableRemove.bl_idname, icon='REMOVE', text="")
+class BG_PT_GraphPanel(bpy.types.Panel):
+    bl_space_type = "NODE_EDITOR"
+    bl_region_type = "UI"
+    bl_label = "Behavior Graphs"
+    bl_category = "Behavior Graphs"
+    bl_context = "scene"
 
-        row = layout.row()
-        row.label(text="Custom Events:")
-        row = layout.row()
-        row.template_list(BGCustomEventsList.bl_idname, "", context.scene,
-                          "bg_custom_events", context.scene, "bg_active_custom_event_idx", rows=5)
-        col = row.column(align=True)
-        col.context_pointer_set('target', context.scene)
-        col.operator(BGCustomEventAdd.bl_idname, icon='ADD', text="")
-        col.operator(BGCustomEventRemove.bl_idname, icon='REMOVE', text="")
+    def draw(self, context):
+        graph = get_active_graph(context)
+        if not graph:
+            return
+
+        draw_bg_panel(self, graph)
 
 
 def indexForBGItem(slots, graph):
@@ -432,50 +450,80 @@ def bg_active_slot_update(self, context):
         self.bg_active_slot_idx = idx
 
 
-class BGGraphPanel(bpy.types.Panel):
-    bl_space_type = "NODE_EDITOR"
-    bl_region_type = "UI"
-    bl_label = "Behavior Graphs"
-    bl_category = "Behavior Graphs"
-    bl_context = "scene"
+def get_active_graph(context):
+    if context.scene.bg_node_type == 'OBJECT':
+        target = context.active_object
+    else:
+        target = context.scene
 
-    def draw(self, context):
-        layout = self.layout
+    if not hasattr(target, "bg_active_graph") or not target.bg_active_graph:
+        return
 
-        if context.scene.bg_node_type == 'OBJECT':
-            target = context.active_object
+    return target.bg_active_graph
+
+
+class BGSetNetworkGraph(bpy.types.Operator):
+    bl_idname = "ui.bg_set_network_graph"
+    bl_label = "Network"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    set: BoolProperty(default=True)
+    all: BoolProperty(default=False)
+
+    def execute(self, context):
+        def network_graph(graph):
+            for node in graph.nodes:
+                if hasattr(node, "networked"):
+                    node.networked = self.set
+
+        if self.all:
+            for graph in [group for group in bpy.data.node_groups if group.bl_idname == "BGTree"]:
+                network_graph(graph)
         else:
-            target = context.scene
+            graph = get_active_graph(context)
+            if graph:
+                network_graph(graph)
 
-        if not hasattr(target, "bg_active_graph") or not target.bg_active_graph:
-            return
+        return {'FINISHED'}
 
-        row = layout.row()
-        row.label(text="Variables:")
-        row = layout.row()
-        row.template_list(BGGlobalVariablesList.bl_idname, "", target.bg_active_graph,
-                          "bg_global_variables", target.bg_active_graph, "bg_active_global_variable_idx", rows=5)
-        col = row.column(align=True)
-        col.context_pointer_set('target', target.bg_active_graph)
-        col.operator(BGGlobalVariableAdd.bl_idname, icon='ADD', text="")
-        col.operator(BGGlobalVariableRemove.bl_idname, icon='REMOVE', text="")
 
-        row = layout.row()
-        row.label(text="Events:")
-        row = layout.row()
-        row.template_list(BGCustomEventsList.bl_idname, "", target.bg_active_graph,
-                          "bg_custom_events", target.bg_active_graph, "bg_active_custom_event_idx", rows=5)
-        col = row.column(align=True)
-        col.context_pointer_set('target', target.bg_active_graph)
-        col.operator(BGCustomEventAdd.bl_idname, icon='ADD', text="")
-        col.operator(BGCustomEventRemove.bl_idname, icon='REMOVE', text="")
+class BGUpdateNodeColors(bpy.types.Operator):
+    bl_idname = "ui.bg_update_node_colors"
+    bl_label = "Update Node Colors"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def execute(self, context):
+        update_nodes(self, context)
+
+        return {'FINISHED'}
 
 
 class BGItem(PropertyGroup):
     graph: PointerProperty(type=NodeTree)
 
 
+class BGPreferences(AddonPreferences):
+    bl_idname = __package__
+
+    network_node_color: FloatVectorProperty(name="Network",
+                                            description="Color",
+                                            subtype='COLOR_GAMMA',
+                                            default=CATEGORY_COLORS["Networking"],
+                                            size=3,
+                                            min=0,
+                                            max=1)
+
+    def draw(self, context):
+        layout = self.layout
+        row = layout.row()
+        row.label(text="Node colors:")
+        box = layout.box()
+        row = box.row()
+        row.prop(self, "network_node_color")
+
+
 def register():
+    bpy.utils.register_class(BGPreferences)
     bpy.utils.register_class(BGNew)
     bpy.utils.register_class(BGRemove)
     bpy.utils.register_class(BGAddSlot)
@@ -490,7 +538,9 @@ def register():
     bpy.utils.register_class(BGCustomEventAdd)
     bpy.utils.register_class(BGCustomEventRemove)
     bpy.utils.register_class(BGCustomEventsList)
-    bpy.utils.register_class(BGGraphPanel)
+    bpy.utils.register_class(BG_PT_GraphPanel)
+    bpy.utils.register_class(BGSetNetworkGraph)
+    bpy.utils.register_class(BGUpdateNodeColors)
 
     bpy.utils.register_class(BGItem)
     bpy.types.Object.bg_slots = CollectionProperty(type=BGItem)
@@ -549,7 +599,7 @@ def register():
 
 
 def unregister():
-    bpy.utils.unregister_class(BGGraphPanel)
+    bpy.utils.unregister_class(BG_PT_GraphPanel)
     bpy.utils.unregister_class(BGNew)
     bpy.utils.unregister_class(BGRemove)
     bpy.utils.unregister_class(BGAddSlot)
@@ -564,12 +614,17 @@ def unregister():
     bpy.utils.unregister_class(BGCustomEventAdd)
     bpy.utils.unregister_class(BGCustomEventRemove)
     bpy.utils.unregister_class(BGCustomEventsList)
+    bpy.utils.unregister_class(BGSetNetworkGraph)
+    bpy.utils.unregister_class(BGUpdateNodeColors)
+    bpy.utils.unregister_class(BGPreferences)
 
     del bpy.types.Object.bg_slots
     del bpy.types.Object.bg_active_graph
     del bpy.types.Object.bg_active_slot_idx
     del bpy.types.Object.bg_global_variables
     del bpy.types.Object.bg_active_global_variable_idx
+    del bpy.types.Object.bg_custom_events
+    del bpy.types.Object.bg_active_custom_event_idx
     del bpy.types.Scene.bg_slots
     del bpy.types.Scene.bg_active_graph
     del bpy.types.Scene.bg_active_slot_idx
@@ -578,6 +633,10 @@ def unregister():
     del bpy.types.Scene.bg_active_global_variable_idx
     del bpy.types.Scene.bg_custom_events
     del bpy.types.Scene.bg_active_custom_event_idx
+    del bpy.types.NodeTree.bg_global_variables
+    del bpy.types.NodeTree.bg_active_global_variable_idx
+    del bpy.types.NodeTree.bg_custom_events
+    del bpy.types.NodeTree.bg_active_custom_event_idx
     bpy.utils.unregister_class(BGItem)
 
     bpy.types.NODE_HT_header.draw = original_NODE_HT_header_draw
