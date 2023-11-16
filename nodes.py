@@ -2,7 +2,7 @@ import bpy
 from bpy.props import PointerProperty, StringProperty
 from bpy.types import Node
 from io_hubs_addon.io.utils import gather_property
-from .utils import gather_object_property, get_socket_value, filter_on_components, filter_entity_type, get_prefs, object_exists
+from .utils import gather_object_property, get_socket_value, filter_on_components, filter_entity_type, get_prefs, object_exists, createSocketForComponentProperty
 from .consts import MATERIAL_PROPERTIES_ENUM, MATERIAL_PROPERTIES_TO_TYPES, SUPPORTED_COMPONENTS, SUPPORTED_PROPERTY_COMPONENTS
 
 
@@ -1136,30 +1136,14 @@ def update_set_component_property(self, context):
     if self.propertyName not in properties:
         return
 
-    from .utils import propToType, type_to_socket
     from io_hubs_addon.components.components_registry import get_component_by_name
 
     component_class = get_component_by_name(self.componentName)
     component_id = component_class.get_id()
     component = getattr(target, component_id)
 
-    property_definition = component.bl_rna.properties[self.propertyName]
-    var_type = propToType(property_definition)
-
     # Create a new socket based on the selected variable type
-    if var_type:
-        prop_value = getattr(component, self.propertyName)
-        if var_type == "enum":
-            self.inputs.new(type_to_socket[var_type], "string")
-            socket = self.inputs.get("string")
-            for item in property_definition.enum_items:
-                choice = socket.choices.add()
-                choice.text = item.identifier
-                choice.value = item.name
-        else:
-            self.inputs.new(type_to_socket[var_type], var_type)
-            socket = self.inputs.get(var_type)
-            socket.default_value = prop_value
+    createSocketForComponentProperty(self.inputs, component, self.propertyName)
 
 
 class BGNode_set_component_property(BGNetworked, BGActionNode, BGNode, Node):
@@ -1226,8 +1210,8 @@ class BGNode_set_component_property(BGNetworked, BGActionNode, BGNode, Node):
 
 def update_get_component_property(self, context):
     # Remove previous socket
-    if self.outputs and len(self.outputs) > 1:
-        self.outputs.remove(self.outputs[1])
+    if self.outputs and len(self.outputs) > 0:
+        self.outputs.remove(self.outputs[0])
 
     if not context:
         return
@@ -1240,30 +1224,14 @@ def update_get_component_property(self, context):
     if self.propertyName not in properties:
         return
 
-    from .utils import propToType, type_to_socket
     from io_hubs_addon.components.components_registry import get_component_by_name
 
     component_class = get_component_by_name(self.componentName)
     component_id = component_class.get_id()
     component = getattr(target, component_id)
 
-    property_definition = component.bl_rna.properties[self.propertyName]
-    var_type = propToType(property_definition)
-
     # Create a new socket based on the selected variable type
-    if var_type:
-        prop_value = getattr(component, self.propertyName)
-        if var_type == "enum":
-            self.outputs.new(type_to_socket[var_type], "string")
-            socket = self.outputs.get("string")
-            for item in property_definition.enum_items:
-                choice = socket.choices.add()
-                choice.text = item.identifier
-                choice.value = item.name
-        else:
-            self.outputs.new(type_to_socket[var_type], var_type)
-            socket = self.outputs.get(var_type)
-            socket.default_value = prop_value
+    createSocketForComponentProperty(self.outputs, component, self.propertyName)
 
 
 class BGNode_get_component_property(BGNode, Node):

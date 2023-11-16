@@ -309,17 +309,44 @@ prop_to_type = {
 }
 
 
-def propToType(property_definition):
+def createSocketForComponentProperty(target, component, property_name):
+    property_definition = component.bl_rna.properties[property_name]
     prop_type = property_definition.bl_rna.identifier
     prop_subtype = property_definition.subtype
     isArray = getattr(property_definition, 'is_array', None)
     if isArray and property_definition.is_array:
         if prop_subtype.startswith('COLOR'):
-            return "color"
+            socket_type = "color"
+        elif prop_type == "BoolProperty":
+            socket_type = "integer"
         else:
-            return "vec3"
+            socket_type = "vec3"
     elif prop_type in prop_to_type:
-        return prop_to_type[prop_type]
+        socket_type = prop_to_type[prop_type]
+    
+    if socket_type:
+        prop_value = getattr(component, property_name)
+        if socket_type == "enum":
+            target.new(type_to_socket[socket_type], "string")
+            socket = target.get("string")
+            for item in property_definition.enum_items:
+                choice = socket.choices.add()
+                choice.text = item.identifier
+                choice.value = item.name
+        else:
+            target.new(type_to_socket[socket_type], socket_type)
+            socket = target.get(socket_type)
+            if socket_type == "integer" and isArray:
+                value = 0
+                for i in range(0, len(prop_value)):
+                    if prop_value[i]:
+                        value |= 1 << i
+                socket.default_value = value
+            else:
+                socket.default_value = prop_value
+
+    return socket
+    
 
 
 # This function is used by several node entity_type properties and
