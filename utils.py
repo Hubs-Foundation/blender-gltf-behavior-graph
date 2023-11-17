@@ -171,7 +171,53 @@ def update_gltf_network_dependencies(node, export_settings, blender_object, dep,
         add_component_to_node(gltf_object, dep, value, export_settings)
 
 
-def get_socket_value(ob, export_settings, socket: NodeSocket):
+def get_input_entity(node, context, ob=None):
+    target = None
+    entity_socket = node.inputs.get("entity")
+    if entity_socket:
+        target = entity_socket.target
+        if node.inputs.get("entity").is_linked and len(entity_socket.links) > 0:
+            link = entity_socket.links[0]
+            from_node = link.from_socket.node
+            # This case should go away when we remove BGNode_variable_get
+            if from_node.bl_idname == "BGNode_variable_get":
+                from_target = get_input_entity(from_node, context, ob)
+                # When copying entities the variable is updated in the variables list
+                # but not on the socket so we pull the variable value directly from the list
+                target = from_target.bg_global_variables.get(from_node.variableName).defaultEntity
+            elif from_node.bl_idname == "BGNode_networkedVariable_get":
+                from_target = get_input_entity(from_node, context, ob)
+                # When copying entities the variable is updated in the variables list
+                # but not on the socket so we pull the variable value directly from the list
+                target = from_target.bg_global_variables.get(from_node.prop_name).defaultEntity
+            elif from_node.bl_idname == "BGNode_hubs_entity_properties":
+                from_target = get_input_entity(from_node, context, ob)
+                target = from_target
+            else:
+                target = link.from_socket.target
+        else:
+            if entity_socket.entity_type == '':
+                target = None
+            elif entity_socket.entity_type in ["object", "self"]:
+                target = ob if ob else context.object
+            elif entity_socket.entity_type == "scene":
+                target = context.scene
+            elif entity_socket.entity_type == "graph":
+                # When exporting we use the current exporting object as the target object
+                if ob:
+                    if type(ob) == bpy.types.Object:
+                        target = context.object.bg_active_graph
+                    else:
+                        target = context.scene.bg_active_graph
+                else:
+                    if context.scene.bg_node_type == 'OBJECT':
+                        target = context.object.bg_active_graph
+                    else:
+                        target = context.scene.bg_active_graph
+
+    return target
+
+def get_socket_value(ob, export_settings, socket):
     if hasattr(socket, "bl_socket_idname"):
         socket_idname = socket.bl_socket_idname
     else:
@@ -187,17 +233,9 @@ def get_socket_value(ob, export_settings, socket: NodeSocket):
         if socket.entity_type == "self":
             return gather_object_property(export_settings, ob)
         else:
-            entity = gather_property(export_settings, socket, socket, "target")
-            if entity:
-                return entity
-            else:
-                raise Exception(f"Input socket {socket.name} not set")
+            return gather_property(export_settings, socket, socket, "target")
     elif socket_type == "material":
-        mat = gather_material_property(export_settings, socket, socket, "default_value")
-        if mat:
-            return mat
-        else:
-            raise Exception(f"Input socket {socket.name} not set")
+        return gather_material_property(export_settings, socket, socket, "default_value")
     elif socket_type == "texture":
         if socket.is_linked:
             return gather_texture_property(export_settings, socket, socket, "default_value")
@@ -212,6 +250,28 @@ def get_socket_value(ob, export_settings, socket: NodeSocket):
     else:
         return None
 
+def get_deep_socket_value(socket, ob, export_settings, context):
+    if socket.is_linked and  len(socket.links) > 0:
+        link = socket.links[0]
+        from_node = link.from_socket.node
+        # This case should go away when we remove BGNode_variable_get
+        if from_node.bl_idname == "BGNode_variable_get":
+            entity = get_input_entity(from_node, context, ob)
+            # When copying entities the variable is updated in the variables list
+            # but not on the socket so we pull the variable value directly from the list
+            var = entity.bg_global_variables.get(from_node.prop_name)
+            return get_variable_value(ob, var, export_settings)
+        elif from_node.bl_idname == "BGNode_networkedVariable_get":
+            entity = get_input_entity(from_node, context, ob)
+            # When copying entities the variable is updated in the variables list
+            # but not on the socket so we pull the variable value directly from the list
+            var = entity.bg_global_variables.get(from_node.prop_name)
+            return get_variable_value(ob, var, export_settings)
+        else:
+            return get_socket_value(ob, export_settings, link.from_socket)
+    else:
+        return get_socket_value(ob, export_settings, socket)
+    
 
 def get_variable_value(ob, var, export_settings):
     value = None
@@ -236,6 +296,13 @@ def get_variable_value(ob, var, export_settings):
             else:
                 raise Exception(
                     f"Variable {ob.name}/{var.name} entity {var.defaultEntity.name} does not exist in the scene")
+    elif var.type == "material":
+        if var.defaultMaterial:
+            if var.defaultMaterial.name in bpy.data.materials:
+                value = gather_material_property(export_settings, var, var, "defaultMaterial")
+            else:
+                raise Exception(
+                    f"Variable {ob.name}/{var.name} material {var.defaultMaterial.name} does not exist in the scene")
 
     return value
 

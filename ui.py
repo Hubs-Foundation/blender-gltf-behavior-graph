@@ -137,6 +137,7 @@ GLOBAL_VARIABLES_TYPES = [
     ("animationAction", "Action", "Action"),
     ("entity", "Entity", "Entity"),
     ("color", "Color", "Color"),
+    ("material", "Material", "Material")
 ]
 
 
@@ -204,6 +205,8 @@ class BGGlobalVariableType(PropertyGroup):
 
     defaultEntity: PointerProperty(name="default", type=bpy.types.Object)
 
+    defaultMaterial: PointerProperty(name="default", type=bpy.types.Material)
+
     networked: BoolProperty(
         name="networked",
         description="If checked this variable will be Networked",
@@ -268,11 +271,13 @@ class BGGlobalVariablesList(bpy.types.UIList):
             split.prop(item, "defaultColor", text="", emboss=True, icon='NONE')
         elif item.type == "entity":
             split.prop(item, "defaultEntity", text="", emboss=True, icon='NONE')
+        elif item.type == "material":
+            split.prop(item, "defaultMaterial", text="", emboss=True, icon='NONE')
         elif item.type == "animationAction":
             split.prop(item, "defaultAnimationAction", text="", emboss=True, icon='NONE')
         split = layout.split(align=False)
         split.prop(item, "networked", text="", emboss=True, icon='NONE')
-        if item.type == "entity" or disable_networked:
+        if item.type in ["entity", "material"] or disable_networked:
             split.enabled = False
 
 

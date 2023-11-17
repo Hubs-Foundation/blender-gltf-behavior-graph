@@ -2,7 +2,7 @@ import bpy
 from bpy.props import PointerProperty, StringProperty
 from bpy.types import Node
 from io_hubs_addon.io.utils import gather_property
-from .utils import gather_object_property, get_socket_value, filter_on_components, filter_entity_type, get_prefs, object_exists, createSocketForComponentProperty
+from .utils import gather_object_property, get_socket_value, filter_on_components, filter_entity_type, get_prefs, object_exists, createSocketForComponentProperty, get_input_entity, get_deep_socket_value
 from .consts import MATERIAL_PROPERTIES_ENUM, MATERIAL_PROPERTIES_TO_TYPES, SUPPORTED_COMPONENTS, SUPPORTED_PROPERTY_COMPONENTS
 
 
@@ -659,53 +659,6 @@ def get_available_networkedBehavior_properties(self, context):
 get_available_networkedBehavior_properties.cached_enum = []
 
 
-def get_input_entity(node, context, ob=None):
-    target = None
-    entity_socket = node.inputs.get("entity")
-    if entity_socket:
-        target = entity_socket.target
-        if node.inputs.get("entity").is_linked and len(entity_socket.links) > 0:
-            link = entity_socket.links[0]
-            from_node = link.from_socket.node
-            # This case should go away when we remove BGNode_variable_get
-            if from_node.bl_idname == "BGNode_variable_get":
-                from_target = get_input_entity(from_node, context, ob)
-                # When copying entities the variable is updated in the variables list
-                # but not on the socket so we pull the variable value directly from the list
-                target = from_target.bg_global_variables.get(from_node.variableName).defaultEntity
-            elif from_node.bl_idname == "BGNode_networkedVariable_get":
-                from_target = get_input_entity(from_node, context, ob)
-                # When copying entities the variable is updated in the variables list
-                # but not on the socket so we pull the variable value directly from the list
-                target = from_target.bg_global_variables.get(from_node.prop_name).defaultEntity
-            elif from_node.bl_idname == "BGNode_hubs_entity_properties":
-                from_target = get_input_entity(from_node, context, ob)
-                target = from_target
-            else:
-                target = link.from_socket.target
-        else:
-            if entity_socket.entity_type == '':
-                target = None
-            elif entity_socket.entity_type in ["object", "self"]:
-                target = ob if ob else context.object
-            elif entity_socket.entity_type == "scene":
-                target = context.scene
-            elif entity_socket.entity_type == "graph":
-                # When exporting we use the current exporting object as the target object
-                if ob:
-                    if type(ob) == bpy.types.Object:
-                        target = context.object.bg_active_graph
-                    else:
-                        target = context.scene.bg_active_graph
-                else:
-                    if context.scene.bg_node_type == 'OBJECT':
-                        target = context.object.bg_active_graph
-                    else:
-                        target = context.scene.bg_active_graph
-
-    return target
-
-
 def update_selected_networked_variable(self, context):
     isSetter = self.bl_idname == "BGNode_networkedVariable_set"
 
@@ -1324,9 +1277,7 @@ class BGNode_set_material(BGNetworked, BGActionNode, BGNode, Node):
                 raise Exception("Entity not set")
             if not object_exists(target):
                 raise Exception(f"Entity {target.name} does not exist")
-            material = get_material_socket_value(self.inputs.get("material"), bpy.context)
-            if not material:
-                raise Exception("Material not set")
+            material = get_deep_socket_value(self.inputs.get("material"), ob, export_settings, bpy.context)
             from .utils import update_gltf_network_dependencies
             from .components import networked_object_material
             from .components import networked_material
@@ -1377,8 +1328,6 @@ class BGNode_set_material_property(BGNetworked, BGActionNode, BGNode, Node):
     def update_network_dependencies(self, ob, export_settings):
         if self.networked:
             material = get_material_socket_value(self.inputs.get("material"), bpy.context)
-            if not material:
-                raise Exception("Material not set")
             from .utils import update_gltf_network_dependencies
             from .components import networked_material
             update_gltf_network_dependencies(self, export_settings, material, networked_material.NetworkedMaterial)
