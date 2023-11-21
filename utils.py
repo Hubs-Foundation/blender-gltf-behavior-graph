@@ -152,7 +152,7 @@ def add_component_to_node(gltf2_object, dep, value, export_settings):
             else:
                 gltf2_object.extensions[hubs_ext_name].extension[dep.get_name()].update(value)
         else:
-            gltf2_object.extensions[hubs_ext_name].update({dep.get_name(): value})
+            gltf2_object.extensions[hubs_ext_name][dep.get_name()].update(value)
 
 
 def update_gltf_network_dependencies(node, export_settings, blender_object, dep, value={"networked": "true"}):
