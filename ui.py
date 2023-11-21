@@ -398,7 +398,7 @@ class BGObjectPanel(bpy.types.Panel):
     bl_context = "object"
 
     def draw(self, context):
-        draw_bg_panel(self, context.object)
+        draw_bg_panel(self, context.active_object)
 
 
 class BGScenePanel(bpy.types.Panel):

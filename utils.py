@@ -199,19 +199,19 @@ def get_input_entity(node, context, ob=None):
             if entity_socket.entity_type == '':
                 target = None
             elif entity_socket.entity_type in ["object", "self"]:
-                target = ob if ob else context.object
+                target = ob if ob else context.active_object
             elif entity_socket.entity_type == "scene":
                 target = context.scene
             elif entity_socket.entity_type == "graph":
                 # When exporting we use the current exporting object as the target object
                 if ob:
                     if type(ob) == bpy.types.Object:
-                        target = context.object.bg_active_graph
+                        target = context.active_object.bg_active_graph
                     else:
                         target = context.scene.bg_active_graph
                 else:
                     if context.scene.bg_node_type == 'OBJECT':
-                        target = context.object.bg_active_graph
+                        target = context.active_object.bg_active_graph
                     else:
                         target = context.scene.bg_active_graph
 
@@ -460,8 +460,8 @@ def filter_entity_type(self, context):
 
 def update_nodes(self, context):
     if context.scene.bg_node_type == 'OBJECT':
-        if hasattr(context.object, "bg_active_graph") and context.object.bg_active_graph != None:
-            for node in context.object.bg_active_graph.nodes:
+        if hasattr(context.active_object, "bg_active_graph") and context.active_object.bg_active_graph != None:
+            for node in context.active_object.bg_active_graph.nodes:
                 if hasattr(node, "refresh") and callable(getattr(node, "refresh")):
                     node.refresh()
     else:
@@ -472,8 +472,8 @@ def update_nodes(self, context):
 
 
 def update_graphs(self, context):
-    if hasattr(context.object, "bg_active_graph") and context.object.bg_active_graph != None:
-        context.object.bg_active_graph.update()
+    if hasattr(context.active_object, "bg_active_graph") and context.active_object.bg_active_graph != None:
+        context.active_object.bg_active_graph.update()
     if hasattr(context.scene, "bg_active_graph") and context.scene.bg_active_graph != None:
         context.scene.bg_active_graph.update()
 

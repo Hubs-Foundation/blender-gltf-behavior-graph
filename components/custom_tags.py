@@ -22,10 +22,10 @@ class CUSTOM_TAGS_UL_tags_list(bpy.types.UIList):
 
 
 def get_host(context):
-    if context.object.type == 'ARMATURE' and (context.mode == 'EDIT_ARMATURE' or context.mode == 'POSE'):
+    if context.active_object.type == 'ARMATURE' and (context.mode == 'EDIT_ARMATURE' or context.mode == 'POSE'):
         return context.active_bone
     else:
-        return context.object
+        return context.active_object
 
 
 class CUSTOM_TAGS_OT_add_tag(bpy.types.Operator):
