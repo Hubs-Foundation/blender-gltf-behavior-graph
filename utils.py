@@ -429,10 +429,12 @@ def createSocketForComponentProperty(target, component, property_name):
 def filter_entity_type(target, context):
     if not hasattr(target, "node_type"):
         target = target.node
-    is_var_event_node = target.bl_idname in ["BGNode_variable_get", 
-                                             "BGNode_variable_set", 
-                                             "BGNode_customEvent_trigger", 
-                                             "BGNode_customEvent_onTriggered"]
+    is_var_event_node = target.bl_idname in ["BGNode_variable_get",
+                                             "BGNode_variable_set",
+                                             "BGNode_customEvent_trigger",
+                                             "BGNode_customEvent_onTriggered", "BGNode_networkedVariable_get",
+                                             "BGNode_networkedVariable_set"]
+
     # Used for custom variables and events entity sockets
     if is_var_event_node:
         types = [("scene", "Scene", "Scene"),

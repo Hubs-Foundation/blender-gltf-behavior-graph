@@ -88,10 +88,11 @@ class BGHubsEntitySocket(NodeSocketStandard):
         else:
             col = layout.column()
             col.prop(self, "entity_type")
-            is_var_event_node = self.node.bl_idname in ["BGNode_variable_get", 
-                                                        "BGNode_variable_set", 
-                                                           "BGNode_customEvent_trigger", 
-                                                           "BGNode_customEvent_onTriggered"]
+            is_var_event_node = self.node.bl_idname in ["BGNode_variable_get",
+                                                        "BGNode_variable_set",
+                                                        "BGNode_customEvent_trigger",
+                                                        "BGNode_customEvent_onTriggered", "BGNode_networkedVariable_get",
+                                                        "BGNode_networkedVariable_set"]
             if is_var_event_node:
                 if self.entity_type == "other":
                     col.prop(self, "target", text=text)
