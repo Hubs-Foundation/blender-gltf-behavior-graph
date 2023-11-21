@@ -1,7 +1,7 @@
 import bpy
 from bpy.props import StringProperty, PointerProperty
 from bpy.types import NodeSocketStandard, NodeSocketInterface, NodeSocketString, NodeSocketInterfaceString
-from .utils import gather_object_property, filter_on_components, filter_entity_type, update_nodes
+from .utils import gather_object_property, filter_on_components, filter_entity_type, update_nodes, should_export_node_entity
 
 
 class BGFlowSocket(NodeSocketStandard):
@@ -88,18 +88,22 @@ class BGHubsEntitySocket(NodeSocketStandard):
         else:
             col = layout.column()
             col.prop(self, "entity_type")
-            if not hasattr(self, "custom_type") or self.custom_type == "default":
-                if self.entity_type != "self":
-                    col.prop(self, "target", text=text)
-            elif self.custom_type == "event_variable":
+            is_var_event_node = self.node.bl_idname in ["BGNode_variable_get", 
+                                                        "BGNode_variable_set", 
+                                                           "BGNode_customEvent_trigger", 
+                                                           "BGNode_customEvent_onTriggered"]
+            if is_var_event_node:
                 if self.entity_type == "other":
+                    col.prop(self, "target", text=text)
+            else:
+                if self.entity_type != "self":
                     col.prop(self, "target", text=text)
 
     def draw_color(self, context, node):
         return (0.2, 1.0, 0.2, 1.0)
 
     def gather_parameters(self, ob, export_settings):
-        if not hasattr(self, "custom_type") or self.custom_type == "default" and self.export:
+        if should_export_node_entity(self.node, ob) and self.export:
             if not self.entity_type:
                 raise Exception('Entity type not correctly set')
 

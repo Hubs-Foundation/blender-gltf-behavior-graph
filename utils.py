@@ -426,9 +426,30 @@ def createSocketForComponentProperty(target, component, property_name):
 # the object type that is currently being exported.
 # Quite a hack for so far I didn't find a better workaround.
 
-def filter_entity_type(self, context):
+def filter_entity_type(target, context):
+    if not hasattr(target, "node_type"):
+        target = target.node
+    is_var_event_node = target.bl_idname in ["BGNode_variable_get", 
+                                             "BGNode_variable_set", 
+                                             "BGNode_customEvent_trigger", 
+                                             "BGNode_customEvent_onTriggered"]
+    # Used for custom variables and events entity sockets
+    if is_var_event_node:
+        types = [("scene", "Scene", "Scene"),
+                 ("graph", "Graph", "Graph"),
+                 ("other", "Other", "Other")]
+        
+        # If bg_export_type is not None, it's export time
+        if context.scene.bg_export_type != "none":
+            if context.scene.bg_export_type != "scene":
+                types.insert(0, ("object", "Self", "Self"))
+
+        #  Execution time, bg_node_type will be set to the type of the current object
+        elif context.scene.bg_node_type != 'SCENE':
+            types.insert(0, ("object", "Self", "Self")) 
+
     # Used for general nodes that have an entity socket
-    if not hasattr(self, "custom_type") or self.custom_type == "default":
+    else:
         types = [("other", "Other", "Other")]
 
         # If bg_export_type is not None, it's export time
@@ -439,23 +460,26 @@ def filter_entity_type(self, context):
         #  Execution time, bg_node_type will be set to the type of the current object
         elif context.scene.bg_node_type != 'SCENE':
             types.insert(0, ("self", "Self", "Self"))
-
-    # Used for custom variables and events entity sockets
-    elif self.custom_type == "event_variable":
-        types = [("scene", "Scene", "Scene"),
-                 ("graph", "Graph", "Graph"),
-                 ("other", "Other", "Other")]
-
-        # If bg_export_type is not None, it's export time
-        if context.scene.bg_export_type != "none":
-            if context.scene.bg_export_type != "scene":
-                types.insert(0, ("object", "Self", "Self"))
-
-        #  Execution time, bg_node_type will be set to the type of the current object
-        elif context.scene.bg_node_type != 'SCENE':
-            types.insert(0, ("object", "Self", "Self"))
+           
 
     return types
+
+def should_export_node_entity(node, ob):
+    if node.bl_idname in ["BGNode_networkedVariable_get", "BGNode_networkedVariable_set"]:
+        target = get_input_entity(node, bpy.context, ob)
+        if not target:
+            raise Exception("Entity not set")
+        if not object_exists(target):
+            raise Exception(f"Entity {target.name} does not exist")
+        has_prop = node.prop_name in target.bg_global_variables
+        if not has_prop:
+            raise Exception(f"Property {node.prop_name} does not exist")
+        prop = target.bg_global_variables.get(node.prop_name)
+        return prop.networked
+    elif node.bl_idname in ["BGNode_variable_get", "BGNode_variable_set", "BGNode_customEvent_trigger", "BGNode_customEvent_onTriggered"]:
+        return False
+    else:
+        return True
 
 
 def update_nodes(self, context):

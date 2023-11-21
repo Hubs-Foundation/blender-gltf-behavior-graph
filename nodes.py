@@ -441,7 +441,6 @@ class BGNode_variable_get(BGNode, Node):
         self.color = (0.6, 0.6, 0.2)
         self.inputs.new("BGHubsEntitySocket", "entity")
         entity = self.inputs.get("entity")
-        entity.custom_type = "event_variable"
         entity.export = False
         update_selected_variable(self, context)
 
@@ -491,7 +490,6 @@ class BGNode_variable_set(BGActionNode, BGNode, Node):
         self.color = (0.2, 0.6, 0.2)
         self.inputs.new("BGHubsEntitySocket", "entity")
         entity = self.inputs.get("entity")
-        entity.custom_type = "event_variable"
         entity.export = False
         update_selected_variable(self, context)
 
@@ -571,7 +569,6 @@ class BGNode_customEvent_trigger(BGActionNode, BGNode, Node):
         super().init(context)
         self.inputs.new("BGHubsEntitySocket", "entity")
         entity = self.inputs.get("entity")
-        entity.custom_type = "event_variable"
         entity.export = False
 
     def draw_buttons(self, context, layout):
@@ -618,7 +615,6 @@ class BGNode_customEvent_onTriggered(BGEventNode, BGNode, Node):
         super().init(context)
         self.inputs.new("BGHubsEntitySocket", "entity")
         entity = self.inputs.get("entity")
-        entity.custom_type = "event_variable"
         entity.export = False
 
     def draw_buttons(self, context, layout):
@@ -776,8 +772,7 @@ class BGNode_networkedVariable_set(BGNetworked, BGActionNode, BGNode, Node):
     def init(self, context):
         super().init(context)
         self.inputs.new("BGHubsEntitySocket", "entity")
-        entity = self.inputs.get("entity")
-        entity.custom_type = "event_variable"
+        self.inputs.get("entity")
         update_selected_networked_variable(self, context)
 
     def draw_buttons(self, context, layout):
@@ -863,8 +858,7 @@ class BGNode_networkedVariable_get(BGNode, Node):
         super().init(context)
         self.color = (0.6, 0.6, 0.2)
         self.inputs.new("BGHubsEntitySocket", "entity")
-        entity = self.inputs.get("entity")
-        entity.custom_type = "event_variable"
+        self.inputs.get("entity")
         update_selected_networked_variable(self, context)
 
     def draw_buttons(self, context, layout):
