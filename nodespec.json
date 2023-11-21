@@ -5632,6 +5632,65 @@
     "configuration": []
   },
   {
+    "type": "time/set",
+    "category": "Time",
+    "label": "Set Timer",
+    "inputs": [
+      {
+        "name": "flow",
+        "valueType": "flow"
+      },
+      {
+        "name": "duration",
+        "valueType": "float",
+        "defaultValue": 1
+      },
+      {
+        "name": "loop",
+        "valueType": "boolean",
+        "defaultValue": false
+      }
+    ],
+    "outputs": [
+      {
+        "name": "flow",
+        "valueType": "flow"
+      },
+      {
+        "name": "timerId",
+        "valueType": "integer"
+      },
+      {
+        "name": "exec",
+        "valueType": "flow"
+      }
+    ],
+    "configuration": []
+  },
+  {
+    "type": "timer/clear",
+    "category": "Time",
+    "label": "Clear Timer",
+    "inputs": [
+      {
+        "name": "flow",
+        "valueType": "flow"
+      },
+      {
+        "name": "timerId",
+        "valueType": "integer",
+        "defaultValue": 0
+      }
+    ],
+    "outputs": [
+      {
+        "name": "flow",
+        "valueType": "flow"
+      }
+    ],
+    "configuration": []
+  },
+  {
     "type": "hubs/displayMessage",
     "category": "Misc",
     "label": "Display Notification Message",
