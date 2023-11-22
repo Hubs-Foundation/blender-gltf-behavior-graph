@@ -220,7 +220,7 @@ def get_input_entity(node, context, ob=None):
 
     return target
 
-def get_socket_value(ob, export_settings, socket):
+def gather_socket_value(ob, export_settings, socket):
     if hasattr(socket, "bl_socket_idname"):
         socket_idname = socket.bl_socket_idname
     else:
@@ -253,7 +253,7 @@ def get_socket_value(ob, export_settings, socket):
     else:
         return None
 
-def get_deep_socket_value(socket, ob, export_settings, context):
+def gather_deep_socket_value(socket, ob, export_settings, context):
     if socket.is_linked and  len(socket.links) > 0:
         link = socket.links[0]
         from_node = link.from_socket.node
@@ -263,20 +263,20 @@ def get_deep_socket_value(socket, ob, export_settings, context):
             # When copying entities the variable is updated in the variables list
             # but not on the socket so we pull the variable value directly from the list
             var = entity.bg_global_variables.get(from_node.prop_name)
-            return get_variable_value(ob, var, export_settings)
+            return gather_variable_value(ob, var, export_settings)
         elif from_node.bl_idname == "BGNode_networkedVariable_get":
             entity = get_input_entity(from_node, context, ob)
             # When copying entities the variable is updated in the variables list
             # but not on the socket so we pull the variable value directly from the list
             var = entity.bg_global_variables.get(from_node.prop_name)
-            return get_variable_value(ob, var, export_settings)
+            return gather_variable_value(ob, var, export_settings)
         else:
-            return get_socket_value(ob, export_settings, link.from_socket)
+            return gather_socket_value(ob, export_settings, link.from_socket)
     else:
-        return get_socket_value(ob, export_settings, socket)
+        return gather_socket_value(ob, export_settings, socket)
     
 
-def get_variable_value(ob, var, export_settings):
+def gather_variable_value(ob, var, export_settings):
     value = None
     if var.type == "integer":
         value = var.defaultInt
@@ -520,6 +520,79 @@ def object_exists(ob):
     elif type(ob) == bpy.types.Object:
         return ob.name in bpy.context.view_layer.objects
     return False
+
+
+def unique_property_name(property, unique_name, name, value): 
+    import re
+    def collection_from_element(self):
+        import re
+        # this gets the collection that the element is in
+        path = self.path_from_id()
+        match = re.match('(.*)\[\d*\]', path)
+        parent = self.id_data
+        try:
+            coll_path = match.group(1)
+        except AttributeError:
+            raise TypeError("Property not element in a collection.") 
+        else:
+            return parent.path_resolve(coll_path)
+
+    def new_val(stem, nbr):
+        # simply for formatting
+        return '{st}.{nbr:03d}'.format(st=stem, nbr=nbr)
+
+    # =====================================================
+
+    if name not in unique_name:
+        # don't want to handle
+        property[name] = value
+        return
+    if value == getattr(property, name):
+        # check for assignement of current value
+        return
+
+    coll = collection_from_element(property)
+    if value not in coll:
+        # if value is not in the collection, just assign
+        property[name] = value
+        return
+
+    # see if value is already in a format like 'name.012'
+    match = re.match('(.*)\.(\d{3,})', value)
+    if match is None:
+        stem, nbr = value, 1
+    else:
+        stem, nbr = match.groups()
+
+    # check for each value if in collection
+    new_value = new_val(stem, nbr)
+    while new_value in coll:
+        nbr += 1
+        new_value = new_val(stem, nbr)
+    property[name] = new_value
+
+def get_variable_value(var):
+    value = None
+    if var.type == "integer":
+        value = var.defaultInt
+    elif var.type == "boolean":
+        value = var.defaultBoolean
+    elif var.type == "float":
+        value = var.defaultFloat
+    elif var.type == "string":
+        value = var.defaultString
+    elif var.type == "vec3":
+        value = var.defaultVec3
+    elif var.type == "animationAction":
+        value = var.defaultAnimationAction
+    elif var.type == "color":
+        value = var.defaultColor
+    elif var.type == "entity":
+        value = var.defaultEntity
+    elif var.type == "material":
+        var.defaultMaterial
+
+    return value
 
 
 def get_prefs():

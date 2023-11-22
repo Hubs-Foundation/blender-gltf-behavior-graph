@@ -149,3 +149,15 @@ SUPPORTED_PROPERTY_COMPONENTS = [
     media_frame.MediaFrame.get_name(),
     visible.Visible.get_name(),
 ]
+
+VARIABLES_TYPES = [
+    ("boolean", "Boolean", "Boolean"),
+    ("float", "Float", "Float"),
+    ("integer", "Integer", "Integer"),
+    ("string", "String", "String"),
+    ("vec3", "Vector3", "Vector3"),
+    ("animationAction", "Action", "Action"),
+    ("entity", "Entity", "Entity"),
+    ("color", "Color", "Color"),
+    ("material", "Material", "Material")
+]
