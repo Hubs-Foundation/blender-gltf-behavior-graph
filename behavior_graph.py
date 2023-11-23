@@ -8,7 +8,7 @@ from bpy.types import Node, NodeTree, NodeReroute, NodeSocketString
 from bpy.utils import register_class, unregister_class
 from nodeitems_utils import NodeCategory, NodeItem, register_node_categories, unregister_node_categories
 from io_hubs_addon.io.utils import gather_property
-from .utils import get_socket_value, type_to_socket, resolve_input_link, resolve_output_link, get_variable_value, get_prefs
+from .utils import gather_socket_value, type_to_socket, resolve_input_link, resolve_output_link, gather_variable_value, get_prefs
 from .consts import CUSTOM_CATEGORY_NODES, DEPRECATED_NODES, CATEGORY_COLORS
 
 auto_casts = {
@@ -486,7 +486,7 @@ def read_nodespec(filename):
 def get_object_variables(ob, variables, export_settings):
     for var in ob.bg_global_variables:
         if not var.networked:
-            value = get_variable_value(ob, var, export_settings)
+            value = gather_variable_value(ob, var, export_settings)
             variables[f"{ob.name}_{var.name}"] = {
                 "name": f"{ob.name}_{var.name}",
                 "id": len(variables),
@@ -501,6 +501,14 @@ def get_object_custom_events(ob, events, export_settings):
             "name": f"{ob.name}_{event.name}",
             "id": len(events)
         }
+        if len(event.parameters) > 0:
+            events[f"{ob.name}_{event.name}"]["parameters"] = []
+            for parameter in event.parameters:
+                events[f"{ob.name}_{event.name}"]["parameters"].append({
+                    "name": parameter.name,
+                    "valueTypeName": parameter.type,
+                    "defaultValue": gather_variable_value(ob, parameter, export_settings)
+                })
 
 
 def gather_events_and_variables(export_settings):
@@ -585,7 +593,7 @@ def gather_nodes(ob, ob_idx, slot, slot_idx, export_settings, events, variables,
                         node_data["parameters"].update({input_socket.identifier: parameters})
 
                 else:
-                    value = get_socket_value(ob, export_settings, input_socket)
+                    value = gather_socket_value(ob, export_settings, input_socket)
                     if value != None:
                         node_data["parameters"].update({input_socket.identifier: {"value": value}})
 

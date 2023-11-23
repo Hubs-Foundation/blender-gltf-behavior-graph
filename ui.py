@@ -2,11 +2,16 @@ import bpy
 from bpy.types import PropertyGroup, NodeTree
 from bpy.props import PointerProperty, CollectionProperty, IntProperty, EnumProperty, StringProperty, FloatProperty, BoolProperty, FloatVectorProperty
 from bpy.types import AddonPreferences
-from .consts import CATEGORY_COLORS
-from .utils import update_nodes, get_prefs
+from .consts import CATEGORY_COLORS, VARIABLES_TYPES
+from .utils import update_nodes, get_prefs, unique_property_name
 
 original_NODE_HT_header_draw = bpy.types.NODE_HT_header.draw
 
+def set_unique_name_prop(self, value):
+    unique_property_name(self, "name", "name", value)
+
+def get_unique_name_prop(self):
+    return self.get("name") or ""
 
 def draw_header(self, context):
     layout = self.layout
@@ -128,30 +133,22 @@ class BGAddSlot(bpy.types.Operator):
         return {'FINISHED'}
 
 
-GLOBAL_VARIABLES_TYPES = [
-    ("boolean", "Boolean", "Boolean"),
-    ("float", "Float", "Float"),
-    ("integer", "Integer", "Integer"),
-    ("string", "String", "String"),
-    ("vec3", "Vector3", "Vector3"),
-    ("animationAction", "Action", "Action"),
-    ("entity", "Entity", "Entity"),
-    ("color", "Color", "Color"),
-    ("material", "Material", "Material")
-]
-
-
-class BGGlobalVariableType(PropertyGroup):
+class BGVariableType(PropertyGroup):
     name: StringProperty(
         name="Name",
         description="Name",
-        update=update_nodes
+        update=update_nodes,
+        set=set_unique_name_prop,
+        get=get_unique_name_prop
     )
+
+    def __setattr__(self, name, value): 
+        unique_property_name(self, "name", name, value)
 
     type: EnumProperty(
         name="Type",
         description="Type",
-        items=GLOBAL_VARIABLES_TYPES,
+        items=VARIABLES_TYPES,
         update=update_nodes,
         default="integer"
     )
@@ -225,6 +222,7 @@ class BGGlobalVariableAdd(bpy.types.Operator):
         new_var = target.bg_global_variables.add()
         new_var.name = f"prop{len(target.bg_global_variables)}"
         new_var.type = "integer"
+        target.bg_active_global_variable_idx = len(target.bg_global_variables) - 1
 
         update_nodes(self, context)
 
@@ -239,6 +237,7 @@ class BGGlobalVariableRemove(bpy.types.Operator):
     def execute(self, context):
         target = context.target
         target.bg_global_variables.remove(target.bg_active_global_variable_idx)
+        target.bg_active_global_variable_idx = len(target.bg_global_variables) - 1
 
         update_nodes(self, context)
 
@@ -281,12 +280,88 @@ class BGGlobalVariablesList(bpy.types.UIList):
             split.enabled = False
 
 
+class BGCustomEventParameterAdd(bpy.types.Operator):
+    bl_idname = "ui.bg_add_custom_event_parameter"
+    bl_label = "Add Custom Event Parameter"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def execute(self, context):
+        target = context.target
+        if target.bg_active_custom_event_idx >= 0:
+            custom_event = target.bg_custom_events[target.bg_active_custom_event_idx]
+            new_param = custom_event.parameters.add()
+            new_param.name = f"param{len(custom_event.parameters)}"
+            custom_event.parameter_index = len(custom_event.parameters) - 1
+
+            update_nodes(self, context)
+
+        return {'FINISHED'}
+
+
+class BGCustomEventParameterRemove(bpy.types.Operator):
+    bl_idname = "ui.bg_remove_custom_event_parameter"
+    bl_label = "Remove Custom Event Parameter"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def execute(self, context):
+        target = context.target
+        if target.bg_active_custom_event_idx >= 0:
+            custom_event = target.bg_custom_events[target.bg_active_custom_event_idx]
+            custom_event.parameters.remove(custom_event.parameter_index)
+            custom_event.parameter_index = len(custom_event.parameters) - 1
+
+        update_nodes(self, context)
+
+        return {'FINISHED'}
+    
+
+class BGCustomEventParametersList(bpy.types.UIList):
+    bl_idname = "BG_UL_CustomEventParameter_list"
+    bl_label = "Parameters"
+
+    def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
+        split = layout.split(align=False)
+        split.prop(item, "name", text="", emboss=False, icon='NONE')
+        split.prop(item, "type", text="", emboss=False, icon='NONE')
+        if item.type == "integer":
+            split.prop(item, "defaultInt", text="", emboss=True, slider=False, icon='NONE')
+        elif item.type == "boolean":
+            split.prop(item, "defaultBoolean", text="", toggle=True, emboss=True, icon='NONE')
+        elif item.type == "float":
+            split.prop(item, "defaultFloat", text="", emboss=True, slider=False, icon='NONE')
+        elif item.type == "string":
+            split.prop(item, "defaultString", text="", emboss=True, icon='NONE')
+        elif item.type == "vec3":
+            split.prop(item, "defaultVec3", text="", emboss=True, icon='NONE')
+        elif item.type == "color":
+            split.prop(item, "defaultColor", text="", emboss=True, icon='NONE')
+        elif item.type == "entity":
+            split.prop(item, "defaultEntity", text="", emboss=True, icon='NONE')
+        elif item.type == "material":
+            split.prop(item, "defaultMaterial", text="", emboss=True, icon='NONE')
+        elif item.type == "animationAction":
+            split.prop(item, "defaultAnimationAction", text="", emboss=True, icon='NONE')
+            
+
 class BGCustomEventType(PropertyGroup):
     name: StringProperty(
         name="Name",
         description="Name",
-        update=update_nodes
+        update=update_nodes,
+        set=set_unique_name_prop,
+        get=get_unique_name_prop
     )
+
+    def __setattr__(self, name, value): 
+        unique_property_name(self, "name", name, value)
+
+    parameters: CollectionProperty(
+        type=BGVariableType)
+    
+    parameter_index: IntProperty(
+        name="Active Custom Event Parameter index",
+        description="Active Custom Event index",
+        default=-1)
 
 
 class BGCustomEventAdd(bpy.types.Operator):
@@ -298,6 +373,7 @@ class BGCustomEventAdd(bpy.types.Operator):
         target = context.target
         new_event = target.bg_custom_events.add()
         new_event.name = f"event{len(target.bg_custom_events)}"
+        target.bg_active_custom_event_idx = len(target.bg_custom_events) - 1
 
         update_nodes(self, context)
 
@@ -381,13 +457,30 @@ def draw_bg_panel(self, target):
 
     row = layout.row()
     row.label(text="Custom Events:")
-    row = layout.row()
+    box = layout.box()
+
+    row = box.row()
+    row.label(text="Events")
+    row = box.row()
     row.template_list(BGCustomEventsList.bl_idname, "", target,
                       "bg_custom_events", target, "bg_active_custom_event_idx", rows=5)
     col = row.column(align=True)
     col.context_pointer_set('target', target)
     col.operator(BGCustomEventAdd.bl_idname, icon='ADD', text="")
     col.operator(BGCustomEventRemove.bl_idname, icon='REMOVE', text="")
+
+    if len(target.bg_custom_events) > 0 and target.bg_active_custom_event_idx < len(target.bg_custom_events):
+        selected_event = target.bg_custom_events[target.bg_active_custom_event_idx]
+
+        row = box.row()
+        row.label(text="Parameters")
+        row = box.row()
+        row.template_list(BGCustomEventParametersList.bl_idname, "", selected_event,
+                        "parameters", selected_event, "parameter_index", rows=5)
+        col = row.column(align=True)
+        col.context_pointer_set('target', target)
+        col.operator(BGCustomEventParameterAdd.bl_idname, icon='ADD', text="")
+        col.operator(BGCustomEventParameterRemove.bl_idname, icon='REMOVE', text="")
 
 
 class BGObjectPanel(bpy.types.Panel):
@@ -535,13 +628,16 @@ def register():
     bpy.utils.register_class(BGNodeTreeList)
     bpy.utils.register_class(BGObjectPanel)
     bpy.utils.register_class(BGScenePanel)
-    bpy.utils.register_class(BGGlobalVariableType)
+    bpy.utils.register_class(BGVariableType)
     bpy.utils.register_class(BGGlobalVariableAdd)
     bpy.utils.register_class(BGGlobalVariableRemove)
     bpy.utils.register_class(BGGlobalVariablesList)
     bpy.utils.register_class(BGCustomEventType)
     bpy.utils.register_class(BGCustomEventAdd)
     bpy.utils.register_class(BGCustomEventRemove)
+    bpy.utils.register_class(BGCustomEventParameterAdd)
+    bpy.utils.register_class(BGCustomEventParameterRemove)
+    bpy.utils.register_class(BGCustomEventParametersList)
     bpy.utils.register_class(BGCustomEventsList)
     bpy.utils.register_class(BG_PT_GraphPanel)
     bpy.utils.register_class(BGSetNetworkGraph)
@@ -555,7 +651,7 @@ def register():
         description="Active BG index",
         update=bg_active_slot_idx_update,
         default=-1)
-    bpy.types.Object.bg_global_variables = CollectionProperty(type=BGGlobalVariableType)
+    bpy.types.Object.bg_global_variables = CollectionProperty(type=BGVariableType)
     bpy.types.Object.bg_active_global_variable_idx = IntProperty(
         name="Active Global Object Variable index",
         description="Active Global Object Variable index",
@@ -578,7 +674,7 @@ def register():
         items=[("OBJECT", "Object", "Object"),
                ("SCENE", "Scene", "Scene")],
         default="SCENE")
-    bpy.types.Scene.bg_global_variables = CollectionProperty(type=BGGlobalVariableType)
+    bpy.types.Scene.bg_global_variables = CollectionProperty(type=BGVariableType)
     bpy.types.Scene.bg_active_global_variable_idx = IntProperty(
         name="Active Global Variable index",
         description="Active Global Variable index",
@@ -589,7 +685,7 @@ def register():
         description="Active Custom Event index",
         default=-1)
 
-    bpy.types.NodeTree.bg_global_variables = CollectionProperty(type=BGGlobalVariableType)
+    bpy.types.NodeTree.bg_global_variables = CollectionProperty(type=BGVariableType)
     bpy.types.NodeTree.bg_active_global_variable_idx = IntProperty(
         name="Active Global Variable index",
         description="Active Global Variable index",
@@ -611,7 +707,7 @@ def unregister():
     bpy.utils.unregister_class(BGObjectPanel)
     bpy.utils.unregister_class(BGScenePanel)
     bpy.utils.unregister_class(BGNodeTreeList)
-    bpy.utils.unregister_class(BGGlobalVariableType)
+    bpy.utils.unregister_class(BGVariableType)
     bpy.utils.unregister_class(BGGlobalVariableAdd)
     bpy.utils.unregister_class(BGGlobalVariableRemove)
     bpy.utils.unregister_class(BGGlobalVariablesList)
@@ -619,6 +715,9 @@ def unregister():
     bpy.utils.unregister_class(BGCustomEventAdd)
     bpy.utils.unregister_class(BGCustomEventRemove)
     bpy.utils.unregister_class(BGCustomEventsList)
+    bpy.utils.unregister_class(BGCustomEventParametersList)
+    bpy.utils.unregister_class(BGCustomEventParameterAdd)
+    bpy.utils.unregister_class(BGCustomEventParameterRemove)
     bpy.utils.unregister_class(BGSetNetworkGraph)
     bpy.utils.unregister_class(BGUpdateNodeColors)
     bpy.utils.unregister_class(BGPreferences)

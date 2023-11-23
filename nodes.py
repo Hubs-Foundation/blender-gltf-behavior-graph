@@ -2,7 +2,7 @@ import bpy
 from bpy.props import PointerProperty, StringProperty
 from bpy.types import Node
 from io_hubs_addon.io.utils import gather_property
-from .utils import gather_object_property, get_socket_value, filter_on_components, filter_entity_type, get_prefs, object_exists, createSocketForComponentProperty, get_input_entity, get_deep_socket_value
+from .utils import gather_object_property, gather_socket_value, filter_on_components, filter_entity_type, get_prefs, object_exists, createSocketForComponentProperty, get_input_entity, gather_deep_socket_value, get_variable_value
 from .consts import MATERIAL_PROPERTIES_ENUM, MATERIAL_PROPERTIES_TO_TYPES, SUPPORTED_COMPONENTS, SUPPORTED_PROPERTY_COMPONENTS
 
 
@@ -547,6 +547,75 @@ def setCustomEventId(self, value):
         self.customEventName = 'None'
 
 
+def update_selected_custom_event(self, context):
+    isInput = self.bl_idname == "BGNode_customEvent_trigger"
+
+    if not context:
+        return
+    
+    target = get_input_entity(self, context)
+
+    if not target:
+        return
+       
+    params = None
+    recreate_sockets = True
+
+    if self.customEventName != "None":
+        params = target.bg_custom_events.get(self.customEventName).parameters
+        if isInput:
+            if len(params) != len(self.inputs) - 2 and not len(params) == 0:
+                recreate_sockets = True
+            else:
+                sockets_equal = True
+                for idx, param in enumerate(params):
+                    if len(self.inputs) > idx + 2:
+                        param_name = param.name
+                        param_type = param.type
+                        from .utils import socket_to_type
+                        socket_name = self.inputs[idx + 2].name
+                        socket_type = socket_to_type[self.inputs[idx + 2].bl_idname]
+                        sockets_equal = sockets_equal and socket_type == param_type and socket_name == param_name
+                recreate_sockets = not sockets_equal
+
+        else:
+            if len(params) != len(self.outputs) - 1:
+                recreate_sockets = True
+            else:
+                sockets_equal = True
+                for idx, param in enumerate(params):
+                    if len(self.outputs) > idx + 1:
+                        param_name = param.name
+                        param_type = param.type
+                        from .utils import socket_to_type
+                        socket_name = self.outputs[idx + 1].name
+                        socket_type = socket_to_type[self.outputs[idx + 1].bl_idname]
+                        sockets_equal = sockets_equal and socket_type == param_type and socket_name == param_name
+                recreate_sockets = not sockets_equal
+
+    if recreate_sockets:
+        if isInput:
+            for i in range(len(self.inputs) - 1, 1, -1):
+                self.inputs.remove(self.inputs[i])
+        else:
+            for i in range(len(self.outputs) - 1, 0, -1):
+                self.outputs.remove(self.outputs[i])
+    
+        if params:
+            for param in params:
+                param_name = param.name
+                param_type = param.type
+
+                from .utils import type_to_socket
+                if isInput:
+                    socket = self.inputs.new(type_to_socket[param_type], param_name)
+                else:
+                    socket = self.outputs.new(type_to_socket[param_type], param_name)
+                if param_type == "entity":
+                    socket.refresh = False
+                socket.default_value = get_variable_value(param)
+
+
 class BGNode_customEvent_trigger(BGActionNode, BGNode, Node):
     bl_label = "Trigger"
     node_type = "customEvent/trigger"
@@ -561,6 +630,7 @@ class BGNode_customEvent_trigger(BGActionNode, BGNode, Node):
         name="Custom Event",
         description="Custom Event",
         items=get_available_custom_events,
+        update=update_selected_custom_event,
         get=getCustomEventId,
         set=setCustomEventId,
     )
@@ -576,6 +646,25 @@ class BGNode_customEvent_trigger(BGActionNode, BGNode, Node):
 
     def refresh(self):
         self.customEventId = self.customEventId
+
+    def gather_parameters(self, ob, input_socket, export_settings):
+        target = get_input_entity(self, bpy.context)
+
+        if not target or self.customEventName == "None":
+            return
+
+        from .utils import socket_to_type
+        params = target.bg_custom_events.get(self.customEventName).parameters
+        if len(params) > 0:
+            target_param = None
+            for param in params:
+                if param.name == input_socket.name and param.type == socket_to_type[input_socket.bl_idname]:
+                    target_param = param
+                    break
+            if target_param:
+                return {
+                    "value": gather_socket_value(ob, export_settings, input_socket)
+                }
 
     def gather_configuration(self, ob, variables, events, export_settings):
         target = get_input_entity(self, bpy.context, ob)
@@ -607,6 +696,7 @@ class BGNode_customEvent_onTriggered(BGEventNode, BGNode, Node):
         name="Custom Event",
         description="Custom Event",
         items=get_available_custom_events,
+        update=update_selected_custom_event,
         get=getCustomEventId,
         set=setCustomEventId,
     )
@@ -786,7 +876,7 @@ class BGNode_networkedVariable_set(BGNetworked, BGActionNode, BGNode, Node):
 
     def gather_parameters(self, ob, input_socket, export_settings):
         return {
-            "value": get_socket_value(ob, export_settings, input_socket)
+            "value": gather_socket_value(ob, export_settings, input_socket)
         }
 
     def gather_configuration(self, ob, variables, events, export_settings):
@@ -819,12 +909,12 @@ class BGNode_networkedVariable_set(BGNetworked, BGActionNode, BGNode, Node):
             raise Exception(f"Property {self.prop_name} does not exist")
         prop = target.bg_global_variables.get(self.prop_name)
         if prop.networked:
-            from .utils import update_gltf_network_dependencies, get_variable_value
+            from .utils import update_gltf_network_dependencies, gather_variable_value
             from .components.networked_behavior import NetworkedBehavior
             value = {
                 self.prop_name: {
                     "type": prop.type,
-                    "value": get_variable_value(target, prop, export_settings)
+                    "value": gather_variable_value(target, prop, export_settings)
                 }
             }
             update_gltf_network_dependencies(self, export_settings, target, NetworkedBehavior, value)
@@ -869,7 +959,7 @@ class BGNode_networkedVariable_get(BGNode, Node):
 
     def gather_parameters(self, ob, input_socket, export_settings):
         return {
-            "value": get_socket_value(ob, export_settings, input_socket)
+            "value": gather_socket_value(ob, export_settings, input_socket)
         }
 
     def gather_configuration(self, ob, variables, events, export_settings):
@@ -1140,7 +1230,7 @@ class BGNode_set_component_property(BGNetworked, BGActionNode, BGNode, Node):
 
     def gather_parameters(self, ob, input_socket, export_settings):
         return {
-            "value": get_socket_value(ob, export_settings, input_socket)
+            "value": gather_socket_value(ob, export_settings, input_socket)
         }
 
     def gather_configuration(self, ob, variables, events, export_settings):
@@ -1271,7 +1361,7 @@ class BGNode_set_material(BGNetworked, BGActionNode, BGNode, Node):
                 raise Exception("Entity not set")
             if not object_exists(target):
                 raise Exception(f"Entity {target.name} does not exist")
-            material = get_deep_socket_value(self.inputs.get("material"), ob, export_settings, bpy.context)
+            material = gather_deep_socket_value(self.inputs.get("material"), ob, export_settings, bpy.context)
             from .utils import update_gltf_network_dependencies
             from .components import networked_object_material
             from .components import networked_material
