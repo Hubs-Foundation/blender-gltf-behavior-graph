@@ -552,12 +552,12 @@ def update_selected_custom_event(self, context):
 
     if not context:
         return
-    
+
     target = get_input_entity(self, context)
 
     if not target:
         return
-       
+
     params = None
     recreate_sockets = True
 
@@ -600,7 +600,7 @@ def update_selected_custom_event(self, context):
         else:
             for i in range(len(self.outputs) - 1, 0, -1):
                 self.outputs.remove(self.outputs[i])
-    
+
         if params:
             for param in params:
                 param_name = param.name

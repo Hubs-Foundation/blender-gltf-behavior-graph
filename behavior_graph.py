@@ -422,7 +422,6 @@ def create_node_class(node_data):
                 else:
                     self.color = CATEGORY_COLORS["None"]
 
-
             for input_data in node_data["inputs"]:
 
                 if "choices" in input_data:
