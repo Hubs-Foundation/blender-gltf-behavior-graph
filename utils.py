@@ -220,6 +220,7 @@ def get_input_entity(node, context, ob=None):
 
     return target
 
+
 def gather_socket_value(ob, export_settings, socket):
     if hasattr(socket, "bl_socket_idname"):
         socket_idname = socket.bl_socket_idname
@@ -253,8 +254,9 @@ def gather_socket_value(ob, export_settings, socket):
     else:
         return None
 
+
 def gather_deep_socket_value(socket, ob, export_settings, context):
-    if socket.is_linked and  len(socket.links) > 0:
+    if socket.is_linked and len(socket.links) > 0:
         link = socket.links[0]
         from_node = link.from_socket.node
         # This case should go away when we remove BGNode_variable_get
@@ -274,7 +276,7 @@ def gather_deep_socket_value(socket, ob, export_settings, context):
             return gather_socket_value(ob, export_settings, link.from_socket)
     else:
         return gather_socket_value(ob, export_settings, socket)
-    
+
 
 def gather_variable_value(ob, var, export_settings):
     value = None
@@ -393,7 +395,7 @@ def createSocketForComponentProperty(target, component, property_name):
             socket_type = "vec3"
     elif prop_type in prop_to_type:
         socket_type = prop_to_type[prop_type]
-    
+
     if socket_type:
         prop_value = getattr(component, property_name)
         if socket_type == "enum":
@@ -416,7 +418,6 @@ def createSocketForComponentProperty(target, component, property_name):
                 socket.default_value = prop_value
 
     return socket
-    
 
 
 # This function is used by several node entity_type properties and
@@ -443,7 +444,7 @@ def filter_entity_type(target, context):
         types = [("scene", "Scene", "Scene"),
                  ("graph", "Graph", "Graph"),
                  ("other", "Other", "Other")]
-        
+
         # If bg_export_type is not None, it's export time
         if context.scene.bg_export_type != "none":
             if context.scene.bg_export_type != "scene":
@@ -451,7 +452,7 @@ def filter_entity_type(target, context):
 
         #  Execution time, bg_node_type will be set to the type of the current object
         elif context.scene.bg_node_type != 'SCENE':
-            types.insert(0, ("object", "Self", "Self")) 
+            types.insert(0, ("object", "Self", "Self"))
 
     # Used for general nodes that have an entity socket
     else:
@@ -465,9 +466,9 @@ def filter_entity_type(target, context):
         #  Execution time, bg_node_type will be set to the type of the current object
         elif context.scene.bg_node_type != 'SCENE':
             types.insert(0, ("self", "Self", "Self"))
-           
 
     return types
+
 
 def should_export_node_entity(node, ob):
     if node.bl_idname in ["BGNode_networkedVariable_get", "BGNode_networkedVariable_set"]:
@@ -522,8 +523,9 @@ def object_exists(ob):
     return False
 
 
-def unique_property_name(property, unique_name, name, value): 
+def unique_property_name(property, unique_name, name, value):
     import re
+
     def collection_from_element(self):
         import re
         # this gets the collection that the element is in
@@ -533,7 +535,7 @@ def unique_property_name(property, unique_name, name, value):
         try:
             coll_path = match.group(1)
         except AttributeError:
-            raise TypeError("Property not element in a collection.") 
+            raise TypeError("Property not element in a collection.")
         else:
             return parent.path_resolve(coll_path)
 
@@ -570,6 +572,7 @@ def unique_property_name(property, unique_name, name, value):
         nbr += 1
         new_value = new_val(stem, nbr)
     property[name] = new_value
+
 
 def get_variable_value(var):
     value = None
