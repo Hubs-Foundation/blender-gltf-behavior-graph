@@ -403,8 +403,8 @@ def createSocketForComponentProperty(target, component, property_name):
             socket = target.get("string")
             for item in property_definition.enum_items:
                 choice = socket.choices.add()
-                choice.text = item.identifier
-                choice.value = item.name
+                choice.text = item.name
+                choice.value = item.identifier
         else:
             target.new(type_to_socket[socket_type], socket_type)
             socket = target.get(socket_type)
