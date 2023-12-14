@@ -5507,9 +5507,9 @@
     "configuration": []
   },
   {
-    "type": "physics/setRigidBodyProperties",
+    "type": "physics/setRigidBodyActive",
     "category": "Physics",
-    "label": "Set Rigid Body Property",
+    "label": "Activate Rigid Body",
     "inputs": [
       {
         "name": "entity",
@@ -5517,35 +5517,8 @@
         "defaultValue": 0
       },
       {
-        "name": "setType",
+        "name": "setActive",
         "valueType": "flow"
-      },
-      {
-        "name": "type",
-        "valueType": "string",
-        "defaultValue": "kinematic"
-      },
-      {
-        "name": "setMass",
-        "valueType": "flow"
-      },
-      {
-        "name": "mass",
-        "valueType": "float",
-        "defaultValue": 1
-      },
-      {
-        "name": "setGravity",
-        "valueType": "flow"
-      },
-      {
-        "name": "gravity",
-        "valueType": "vec3",
-        "defaultValue": {
-          "x": 0,
-          "y": -9.8,
-          "z": 0
-        }
       }
     ],
     "outputs": [

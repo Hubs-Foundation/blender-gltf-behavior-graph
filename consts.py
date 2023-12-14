@@ -64,6 +64,10 @@ CUSTOM_CATEGORY_NODES = ["BGNode_hubs_onPlayerJoined",
                          "BGNode_hubs_entity_components_custom_tags_hasTag",
                          "BGNode_hubs_components_text_setText"]
 
+# Categories that we don't want to load from the JSON because we are replacing them by hardcoded categories
+FILTERED_CATEGORIES = ["Media", "Text",  "String Math",
+                       "Bool Math", "Int Math", "Float Math", "Vec3 Math", "Euler Math", "Physics", "Media Frame"]
+
 MATERIAL_PROPERTIES_ENUM = [
     ("color", "Color", "Color"),
     ("map", "Map", "Map"),

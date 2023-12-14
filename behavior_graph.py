@@ -9,7 +9,7 @@ from bpy.utils import register_class, unregister_class
 from nodeitems_utils import NodeCategory, NodeItem, register_node_categories, unregister_node_categories
 from io_hubs_addon.io.utils import gather_property
 from .utils import gather_socket_value, type_to_socket, resolve_input_link, resolve_output_link, gather_variable_value, get_prefs
-from .consts import CUSTOM_CATEGORY_NODES, DEPRECATED_NODES, CATEGORY_COLORS
+from .consts import CUSTOM_CATEGORY_NODES, DEPRECATED_NODES, CATEGORY_COLORS, FILTERED_CATEGORIES
 
 auto_casts = {
     ("BGHubsEntitySocket", "NodeSocketString"): "BGNode_hubs_entity_toString",
@@ -254,14 +254,14 @@ class NODE_MT_behavior_graphs_subcategory_Media_Frame(bpy.types.Menu):
         node_add_menu.add_node_type(layout, "BGNode_media_frame_setMediaFrameProperty")
 
 
-class NODE_MT_behavior_graphs_subcategory_Physics(bpy.types.Menu):
-    bl_idname = "NODE_MT_behavior_graphs_subcategory_Physics"
-    bl_label = "Media Frame"
+class NODE_MT_behavior_graphs_subcategory_Rigid_Body(bpy.types.Menu):
+    bl_idname = "NODE_MT_behavior_graphs_subcategory_Rigid_Body"
+    bl_label = "Rigid Body"
 
     def draw(self, context):
         layout = self.layout
         from bl_ui import node_add_menu
-        node_add_menu.add_node_type(layout, "BGNode_physics_setRigidBodyProperties")
+        node_add_menu.add_node_type(layout, "BGNode_physics_setRigidBodyActive")
 
 
 class BGSubcategory(NodeItem):
@@ -295,7 +295,8 @@ CUSTOM_CATEGORIES = {
         NodeItem("BGNode_get_component_property"),
         BGSubcategory(f"BEHAVIOR_GRAPH_Subcategory_Media", label="Media"),
         BGSubcategory(f"BEHAVIOR_GRAPH_Subcategory_Custom_Tags", label="Custom Tags"),
-        BGSubcategory(f"BEHAVIOR_GRAPH_Subcategory_Media_Frame", label="Media Frame")
+        BGSubcategory(f"BEHAVIOR_GRAPH_Subcategory_Media_Frame", label="Media Frame"),
+        BGSubcategory(f"BEHAVIOR_GRAPH_Subcategory_Rigid_Body", label="Rigid Body")
     ],
     "Math": [
         BGSubcategory(f"BEHAVIOR_GRAPH_Subcategory_String_Math", label="String Math"),
@@ -361,6 +362,8 @@ all_classes = [
 
     BGNode_media_frame_setMediaFrameProperty,
 
+    BGNode_physics_setRigidBodyActive,
+
     BGNode_set_material,
     BGNode_set_material_property,
     BGNode_get_material_property,
@@ -384,7 +387,7 @@ all_classes = [
     NODE_MT_behavior_graphs_subcategory_Lifecycle_Events,
     NODE_MT_behavior_graphs_subcategory_Custom_Tags,
     NODE_MT_behavior_graphs_subcategory_Media_Frame,
-    NODE_MT_behavior_graphs_subcategory_Physics,
+    NODE_MT_behavior_graphs_subcategory_Rigid_Body,
 
     BGNode_set_component_property,
     BGNode_get_component_property
@@ -708,10 +711,6 @@ def get_category(category, items):
         if isinstance(item, NodeItem) or isinstance(item, BGSubcategory):
             cat_items.append(item)
     return BGCategory("BEHAVIOR_GRAPH_" + category.replace(" ", "_"), category, items=cat_items)
-
-
-FILTERED_CATEGORIES = ["Media", "Text",  "String Math",
-                       "Bool Math", "Int Math", "Float Math", "Vec3 Math", "Euler Math", "Physics", "Media Frame"]
 
 
 # We need to make sure that the bg_export_type property is reset to none after

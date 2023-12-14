@@ -1490,6 +1490,19 @@ class BGNode_media_frame_setMediaFrameProperty(BGNetworked, BGNode, Node):
         layout.prop(self, "networked")
 
 
+class BGNode_physics_setRigidBodyActive(BGNetworked, BGNode, Node):
+    bl_label = "Set Active"
+    node_type = "physics/setRigidBodyActive"
+
+    def init(self, context):
+        super().init(context)
+        entity = self.inputs.new("BGHubsEntitySocket", "entity")
+        entity.poll_components = "rigidbody"
+        from .sockets import BGFlowSocket
+        BGFlowSocket.create(self.inputs, name="setActive")
+        BGFlowSocket.create(self.outputs)
+
+
 class BGNode_animation_createAnimationAction(BGNetworked, BGActionNode, BGNode, Node):
     bl_label = "Create AnimationAction"
     node_type = "animation/createAnimationAction"
