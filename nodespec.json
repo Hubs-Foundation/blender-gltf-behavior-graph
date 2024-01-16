@@ -2538,7 +2538,7 @@
   },
   {
     "type": "hubs/misc/changehub",
-    "category": "Components",
+    "category": "Misc",
     "label": "Change Hub",
     "inputs": [
       {
