@@ -2,10 +2,13 @@
 Use the addon in conjunction with the [Mozilla Hubs Blender Exporter Addon](https://github.com/MozillaReality/hubs-blender-exporter).
 
 Behavior graphs is still in alpha state and not part of the main Hubs client branch. That means it will not work on regular hubs instances or on the official hubs demo server. For testing, you can use the instance https://testing.dev.myhubs.net/ This instance will be regularly updated with the development branch so you can expect it to have the latest code running anytime.
-Examples and demo scenes can be found [in an own dedicated repo](https://github.com/MozillaReality/blender-behavior-graph-examples).
+
+Alternatively, you can use [hubs-compose](https://github.com/mozilla/hubs-compose/) to run the whole stack locally. The current active branch before we merge in main is: https://github.com/mozilla/hubs/tree/behavior-graphs-spike-rebased
+Users of the Hubs professional plan can upload a custom client using that branch.
+
+Examples and demo scenes can be found in the repo [blender-behavior-graph-examples](https://github.com/MozillaReality/blender-behavior-graph-examples).
 
 # Testing and Debugging
-The current active branch before we merge in main is: https://github.com/mozilla/hubs/tree/behavior-graphs-spike-rebased
 + Use these url query parameters while testing: ?newLoader&ecsDebug&vr_entry_type=2d_now&entity_state_api
   + newLoader: Force use the new loader (required for BGs).
   + ecsDebug: Show the ECS debug panel. Good for debugging your entities while in the room.
