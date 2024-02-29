@@ -242,9 +242,9 @@ def gather_socket_value(ob, export_settings, socket):
         return gather_material_property(export_settings, socket, socket, "default_value")
     elif socket_type == "texture":
         if socket.is_linked:
-            return gather_texture_property(export_settings, socket, socket, "default_value")
-        else:
             raise Exception("Linked textures not yet supported")
+        else:
+            return gather_texture_property(export_settings, socket, socket, "default_value")
     elif socket_type == "color":
         return gather_color_property(export_settings, socket, socket, "default_value", "COLOR_GAMMA")
     elif socket_type == "vec3":
