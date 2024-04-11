@@ -53,13 +53,13 @@ class BGTree(NodeTree):
     def mark_invalid_links(self):
         print("mark invalid links")
         for link in self.links:
-            if type(link.from_socket) != type(link.to_socket):
+            if type(link.from_socket) is not type(link.to_socket):
                 link.is_valid = False
 
     def update(self):
         from .sockets import BGEnumSocket
         for link in self.links:
-            if type(link.from_socket) != type(link.to_socket):
+            if type(link.from_socket) is not type(link.to_socket):
                 cast_key = (link.from_socket.bl_idname,
                             link.to_socket.bl_idname)
                 # if link.from_socket.bl_idname.startswith("NodeSocketVector") and link.to_socket.bl_idname.startswith("NodeSocketVector"):
@@ -78,7 +78,7 @@ class BGTree(NodeTree):
                     try:
                         node = self.nodes.new(auto_casts[cast_key])
                         node.location = [link.from_node.location[0] + abs(
-                            link.from_node.location[0] - link.to_node.location[0])/2, link.from_node.location[1]]
+                            link.from_node.location[0] - link.to_node.location[0]) / 2, link.from_node.location[1]]
                         self.links.new(link.from_socket, node.inputs[0])
                         self.links.new(node.outputs[0], link.to_socket)
                         node.hide = len(node.inputs) <= 1 and len(
@@ -87,7 +87,7 @@ class BGTree(NodeTree):
                         node.select = True
                     except:
                         self.links.remove(link)
-                elif type(link.to_socket) == BGEnumSocket and type(link.from_socket) == NodeSocketString:
+                elif type(link.to_socket) is BGEnumSocket and type(link.from_socket) is NodeSocketString:
                     pass
                 else:
                     self.links.remove(link)
@@ -476,7 +476,7 @@ def read_nodespec(filename):
                 print("SKIP", node_spec["type"])
                 continue
             category = node_spec["category"]
-            if not category in behavior_graph_node_categories:
+            if category not in behavior_graph_node_categories:
                 behavior_graph_node_categories[category] = []
             node_class = create_node_class(node_spec)
             extra_classes.append(node_class)
@@ -586,7 +586,7 @@ def gather_nodes(ob, ob_idx, slot, slot_idx, export_settings, events, variables,
 
                 elif hasattr(input_socket, "gather_parameters") and callable(getattr(input_socket, "gather_parameters")):
                     parameters = input_socket.gather_parameters(ob, export_settings)
-                    if parameters != None:
+                    if parameters is not None:
                         node_data["parameters"].update({input_socket.identifier: parameters})
 
                 elif hasattr(node, "gather_parameters") and callable(getattr(node, "gather_parameters")):
@@ -667,18 +667,18 @@ class glTF2ExportUserExtension:
                         # If we don't select and activate the object, the node properties
                         # that reference cached enums are empty sometimes. Very strange but for now
                         #  this works.
-                        if type(ob) != bpy.types.Scene:
+                        if type(ob) is not bpy.types.Scene:
                             was_selected = ob in bpy.context.selected_objects
                             previous_active_ob = bpy.context.active_object
                             ob.select_set(True)
                             bpy.context.view_layer.objects.active = ob
 
-                        bpy.context.scene.bg_export_type = "object" if type(ob) == bpy.types.Object else "scene"
+                        bpy.context.scene.bg_export_type = "object" if type(ob) is bpy.types.Object else "scene"
                         nodes.extend(gather_nodes(ob, ob_idx, slot, slot_idx, export_settings,
                                                   glob_events, glob_variables, export_report))
                         bpy.context.scene.bg_export_type = "none"
 
-                        if type(ob) != bpy.types.Scene:
+                        if type(ob) is not bpy.types.Scene:
                             ob.select_set(was_selected)
                             bpy.context.view_layer.objects.active = previous_active_ob
 
@@ -721,7 +721,7 @@ def glTF2_pre_export_callback(export_settings):
     exts = export_settings["gltf_user_extensions"]
     for ext in exts:
         import io_hubs_addon
-        if type(ext) == io_hubs_addon.io.gltf_exporter.glTF2ExportUserExtension:
+        if type(ext) is io_hubs_addon.io.gltf_exporter.glTF2ExportUserExtension:
             ext.was_used = True
 
 

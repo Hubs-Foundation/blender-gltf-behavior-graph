@@ -12,7 +12,6 @@ def update_networked_color(self, context):
     else:
         self.color = (0.2, 0.6, 0.2)
 
-
 class BGNode():
     bl_label = "Behavior Graph Node"
     bl_icon = "NODE"

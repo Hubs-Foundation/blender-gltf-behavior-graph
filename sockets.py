@@ -1,6 +1,7 @@
 import bpy
 from bpy.props import StringProperty, PointerProperty
-from bpy.types import NodeSocketStandard, NodeSocketInterface, NodeSocketString, NodeSocketInterfaceString
+#from bpy.types import NodeSocketStandard, NodeSocketInterface, NodeSocketString, NodeSocketInterfaceString
+from bpy.types import NodeSocketStandard, NodeSocketString, NodeSocket
 from .utils import gather_object_property, filter_on_components, filter_entity_type, update_nodes, should_export_node_entity
 
 
@@ -28,14 +29,14 @@ class BGFlowSocket(NodeSocketStandard):
             socket.link_limit = 0
 
 
-class BGHubsEntitySocketInterface(NodeSocketInterface):
+class BGHubsEntitySocketInterface(NodeSocket):
     bl_idname = "BGHubsEntitySocketInterface"
     bl_socket_idname = "BGHubsEntitySocket"
 
-    def draw(self, context, layout):
+    def draw(self, context, layout, node, text):
         pass
 
-    def draw_color(self, context):
+    def draw_color(self, context, node):
         return (0.2, 1.0, 0.2, 1.0)
 
 
@@ -169,14 +170,14 @@ class BGEnumSocket(NodeSocketStandard):
         return (0.4, 0.7, 1.0, 1.0)
 
 
-class BGHubsAnimationActionSocketInterface(NodeSocketInterface):
+class BGHubsAnimationActionSocketInterface(NodeSocket):
     bl_idname = "BGHubsAnimationActionSocketInterface"
     bl_socket_idname = "BGHubsAnimationActionSocket"
 
-    def draw(self, context, layout):
+    def draw(self, context, layout, node, text):
         pass
 
-    def draw_color(self, context):
+    def draw_color(self, context, node):
         return (0.2, 1.0, 1.0, 1.0)
 
 
@@ -190,14 +191,14 @@ class BGHubsAnimationActionSocket(NodeSocketStandard):
         return (0.2, 1.0, 1.0, 1.0)
 
 
-class BGHubsPlayerSocketInterface(NodeSocketInterface):
+class BGHubsPlayerSocketInterface(NodeSocket):
     bl_idname = "BGHubsPlayerSocketInterface"
     bl_socket_idname = "BGHubsPlayerSocket"
 
-    def draw(self, context, layout):
+    def draw(self, context, layout, node, text):
         pass
 
-    def draw_color(self, context):
+    def draw_color(self, context, node):
         return (1.00, 0.91, 0.34, 1.0)
 
 
@@ -211,14 +212,14 @@ class BGHubsPlayerSocket(NodeSocketStandard):
         return (1.00, 0.91, 0.34, 1.0)
 
 
-class BGCustomEventSocketInterface(NodeSocketInterfaceString):
+class BGCustomEventSocketInterface(NodeSocket):
     bl_idname = "BGCustomEventSocketInterface"
     bl_socket_idname = "BGCustomEventSocket"
 
-    def draw(self, context, layout):
+    def draw(self, context, layout, node, text):
         pass
 
-    def draw_color(self, context):
+    def draw_color(self, context, node):
         return (1.00, 0.91, 0.34, 1.0)
 
 
