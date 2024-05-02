@@ -138,9 +138,13 @@ def get_hubs_ext(export_settings):
 
 
 def add_component_to_node(gltf2_object, dep, value, export_settings):
-    from io_hubs_addon.io.gltf_exporter import hubs_config
+    try:
+        from io_hubs_addon.io.utils import HUBS_CONFIG
+    except ImportError:
+        # A version of the io_hubs_addon below 1.5 is being used
+        from io_hubs_addon.io.gltf_exporter import hubs_config as HUBS_CONFIG
     hubs_ext = get_hubs_ext(export_settings)
-    hubs_ext_name = hubs_config["gltfExtensionName"]
+    hubs_ext_name = HUBS_CONFIG["gltfExtensionName"]
     if gltf2_object.extensions is None:
         gltf2_object.extensions = {}
     if hubs_ext_name not in gltf2_object.extensions:
