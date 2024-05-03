@@ -67,7 +67,7 @@ class CUSTOM_TAGS_OT_remove_tag(bpy.types.Operator):
 class CustomTags(HubsComponent):
     _definition = {
         'name': 'custom-tags',
-        'display_name': 'BG Custom Tags',
+        'display_name': 'Custom Tags',
         'category': Category.OBJECT,
         'node_type': NodeType.NODE,
         'panel_type': [PanelType.OBJECT, PanelType.BONE],
