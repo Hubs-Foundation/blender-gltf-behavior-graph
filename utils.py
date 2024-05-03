@@ -252,7 +252,12 @@ def gather_socket_value(ob, export_settings, socket):
     elif socket_type == "color":
         return gather_color_property(export_settings, socket, socket, "default_value", "COLOR_GAMMA")
     elif socket_type == "vec3":
-        return gather_vec_property(export_settings, socket, socket, "default_value")
+        value = gather_vec_property(export_settings, socket, socket, "default_value")
+        if export_settings['gltf_yup']:
+            copy = value.copy()
+            value["y"] = copy["z"]
+            value["z"] = copy["y"]
+        return value
     elif hasattr(socket, "default_value"):
         return gather_property(export_settings, socket, socket, "default_value")
     else:
@@ -294,6 +299,10 @@ def gather_variable_value(ob, var, export_settings):
         value = var.defaultString
     elif var.type == "vec3":
         value = gather_vec_property(export_settings, var, var, "defaultVec3")
+        if export_settings['gltf_yup']:
+            copy = value.copy()
+            value["y"] = copy["z"]
+            value["z"] = copy["y"]
     elif var.type == "animationAction":
         value = var.defaultAnimationAction
     elif var.type == "color":
