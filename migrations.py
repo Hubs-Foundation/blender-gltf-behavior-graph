@@ -4,7 +4,7 @@ from . import bl_info
 
 def migrate_0_0_1():
     ''' Since v0.0.2 we use the Blender coordinate system for all vectors and we swizzle when exporting.
-        This migration updates all existing vectors for pre 0.0.1 files.'''
+        This migration updates all existing vectors for pre 0.0.2 files.'''
     def migrate_sockets_coords(socket):
         if not socket.is_linked:
             if socket.bl_idname == "NodeSocketVectorXYZ" or socket.bl_idname == "NodeSocketVectorEuler":
