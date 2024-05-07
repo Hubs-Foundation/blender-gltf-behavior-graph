@@ -35,7 +35,12 @@ def load_post(dummy):
 
 @persistent
 def save_post(dummy):
-    bpy.context.scene.bg_global_props.version = bl_info["version"]
+    for scene in bpy.data.scenes:
+        scene.bg_global_props.version = bl_info["version"]
+    for object in bpy.data.objects:
+        object.bg_global_props.version = bl_info["version"]
+    for node_tree in bpy.data.node_groups:
+        node_tree.bg_global_props.version = bl_info["version"]
 
 
 def register():
@@ -45,6 +50,8 @@ def register():
 
     bpy.utils.register_class(BGGlobalProps)
     bpy.types.Scene.bg_global_props = PointerProperty(type=BGGlobalProps)
+    bpy.types.Object.bg_global_props = PointerProperty(type=BGGlobalProps)
+    bpy.types.NodeTree.bg_global_props = PointerProperty(type=BGGlobalProps)
 
     if load_post not in bpy.app.handlers.load_post:
         bpy.app.handlers.load_post.append(load_post)
@@ -60,6 +67,8 @@ def unregister():
 
     bpy.utils.unregister_class(BGGlobalProps)
     del bpy.types.Scene.bg_global_props
+    del bpy.types.Object.bg_global_props
+    del bpy.types.NodeTree.bg_global_props
 
     if load_post in bpy.app.handlers.load_post:
         bpy.app.handlers.load_post.remove(load_post)
