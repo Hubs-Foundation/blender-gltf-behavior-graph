@@ -6,10 +6,11 @@ from ..utils import do_register, do_unregister
 class NetworkedObjectMaterial(HubsComponent):
     _definition = {
         'name': 'networked-object-material',
-        'display_name': 'BG Networked Object Material',
+        'display_name': 'Networked Object Material',
         'node_type': NodeType.NODE,
         'panel_type': [PanelType.OBJECT],
         'icon': 'MATERIAL_DATA',
+        'deps': ['networked'],
         'version': (1, 0, 0)
     }
 

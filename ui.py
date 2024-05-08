@@ -7,11 +7,14 @@ from .utils import update_nodes, get_prefs, unique_property_name
 
 original_NODE_HT_header_draw = bpy.types.NODE_HT_header.draw
 
+
 def set_unique_name_prop(self, value):
     unique_property_name(self, "name", "name", value)
 
+
 def get_unique_name_prop(self):
     return self.get("name") or ""
+
 
 def draw_header(self, context):
     layout = self.layout
@@ -142,7 +145,7 @@ class BGVariableType(PropertyGroup):
         get=get_unique_name_prop
     )
 
-    def __setattr__(self, name, value): 
+    def __setattr__(self, name, value):
         unique_property_name(self, "name", name, value)
 
     type: EnumProperty(
@@ -313,7 +316,7 @@ class BGCustomEventParameterRemove(bpy.types.Operator):
         update_nodes(self, context)
 
         return {'FINISHED'}
-    
+
 
 class BGCustomEventParametersList(bpy.types.UIList):
     bl_idname = "BG_UL_CustomEventParameter_list"
@@ -341,7 +344,7 @@ class BGCustomEventParametersList(bpy.types.UIList):
             split.prop(item, "defaultMaterial", text="", emboss=True, icon='NONE')
         elif item.type == "animationAction":
             split.prop(item, "defaultAnimationAction", text="", emboss=True, icon='NONE')
-            
+
 
 class BGCustomEventType(PropertyGroup):
     name: StringProperty(
@@ -352,12 +355,12 @@ class BGCustomEventType(PropertyGroup):
         get=get_unique_name_prop
     )
 
-    def __setattr__(self, name, value): 
+    def __setattr__(self, name, value):
         unique_property_name(self, "name", name, value)
 
     parameters: CollectionProperty(
         type=BGVariableType)
-    
+
     parameter_index: IntProperty(
         name="Active Custom Event Parameter index",
         description="Active Custom Event index",
@@ -476,7 +479,7 @@ def draw_bg_panel(self, target):
         row.label(text="Parameters")
         row = box.row()
         row.template_list(BGCustomEventParametersList.bl_idname, "", selected_event,
-                        "parameters", selected_event, "parameter_index", rows=5)
+                          "parameters", selected_event, "parameter_index", rows=5)
         col = row.column(align=True)
         col.context_pointer_set('target', target)
         col.operator(BGCustomEventParameterAdd.bl_idname, icon='ADD', text="")

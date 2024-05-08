@@ -7,7 +7,7 @@ import bpy
 class NetworkedObjectProperties(HubsComponent):
     _definition = {
         'name': 'networked-object-properties',
-        'display_name': 'BG Networked Object',
+        'display_name': 'Networked Object',
         'node_type': NodeType.NODE,
         'panel_type': [PanelType.OBJECT],
         'icon': 'EMPTY_AXIS',

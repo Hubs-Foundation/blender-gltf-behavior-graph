@@ -6,10 +6,11 @@ from ..utils import do_register, do_unregister
 class NetworkedAnimation(HubsComponent):
     _definition = {
         'name': 'networked-animation',
-        'display_name': 'BG Networked Animation',
+        'display_name': 'Networked Animation',
         'node_type': NodeType.NODE,
         'panel_type': [PanelType.OBJECT],
         'icon': 'RENDER_ANIMATION',
+        'deps': ['networked'],
         'version': (1, 0, 0)
     }
 
