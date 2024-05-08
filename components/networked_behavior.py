@@ -120,6 +120,10 @@ def get_value(prop, export_settings):
         value = prop.defaultString
     elif prop.type == "vec3":
         value = gather_vec_property(export_settings, prop, prop, "defaultVec3")
+        if export_settings['gltf_yup']:
+            copy = value.copy()
+            value["y"] = copy["z"]
+            value["z"] = copy["y"]
     elif prop.type == "entity":
         value = gather_object_property(export_settings, prop.defaultEntity)
     elif prop.type == "animationAction":
