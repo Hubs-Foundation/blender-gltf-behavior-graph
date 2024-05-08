@@ -121,10 +121,10 @@ MATERIAL_PROPERTIES_TO_TYPES = {
 }
 
 CATEGORY_COLORS = {
-    "Event":  (0.6, 0.2, 0.2),
-    "Flow":  (0.2, 0.2, 0.2),
-    "Time":  (0.3, 0.3, 0.3),
-    "Action":  (0.2, 0.2, 0.6),
+    "Event": (0.6, 0.2, 0.2),
+    "Flow": (0.2, 0.2, 0.2),
+    "Time": (0.3, 0.3, 0.3),
+    "Action": (0.2, 0.2, 0.6),
     "None": (0.6, 0.6, 0.2),
     "Networking": (0.0, 0.7, 0.7)
 }

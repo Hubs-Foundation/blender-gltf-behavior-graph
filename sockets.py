@@ -1,6 +1,5 @@
 import bpy
 from bpy.props import StringProperty, PointerProperty
-#from bpy.types import NodeSocketStandard, NodeSocketInterface, NodeSocketString, NodeSocketInterfaceString
 from bpy.types import NodeSocketStandard, NodeSocketString, NodeSocket
 from .utils import gather_object_property, filter_on_components, filter_entity_type, update_nodes, should_export_node_entity
 
@@ -133,7 +132,7 @@ class BGHubsEntitySocket(NodeSocketStandard):
                         "value": gather_object_property(export_settings, self.target)
                     }
             else:
-                if type(ob) == bpy.types.Scene:
+                if type(ob) is bpy.types.Scene:
                     raise Exception('Empty entity cannot be used for Scene objects in this context')
                 else:
                     return {

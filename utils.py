@@ -133,7 +133,7 @@ def get_hubs_ext(export_settings):
     exts = export_settings["gltf_user_extensions"]
     for ext in exts:
         import io_hubs_addon
-        if type(ext) == io_hubs_addon.io.gltf_exporter.glTF2ExportUserExtension:
+        if type(ext) is io_hubs_addon.io.gltf_exporter.glTF2ExportUserExtension:
             return ext
 
 
@@ -159,7 +159,7 @@ def add_component_to_node(gltf2_object, dep, value, export_settings):
 
 
 def update_gltf_network_dependencies(node, export_settings, blender_object, dep, value={"networked": "true"}):
-    if type(blender_object) == bpy.types.Object:
+    if type(blender_object) is bpy.types.Object:
         vtree = export_settings['vtree']
         vnode = vtree.nodes[next((uuid for uuid in vtree.nodes if (
             vtree.nodes[uuid].blender_object == blender_object)), None)]
@@ -168,7 +168,7 @@ def update_gltf_network_dependencies(node, export_settings, blender_object, dep,
             export_settings
         )
         add_component_to_node(gltf_object, dep, value, export_settings)
-    elif type(blender_object) == bpy.types.Material:
+    elif type(blender_object) is bpy.types.Material:
         gltf_object = gltf2_blender_gather_materials.gather_material(
             blender_object, 0, export_settings)
         add_component_to_node(gltf_object, dep, value, export_settings)
@@ -208,7 +208,7 @@ def get_input_entity(node, context, ob=None):
             elif entity_socket.entity_type == "graph":
                 # When exporting we use the current exporting object as the target object
                 if ob:
-                    if type(ob) == bpy.types.Object:
+                    if type(ob) is bpy.types.Object:
                         target = context.active_object.bg_active_graph
                     else:
                         target = context.scene.bg_active_graph
@@ -490,21 +490,21 @@ def should_export_node_entity(node, ob):
 
 def update_nodes(self, context):
     if context.scene.bg_node_type == 'OBJECT':
-        if hasattr(context.active_object, "bg_active_graph") and context.active_object.bg_active_graph != None:
+        if hasattr(context.active_object, "bg_active_graph") and context.active_object.bg_active_graph is not None:
             for node in context.active_object.bg_active_graph.nodes:
                 if hasattr(node, "refresh") and callable(getattr(node, "refresh")):
                     node.refresh()
     else:
-        if hasattr(context.scene, "bg_active_graph") and context.scene.bg_active_graph != None:
+        if hasattr(context.scene, "bg_active_graph") and context.scene.bg_active_graph is not None:
             for node in context.scene.bg_active_graph.nodes:
                 if hasattr(node, "refresh") and callable(getattr(node, "refresh")):
                     node.refresh()
 
 
 def update_graphs(self, context):
-    if hasattr(context.active_object, "bg_active_graph") and context.active_object.bg_active_graph != None:
+    if hasattr(context.active_object, "bg_active_graph") and context.active_object.bg_active_graph is not None:
         context.active_object.bg_active_graph.update()
-    if hasattr(context.scene, "bg_active_graph") and context.scene.bg_active_graph != None:
+    if hasattr(context.scene, "bg_active_graph") and context.scene.bg_active_graph is not None:
         context.scene.bg_active_graph.update()
 
 
@@ -514,11 +514,11 @@ def get_graph_from_node(node):
 
 def object_exists(ob):
     from .behavior_graph import BGTree
-    if type(ob) == bpy.types.Scene:
+    if type(ob) is bpy.types.Scene:
         return ob.name in bpy.data.scenes
-    elif type(ob) == BGTree:
+    elif type(ob) is BGTree:
         return ob.name in bpy.data.node_groups
-    elif type(ob) == bpy.types.Object:
+    elif type(ob) is bpy.types.Object:
         return ob.name in bpy.context.view_layer.objects
     return False
 

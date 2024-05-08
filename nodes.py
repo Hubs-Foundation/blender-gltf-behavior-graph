@@ -12,6 +12,7 @@ def update_networked_color(self, context):
     else:
         self.color = (0.2, 0.6, 0.2)
 
+
 class BGNode():
     bl_label = "Behavior Graph Node"
     bl_icon = "NODE"
@@ -96,7 +97,7 @@ class BGEntityPropertyNode():
     def gather_configuration(self, ob, variables, events, export_settings):
         from .behavior_graph import gather_object_property
         target = ob if self.entity_type == "self" else self.target
-        if not self.target and type(ob) == bpy.types.Scene:
+        if not self.target and type(ob) is bpy.types.Scene:
             raise Exception('Empty entity cannot be used for Scene objects in this context')
         elif not self.target and self.entity_type == "other":
             raise Exception('Entity not set')
@@ -107,7 +108,7 @@ class BGEntityPropertyNode():
 
     def gather_parameters(self, ob, input_socket, export_settings):
         if not self.target:
-            if type(ob) == bpy.types.Scene:
+            if type(ob) is bpy.types.Scene:
                 raise Exception('Empty entity cannot be used for Scene objects in this context')
             else:
                 return {
@@ -136,7 +137,7 @@ def update_set_entity_property(self, context):
     if not target:
         return
 
-    setattr(self, "node_type",  "hubs/entity/set/" + self.targetProperty)
+    setattr(self, "node_type", "hubs/entity/set/" + self.targetProperty)
     (socket_type,
      default_value) = entity_property_settings[self.targetProperty]
     socket = self.inputs.new(socket_type, self.targetProperty)

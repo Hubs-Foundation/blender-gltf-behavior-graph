@@ -400,7 +400,6 @@ HARDCODED_NODES = {
     node.node_type for node in all_classes + extra_classes if hasattr(node, "node_type")
 }
 
-
 def create_node_class(node_data):
     from .nodes import BGNode
     label = node_data["type"]
@@ -472,7 +471,7 @@ def read_nodespec(filename):
         nodes = json.load(file)
         nodes.sort(key=lambda item: item["label"])
         for node_spec in nodes:
-            if node_spec["type"] in HARDCODED_NODES or node_spec["type"] in HARDCODED_NODES:
+            if node_spec["type"] in HARDCODED_NODES:
                 print("SKIP", node_spec["type"])
                 continue
             category = node_spec["category"]
@@ -591,17 +590,17 @@ def gather_nodes(ob, ob_idx, slot, slot_idx, export_settings, events, variables,
 
                 elif hasattr(node, "gather_parameters") and callable(getattr(node, "gather_parameters")):
                     parameters = node.gather_parameters(ob, input_socket, export_settings)
-                    if parameters != None:
+                    if parameters is not None:
                         node_data["parameters"].update({input_socket.identifier: parameters})
 
                 else:
                     value = gather_socket_value(ob, export_settings, input_socket)
-                    if value != None:
+                    if value is not None:
                         node_data["parameters"].update({input_socket.identifier: {"value": value}})
 
             if hasattr(node, "gather_configuration") and callable(getattr(node, "gather_configuration")):
                 configuration = node.gather_configuration(ob, variables, events, export_settings)
-                if configuration != None:
+                if configuration is not None:
                     node_data["configuration"] = configuration
 
             elif hasattr(node, "__annotations__"):
@@ -686,13 +685,13 @@ class glTF2ExportUserExtension:
                 if gltf2_object.extensions is None:
                     gltf2_object.extensions = {}
                 gltf2_object.extensions["MOZ_behavior"] = self.Extension(
-                    name="MOZ_behavior",
-                    extension={
-                        "behaviors": [{
-                            "customEvents": customEvents,
-                            "variables": variables,
-                            "nodes": nodes
-                        }]
+                            name="MOZ_behavior",
+                            extension={
+                                "behaviors": [{
+                                    "customEvents": customEvents,
+                                    "variables": variables,
+                                    "nodes": nodes
+                                }]
                     },
                     required=False
                 )
@@ -720,7 +719,7 @@ def glTF2_pre_export_callback(export_settings):
 
     exts = export_settings["gltf_user_extensions"]
     for ext in exts:
-        import io_hubs_addon
+        import io_hubs_addon # this should be done before the loop?
         if type(ext) is io_hubs_addon.io.gltf_exporter.glTF2ExportUserExtension:
             ext.was_used = True
 
