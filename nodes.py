@@ -1472,7 +1472,7 @@ class BGNode_media_mediaPlayback(BGNetworked, BGActionNode, BGNode, Node):
         layout.prop(self, "networked")
 
 
-class BGNode_media_frame_setMediaFrameProperty(BGNetworked, BGNode, Node):
+class BGNode_media_frame_setMediaFrameProperty(BGNode, Node):
     bl_label = "Set Media Frame Property"
     node_type = "media_frame/setMediaFrameProperty"
 
@@ -1485,9 +1485,6 @@ class BGNode_media_frame_setMediaFrameProperty(BGNetworked, BGNode, Node):
         BGFlowSocket.create(self.inputs, name="setLocked")
         self.inputs.new("NodeSocketBool", "locked")
         BGFlowSocket.create(self.outputs)
-
-    def draw_buttons(self, context, layout):
-        layout.prop(self, "networked")
 
 
 class BGNode_physics_setRigidBodyActive(BGNetworked, BGNode, Node):

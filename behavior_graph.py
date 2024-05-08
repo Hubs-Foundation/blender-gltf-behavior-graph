@@ -65,15 +65,21 @@ class BGTree(NodeTree):
                 # if link.from_socket.bl_idname.startswith("NodeSocketVector") and link.to_socket.bl_idname.startswith("NodeSocketVector"):
                 #     continue
                 if isinstance(link.from_socket.node, NodeReroute):
-                    from_node = link.from_socket.node
-                    from_node.outputs.clear()
-                    from_node.outputs.new(link.to_socket.bl_idname, "Output")
-                    self.links.new(from_node.outputs["Output"], link.to_socket)
+                    try:
+                        from_node = link.from_socket.node
+                        from_node.outputs.clear()
+                        from_node.outputs.new(link.to_socket.bl_idname, "Output")
+                        self.links.new(from_node.outputs["Output"], link.to_socket)
+                    except:
+                        pass
                 elif isinstance(link.to_socket.node, NodeReroute):
-                    to_node = link.to_socket.node
-                    to_node.inputs.clear()
-                    to_node.inputs.new(link.from_socket.bl_idname, "Input")
-                    self.links.new(link.from_socket, to_node.inputs["Input"])
+                    try:
+                        to_node = link.to_socket.node
+                        to_node.inputs.clear()
+                        to_node.inputs.new(link.from_socket.bl_idname, "Input")
+                        self.links.new(link.from_socket, to_node.inputs["Input"])
+                    except:
+                        pass
                 elif cast_key in auto_casts:
                     try:
                         node = self.nodes.new(auto_casts[cast_key])
