@@ -697,7 +697,10 @@ class glTF2ExportUserExtension:
                         "behaviors": [{
                             "customEvents": customEvents,
                             "variables": variables,
-                            "nodes": nodes
+                            "nodes": nodes,
+                            "metadata": {
+                                "gltf_yup": export_settings['gltf_yup']
+                            }
                         }]
                     },
                     required=False
