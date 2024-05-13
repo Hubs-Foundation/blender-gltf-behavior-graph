@@ -69,7 +69,7 @@ To test networked behaviors in a scene, you'll need to publish the scene and cha
 You can find some demo scenes in the [BGs demo repository](https://github.com/MozillaReality/blender-behavior-graph-examples). We will be adding future demos to that repository.
 
 # Contributing
-File bugs in the Hubs client repo adding the Behavior Graphs label so we can [track the open issues here](https://github.com/mozilla/hubs/labels/Behavior%20Graphs).
+If you find any bugs related to the Behavior Graphs Blender add-on, you can file bugs so we can [track the open issues here](https://github.com/MozillaReality/blender-gltf-behavior-graph/issues).
 
 # Troubleshooting
 If you see any Behavior Graphs add-on related errors when starting Blender (from the Terminal) it might be that the Behavior Graphs add-on is being initializing before the Hubs Blender exporter add-on is. In that case disable/enable the Behavior Graphs add-on to make sure that is initialized after the Blender Hubs add-on is.
