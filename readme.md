@@ -55,7 +55,10 @@ If you are connecting to a BGs enabled room there are a few query parameters tha
   + **entity_state_api**: Enable pinning.
   + **debugLocalScene**: Use this query parameter while testing a local scene. Important: Make sure you are logged in the room otherwise it will just load the GLD as a media.
 
-You can use any of these query parameters by adding them to your Hubs URL: *?newLoader&ecsDebug&vr_entry_type=2d_now&entity_state_api*
+You can use any of these query parameters by adding them to your Hubs URL:
+```
+?newLoader&ecsDebug&vr_entry_type=2d_now&entity_state_api
+```
 
 **Note**: If you are using the Hubs Blender add-on scene debugger, that will be handled for you automatically by the debugger when a room is created/opened. You can read more about the Hubs Scene Debugger [here](https://github.com/MozillaReality/hubs-blender-exporter/wiki/Hubs-scene-debugger)
 
