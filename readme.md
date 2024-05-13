@@ -24,6 +24,7 @@ Behavior graphs is still in alpha state and not part of the main Hubs client bra
 There are three ways you can test Behavior Graphs:
 - The public testing instance
 - Your own local instance using [Hubs Compose](https://github.com/mozilla/hubs-compose/)
+- Your own Hubs instance
 
 ## Testing instance
 For testing, you can use the [public testing instance](https://testing.dev.myhubs.net/). This instance will be regularly updated with the development branch so you can expect it to have the latest code running anytime.
@@ -40,6 +41,11 @@ To add support for Behavior Graphs in your Hubs Compose based instance you'll ne
 To use your local Hubs Compose instance you'll need to add the instance home URL to your server list.
 
 ![Testing instance](/docs/img/intro-hubs-compose-instance.png)
+
+## Your own Hubs instance
+If you are lucky enough to have your own Hubs instance or have access to client customization in your favorite Hubs provider, you add Behavior Graphs support by using the [add-ons branch](https://github.com/mozilla/hubs/tree/addons) and installing the [Hubs Behavior Graphs add-on](https://github.com/MozillaReality/hubs-behavior-graphs-addon/).
+
+Then you can add your instance home URL to you server list in the Hubs Blender add-on and to start using it.
 
 # Testing and Debugging
 If you are connecting to a BGs enabled room there are a few query parameters that can be useful to use:
