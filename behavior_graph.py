@@ -1,4 +1,3 @@
-from .sockets import *
 from .nodes import *
 import json
 import bpy
@@ -10,6 +9,12 @@ from nodeitems_utils import NodeCategory, NodeItem, register_node_categories, un
 from io_hubs_addon.io.utils import gather_property
 from .utils import gather_socket_value, type_to_socket, resolve_input_link, resolve_output_link, gather_variable_value, get_prefs
 from .consts import CUSTOM_CATEGORY_NODES, DEPRECATED_NODES, CATEGORY_COLORS, FILTERED_CATEGORIES
+
+# differentiate between 3.6 and 4.x nodes
+if bpy.app.version < (3, 90, 0):
+    from .sockets3 import *
+else:
+    from .sockets import *
 
 auto_casts = {
     ("BGHubsEntitySocket", "NodeSocketString"): "BGNode_hubs_entity_toString",
