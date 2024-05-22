@@ -1,8 +1,15 @@
 import bpy
 from bpy.props import StringProperty, PointerProperty
-from bpy.types import NodeSocketStandard, NodeSocketString, NodeSocket
-from .utils import gather_object_property, filter_on_components, filter_entity_type, update_nodes, should_export_node_entity
+from bpy.types import NodeSocketStandard
 
+if bpy.app.version < (4, 0, 0):
+    from bpy.types import NodeSocketInterface as NodeSocket
+    from bpy.types import NodeSocketInterfaceString as NodeSocketString
+else:
+    from bpy.types import NodeSocket
+    from bpy.types import NodeSocketString
+
+from .utils import gather_object_property, filter_on_components, filter_entity_type, update_nodes, should_export_node_entity
 
 class BGFlowSocket(NodeSocketStandard):
     bl_label = "Behavior Graph Flow"
@@ -32,11 +39,16 @@ class BGHubsEntitySocketInterface(NodeSocket):
     bl_idname = "BGHubsEntitySocketInterface"
     bl_socket_idname = "BGHubsEntitySocket"
 
-    def draw(self, context, layout, node, text):
-        pass
-
-    def draw_color(self, context, node):
-        return (0.2, 1.0, 0.2, 1.0)
+    if bpy.app.version < (4, 0, 0):
+        def draw(self, context, layout):
+            pass
+        def draw_color(self, context):
+            return (0.2, 1.0, 0.2, 1.0)
+    else:
+        def draw(self, context, layout, node, text):
+            pass
+        def draw_color(self, context, node):
+            return (0.2, 1.0, 0.2, 1.0)
 
 
 def update_entity_socket(self, context):
@@ -82,7 +94,7 @@ class BGHubsEntitySocket(NodeSocketStandard):
 
     refresh: bpy.props.BoolProperty(default=True)
 
-    def draw(self, context, layout, node, text):
+    def draw(self, context, layout, node, text=None):
         if self.is_output or self.is_linked:
             layout.label(text=text)
         else:
@@ -173,11 +185,17 @@ class BGHubsAnimationActionSocketInterface(NodeSocket):
     bl_idname = "BGHubsAnimationActionSocketInterface"
     bl_socket_idname = "BGHubsAnimationActionSocket"
 
-    def draw(self, context, layout, node, text):
-        pass
+    if bpy.app.version < (4, 0, 0):
+        def draw(self, context, layout):
+            pass
+        def draw_color(self, context):
+            return (0.2, 1.0, 0.2, 1.0)
+    else:
+        def draw(self, context, layout, node, text):
+            pass
 
-    def draw_color(self, context, node):
-        return (0.2, 1.0, 1.0, 1.0)
+        def draw_color(self, context, node):
+            return (0.2, 1.0, 1.0, 1.0)
 
 
 class BGHubsAnimationActionSocket(NodeSocketStandard):
@@ -194,11 +212,16 @@ class BGHubsPlayerSocketInterface(NodeSocket):
     bl_idname = "BGHubsPlayerSocketInterface"
     bl_socket_idname = "BGHubsPlayerSocket"
 
-    def draw(self, context, layout, node, text):
-        pass
-
-    def draw_color(self, context, node):
-        return (1.00, 0.91, 0.34, 1.0)
+    if bpy.app.version < (4, 0, 0):
+        def draw(self, context, layout):
+            pass
+        def draw_color(self, context):
+            return (0.2, 1.0, 0.2, 1.0)
+    else:
+        def draw(self, context, layout, node, text):
+            pass
+        def draw_color(self, context, node):
+            return (1.00, 0.91, 0.34, 1.0)
 
 
 class BGHubsPlayerSocket(NodeSocketStandard):
@@ -211,22 +234,27 @@ class BGHubsPlayerSocket(NodeSocketStandard):
         return (1.00, 0.91, 0.34, 1.0)
 
 
-class BGCustomEventSocketInterface(NodeSocket):
+class BGCustomEventSocketInterface(NodeSocketString):
     bl_idname = "BGCustomEventSocketInterface"
     bl_socket_idname = "BGCustomEventSocket"
 
-    def draw(self, context, layout, node, text):
-        pass
+    if bpy.app.version < (4, 0, 0):
+        def draw(self, context, layout):
+            pass
+        def draw_color(self, context):
+            return (0.2, 1.0, 0.2, 1.0)
+    else:
+        def draw(self, context, layout, node, text):
+            pass
 
-    def draw_color(self, context, node):
-        return (1.00, 0.91, 0.34, 1.0)
+        def draw_color(self, context, node):
+            return (1.00, 0.91, 0.34, 1.0)
 
-
-class BGCustomEventSocket(NodeSocketString):
+# NodeSocketString and NodeSocketInterfaceString have been merged, here we need to use NodeSocketString for both versions
+class BGCustomEventSocket(bpy.types.NodeSocketString):
     bl_label = "Custom Event"
-
     def draw(self, context, layout, node, text):
         layout.label(text=text)
-
     def draw_color(self, context, node):
-        return (1.00, 0.91, 0.34, 1.0)
+            return (1.00, 0.91, 0.34, 1.0)
+

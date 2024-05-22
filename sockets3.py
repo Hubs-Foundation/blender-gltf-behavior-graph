@@ -1,8 +1,11 @@
+#OBSOLETE, WILL BE REMOVED IN THE FUTURE
+
 import bpy
 from bpy.props import StringProperty, PointerProperty
 from bpy.types import NodeSocketStandard, NodeSocketInterface, NodeSocketString, NodeSocketInterfaceString
 from .utils import gather_object_property, filter_on_components, filter_entity_type, update_nodes, should_export_node_entity
 
+print("\tUSING 3.py")
 
 class BGFlowSocket(NodeSocketStandard):
     bl_label = "Behavior Graph Flow"
@@ -215,8 +218,12 @@ class BGCustomEventSocketInterface(NodeSocketInterfaceString):
     bl_idname = "BGCustomEventSocketInterface"
     bl_socket_idname = "BGCustomEventSocket"
 
-    def draw(self, context, layout):
-        pass
+    if bpy.app.version < (4, 0, 0):
+        def draw(self, context, layout):
+            pass
+    else:
+        def draw(self, context, layout, node, text):
+            pass
 
     def draw_color(self, context):
         return (1.00, 0.91, 0.34, 1.0)

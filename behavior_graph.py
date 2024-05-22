@@ -9,12 +9,7 @@ from nodeitems_utils import NodeCategory, NodeItem, register_node_categories, un
 from io_hubs_addon.io.utils import gather_property
 from .utils import gather_socket_value, type_to_socket, resolve_input_link, resolve_output_link, gather_variable_value, get_prefs
 from .consts import CUSTOM_CATEGORY_NODES, DEPRECATED_NODES, CATEGORY_COLORS, FILTERED_CATEGORIES
-
-# differentiate between 3.6 and 4.x nodes
-if bpy.app.version < (3, 90, 0):
-    from .sockets3 import *
-else:
-    from .sockets import *
+from .sockets import *
 
 auto_casts = {
     ("BGHubsEntitySocket", "NodeSocketString"): "BGNode_hubs_entity_toString",
@@ -62,7 +57,7 @@ class BGTree(NodeTree):
                 link.is_valid = False
 
     def update(self):
-        from .sockets import BGEnumSocket
+        # from .sockets import BGEnumSocket
         for link in self.links:
             if type(link.from_socket) is not type(link.to_socket):
                 cast_key = (link.from_socket.bl_idname,
@@ -547,7 +542,7 @@ def gather_events_and_variables(export_settings):
 
 
 def gather_nodes(ob, ob_idx, slot, slot_idx, export_settings, events, variables, export_report):
-    from .sockets import BGFlowSocket
+    # from .sockets import BGFlowSocket
     from .nodes import BGNode
 
     nodes = []
