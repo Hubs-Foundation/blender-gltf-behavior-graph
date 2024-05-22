@@ -1,13 +1,11 @@
 import bpy
 from bpy.props import StringProperty, PointerProperty
-from bpy.types import NodeSocketStandard
+from bpy.types import NodeSocketStandard, NodeSocketString
 
 if bpy.app.version < (4, 0, 0):
     from bpy.types import NodeSocketInterface as NodeSocket
-    from bpy.types import NodeSocketInterfaceString as NodeSocketString
 else:
     from bpy.types import NodeSocket
-    from bpy.types import NodeSocketString
 
 from .utils import gather_object_property, filter_on_components, filter_entity_type, update_nodes, should_export_node_entity
 
@@ -238,23 +236,18 @@ class BGCustomEventSocketInterface(NodeSocketString):
     bl_idname = "BGCustomEventSocketInterface"
     bl_socket_idname = "BGCustomEventSocket"
 
-    if bpy.app.version < (4, 0, 0):
-        def draw(self, context, layout):
-            pass
-        def draw_color(self, context):
-            return (0.2, 1.0, 0.2, 1.0)
-    else:
-        def draw(self, context, layout, node, text):
-            pass
+    def draw(self, context, layout, node, text):
+        pass
 
-        def draw_color(self, context, node):
-            return (1.00, 0.91, 0.34, 1.0)
+    def draw_color(self, context, node):
+        return (0.2, 1.0, 0.2, 1.0)
 
-# NodeSocketString and NodeSocketInterfaceString have been merged, here we need to use NodeSocketString for both versions
-class BGCustomEventSocket(bpy.types.NodeSocketString):
+class BGCustomEventSocket(NodeSocketString):
     bl_label = "Custom Event"
+
     def draw(self, context, layout, node, text):
         layout.label(text=text)
+
     def draw_color(self, context, node):
             return (1.00, 0.91, 0.34, 1.0)
 
