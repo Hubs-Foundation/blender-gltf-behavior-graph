@@ -18,8 +18,12 @@ def redraw_area(context, area_id):
 def gather_material_property(export_settings, blender_object, target, property_name):
     blender_material = getattr(target, property_name)
     if blender_material:
-        material = gltf2_blender_gather_materials.gather_material(
-            blender_material, 0, export_settings)
+        if bpy.app.version < (4, 0, 0):
+            material = gltf2_blender_gather_materials.gather_material(
+                blender_material, 0, export_settings)
+        else:
+            material = gltf2_blender_gather_materials.gather_material(
+                blender_material, export_settings)[0]
         return {
             "__mhc_link_type": "material",
             "index": material
@@ -145,21 +149,25 @@ def add_component_to_node(gltf2_object, dep, value, export_settings):
         from io_hubs_addon.io.gltf_exporter import hubs_config as HUBS_CONFIG
     hubs_ext = get_hubs_ext(export_settings)
     hubs_ext_name = HUBS_CONFIG["gltfExtensionName"]
-    if gltf2_object.extensions is None:
-        gltf2_object.extensions = {}
-    if hubs_ext_name not in gltf2_object.extensions:
-        gltf2_object.extensions[hubs_ext_name] = {dep.get_name(): value}
+    if type(gltf2_object) is tuple:
+        extensions = gltf2_object[0].extensions
     else:
-        if hasattr(gltf2_object.extensions[hubs_ext_name], "extension"):
-            if not dep.get_name() in gltf2_object.extensions[hubs_ext_name].extension:
-                gltf2_object.extensions[hubs_ext_name].extension.update({dep.get_name(): value})
+        extensions = gltf2_object.extensions
+    if extensions is None:
+        extensions = {}
+    if hubs_ext_name not in extensions:
+        extensions[hubs_ext_name] = {dep.get_name(): value}
+    else:
+        if hasattr(extensions[hubs_ext_name], "extension"):
+            if not dep.get_name() in extensions[hubs_ext_name].extension:
+                extensions[hubs_ext_name].extension.update({dep.get_name(): value})
             else:
-                gltf2_object.extensions[hubs_ext_name].extension[dep.get_name()].update(value)
+                extensions[hubs_ext_name].extension[dep.get_name()].update(value)
         else:
-            if not dep.get_name() in gltf2_object.extensions[hubs_ext_name]:
-                gltf2_object.extensions[hubs_ext_name].update({dep.get_name(): value})
+            if not dep.get_name() in extensions[hubs_ext_name]:
+                extensions[hubs_ext_name].update({dep.get_name(): value})
             else:
-                gltf2_object.extensions[hubs_ext_name][dep.get_name()].update(value)
+                extensions[hubs_ext_name][dep.get_name()].update(value)
 
 
 def update_gltf_network_dependencies(node, export_settings, blender_object, dep, value={"networked": "true"}):
@@ -172,9 +180,13 @@ def update_gltf_network_dependencies(node, export_settings, blender_object, dep,
             export_settings
         )
         add_component_to_node(gltf_object, dep, value, export_settings)
-    elif type(blender_object) == bpy.types.Material:
-        gltf_object = gltf2_blender_gather_materials.gather_material(
-            blender_object, 0, export_settings)
+    elif type(blender_object) is bpy.types.Material:
+        if bpy.app.version < (4, 0, 0):
+            gltf_object = gltf2_blender_gather_materials.gather_material(
+                blender_object, 0, export_settings)
+        else:
+            gltf_object = gltf2_blender_gather_materials.gather_material(
+                blender_object,  export_settings)[0]
         add_component_to_node(gltf_object, dep, value, export_settings)
 
 
