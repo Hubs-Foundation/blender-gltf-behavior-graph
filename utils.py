@@ -131,8 +131,8 @@ def gather_object_property(export_settings, blender_object):
 
 def get_hubs_ext(export_settings):
     exts = export_settings["gltf_user_extensions"]
+    import io_hubs_addon
     for ext in exts:
-        import io_hubs_addon
         if type(ext) is io_hubs_addon.io.gltf_exporter.glTF2ExportUserExtension:
             return ext
 

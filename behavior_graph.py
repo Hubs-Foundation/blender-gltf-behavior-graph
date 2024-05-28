@@ -57,7 +57,6 @@ class BGTree(NodeTree):
                 link.is_valid = False
 
     def update(self):
-        # from .sockets import BGEnumSocket
         for link in self.links:
             if type(link.from_socket) is not type(link.to_socket):
                 cast_key = (link.from_socket.bl_idname,
@@ -542,7 +541,6 @@ def gather_events_and_variables(export_settings):
 
 
 def gather_nodes(ob, ob_idx, slot, slot_idx, export_settings, events, variables, export_report):
-    # from .sockets import BGFlowSocket
     from .nodes import BGNode
 
     nodes = []
@@ -716,10 +714,9 @@ def get_category(category, items):
 # exporting, otherwise filter_entity_type will always return the wrong items :S
 def glTF2_pre_export_callback(export_settings):
     bpy.context.scene.bg_export_type = "none"
-
+    import io_hubs_addon
     exts = export_settings["gltf_user_extensions"]
     for ext in exts:
-        import io_hubs_addon # this should be done before the loop?
         if type(ext) is io_hubs_addon.io.gltf_exporter.glTF2ExportUserExtension:
             ext.was_used = True
 

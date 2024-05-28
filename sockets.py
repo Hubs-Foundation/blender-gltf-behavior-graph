@@ -238,7 +238,6 @@ class BGCustomEventSocketInterface(NodeSocketString):
 
     def draw(self, context, layout, node, text):
         pass
-
     def draw_color(self, context, node):
         return (0.2, 1.0, 0.2, 1.0)
 
@@ -249,5 +248,4 @@ class BGCustomEventSocket(NodeSocketString):
         layout.label(text=text)
 
     def draw_color(self, context, node):
-            return (1.00, 0.91, 0.34, 1.0)
-
+        return (1.00, 0.91, 0.34, 1.0)
