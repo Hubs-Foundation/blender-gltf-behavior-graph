@@ -1,5 +1,5 @@
 # Installation and Basic Usage
-Use the addon in conjunction with the [Mozilla Hubs Blender Exporter Addon](https://github.com/MozillaReality/hubs-blender-exporter).
+Use the addon in conjunction with the [Hubs Blender Exporter Addon](https://github.com/MozillaReality/hubs-blender-exporter).
 
 Behavior graphs is still in alpha state and not part of the main Hubs client branch. That means it will not work on regular hubs instances or on the official hubs demo server. For testing, you can use the [public testing instance](https://testing.dev.myhubs.net/). This instance will be regularly updated with the development branch so you can expect it to have the latest code running anytime.
 
