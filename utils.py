@@ -138,9 +138,13 @@ def get_hubs_ext(export_settings):
 
 
 def add_component_to_node(gltf2_object, dep, value, export_settings):
-    from io_hubs_addon.io.gltf_exporter import hubs_config
+    try:
+        from io_hubs_addon.io.utils import HUBS_CONFIG
+    except ImportError:
+        # A version of the io_hubs_addon below 1.5 is being used
+        from io_hubs_addon.io.gltf_exporter import hubs_config as HUBS_CONFIG
     hubs_ext = get_hubs_ext(export_settings)
-    hubs_ext_name = hubs_config["gltfExtensionName"]
+    hubs_ext_name = HUBS_CONFIG["gltfExtensionName"]
     if gltf2_object.extensions is None:
         gltf2_object.extensions = {}
     if hubs_ext_name not in gltf2_object.extensions:
@@ -248,7 +252,12 @@ def gather_socket_value(ob, export_settings, socket):
     elif socket_type == "color":
         return gather_color_property(export_settings, socket, socket, "default_value", "COLOR_GAMMA")
     elif socket_type == "vec3":
-        return gather_vec_property(export_settings, socket, socket, "default_value")
+        value = gather_vec_property(export_settings, socket, socket, "default_value")
+        if export_settings['gltf_yup']:
+            copy = value.copy()
+            value["y"] = copy["z"]
+            value["z"] = copy["y"]
+        return value
     elif hasattr(socket, "default_value"):
         return gather_property(export_settings, socket, socket, "default_value")
     else:
@@ -290,6 +299,10 @@ def gather_variable_value(ob, var, export_settings):
         value = var.defaultString
     elif var.type == "vec3":
         value = gather_vec_property(export_settings, var, var, "defaultVec3")
+        if export_settings['gltf_yup']:
+            copy = value.copy()
+            value["y"] = copy["z"]
+            value["z"] = copy["y"]
     elif var.type == "animationAction":
         value = var.defaultAnimationAction
     elif var.type == "color":

@@ -479,7 +479,7 @@ def draw_bg_panel(self, target):
         row.label(text="Parameters")
         row = box.row()
         row.template_list(BGCustomEventParametersList.bl_idname, "", selected_event,
-                            "parameters", selected_event, "parameter_index", rows=5)
+                          "parameters", selected_event, "parameter_index", rows=5)
         col = row.column(align=True)
         col.context_pointer_set('target', target)
         col.operator(BGCustomEventParameterAdd.bl_idname, icon='ADD', text="")

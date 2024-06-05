@@ -2,7 +2,7 @@ import bpy
 from bpy.props import PointerProperty, StringProperty
 from bpy.types import Node
 from io_hubs_addon.io.utils import gather_property
-from .utils import gather_object_property, gather_socket_value, filter_on_components, filter_entity_type, get_prefs, object_exists, createSocketForComponentProperty, get_input_entity, gather_deep_socket_value, get_variable_value
+from .utils import gather_object_property, gather_socket_value, filter_on_components, filter_entity_type, get_prefs, object_exists, createSocketForComponentProperty, get_input_entity, get_variable_value
 from .consts import MATERIAL_PROPERTIES_ENUM, MATERIAL_PROPERTIES_TO_TYPES, SUPPORTED_COMPONENTS, SUPPORTED_PROPERTY_COMPONENTS
 from .sockets import BGFlowSocket
 
@@ -1357,7 +1357,7 @@ class BGNode_set_material(BGNetworked, BGActionNode, BGNode, Node):
                 raise Exception("Entity not set")
             if not object_exists(target):
                 raise Exception(f"Entity {target.name} does not exist")
-            material = gather_deep_socket_value(self.inputs.get("material"), ob, export_settings, bpy.context)
+            material = get_material_socket_value(self.inputs.get("material"), bpy.context)
             from .utils import update_gltf_network_dependencies
             from .components import networked_object_material
             from .components import networked_material
@@ -1467,7 +1467,7 @@ class BGNode_media_mediaPlayback(BGNetworked, BGActionNode, BGNode, Node):
         layout.prop(self, "networked")
 
 
-class BGNode_media_frame_setMediaFrameProperty(BGNetworked, BGNode, Node):
+class BGNode_media_frame_setMediaFrameProperty(BGNode, Node):
     bl_label = "Set Media Frame Property"
     node_type = "media_frame/setMediaFrameProperty"
 
@@ -1479,9 +1479,6 @@ class BGNode_media_frame_setMediaFrameProperty(BGNetworked, BGNode, Node):
         BGFlowSocket.create(self.inputs, name="setLocked")
         self.inputs.new("NodeSocketBool", "locked")
         BGFlowSocket.create(self.outputs)
-
-    def draw_buttons(self, context, layout):
-        layout.prop(self, "networked")
 
 
 class BGNode_physics_setRigidBodyActive(BGNetworked, BGNode, Node):
