@@ -1,14 +1,17 @@
 {
   "python.autoComplete.extraPaths": [
-    "./fake_bpy_modules_3.4-20230117"
+    "./fake_bpy_modules_4.0"
   ],
   "python.formatting.provider": "autopep8",
   "python.formatting.autopep8Args": [
     "--exclude=models", "--max-line-length", "120", "--experimental"
   ],
   "python.analysis.extraPaths": [
-    "./fake_bpy_modules_3.4-20230117"
+    "./fake_bpy_modules_4.0"
   ],
+  "python.analysis.diagnosticSeverityOverrides": {
+    "reportInvalidTypeForm": "none",
+  },
   "editor.defaultFormatter": "ms-python.autopep8",
   "editor.formatOnSave": true,
   "editor.formatOnSaveMode": "file",

@@ -117,7 +117,7 @@ class BGNodeTreeList(bpy.types.UIList):
 
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
         split = layout.split(factor=0.90, align=False)
-        if item.graph != None:
+        if item.graph is not None:
             split.prop(item.graph, "name", text="", emboss=False, icon='NODETREE')
         else:
             split.prop(self, "empty", text="", emboss=False, icon='NODETREE')
@@ -254,7 +254,7 @@ class BGGlobalVariablesList(bpy.types.UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
         disable_networked = False
         from .behavior_graph import BGTree
-        if type(data) == bpy.types.Scene or type(data) == BGTree:
+        if type(data) is bpy.types.Scene or type(data) is BGTree:
             disable_networked = True
         split = layout.split(align=False)
         split.prop(item, "name", text="", emboss=False, icon='NONE')
