@@ -4,6 +4,7 @@ from bpy.types import Node
 from io_hubs_addon.io.utils import gather_property
 from .utils import gather_object_property, gather_socket_value, filter_on_components, filter_entity_type, get_prefs, object_exists, createSocketForComponentProperty, get_input_entity, get_variable_value
 from .consts import MATERIAL_PROPERTIES_ENUM, MATERIAL_PROPERTIES_TO_TYPES, SUPPORTED_COMPONENTS, SUPPORTED_PROPERTY_COMPONENTS
+from .sockets import BGFlowSocket
 
 
 def update_networked_color(self, context):
@@ -34,7 +35,6 @@ class BGNode():
 
 class BGEventNode():
     def init(self, context):
-        from .sockets import BGFlowSocket
         super().init(context)
         self.color = (0.6, 0.2, 0.2)
         BGFlowSocket.create(self.outputs)
@@ -42,7 +42,6 @@ class BGEventNode():
 
 class BGActionNode():
     def init(self, context):
-        from .sockets import BGFlowSocket
         super().init(context)
         self.color = (0.2, 0.2, 0.6)
         BGFlowSocket.create(self.inputs)
@@ -97,7 +96,7 @@ class BGEntityPropertyNode():
     def gather_configuration(self, ob, variables, events, export_settings):
         from .behavior_graph import gather_object_property
         target = ob if self.entity_type == "self" else self.target
-        if not self.target and type(ob) == bpy.types.Scene:
+        if not self.target and type(ob) is bpy.types.Scene:
             raise Exception('Empty entity cannot be used for Scene objects in this context')
         elif not self.target and self.entity_type == "other":
             raise Exception('Entity not set')
@@ -108,7 +107,7 @@ class BGEntityPropertyNode():
 
     def gather_parameters(self, ob, input_socket, export_settings):
         if not self.target:
-            if type(ob) == bpy.types.Scene:
+            if type(ob) is bpy.types.Scene:
                 raise Exception('Empty entity cannot be used for Scene objects in this context')
             else:
                 return {
@@ -137,7 +136,7 @@ def update_set_entity_property(self, context):
     if not target:
         return
 
-    setattr(self, "node_type",  "hubs/entity/set/" + self.targetProperty)
+    setattr(self, "node_type", "hubs/entity/set/" + self.targetProperty)
     (socket_type,
      default_value) = entity_property_settings[self.targetProperty]
     socket = self.inputs.new(socket_type, self.targetProperty)
@@ -277,7 +276,6 @@ class BGNode_media_onMediaEvent(BGEventNode, BGEntityPropertyNode, BGNode, Node)
     def init(self, context):
         self.use_custom_color = True
         self.color = (0.6, 0.2, 0.2)
-        from .sockets import BGFlowSocket
         BGFlowSocket.create(self.outputs, name="create")
         BGFlowSocket.create(self.outputs, name="play")
         BGFlowSocket.create(self.outputs, name="pause")
@@ -290,7 +288,6 @@ class BGNode_media_onMediaEvent(BGEventNode, BGEntityPropertyNode, BGNode, Node)
 
 
 def update_output_sockets(self, context):
-    from .sockets import BGFlowSocket
     existing_outputs = len(self.outputs)
     print("existing", existing_outputs, "desired", self.numOutputs)
     if (existing_outputs < self.numOutputs):
@@ -315,7 +312,6 @@ class BGNode_flow_sequence(BGNode, Node):
     def init(self, context):
         super().init(context)
         self.color = (0.2, 0.2, 0.2)
-        from .sockets import BGFlowSocket
         BGFlowSocket.create(self.inputs)
         update_output_sockets(self, context)
 
@@ -1462,7 +1458,6 @@ class BGNode_media_mediaPlayback(BGNetworked, BGActionNode, BGNode, Node):
     def init(self, context):
         super().init(context)
         self.inputs.new("BGHubsEntitySocket", "entity")
-        from .sockets import BGFlowSocket
         BGFlowSocket.create(self.inputs, name="play")
         BGFlowSocket.create(self.inputs, name="pause")
         BGFlowSocket.create(self.inputs, name="setMuted")
@@ -1479,7 +1474,6 @@ class BGNode_media_frame_setMediaFrameProperty(BGNode, Node):
     def init(self, context):
         super().init(context)
         self.inputs.new("BGHubsEntitySocket", "entity")
-        from .sockets import BGFlowSocket
         BGFlowSocket.create(self.inputs, name="setActive")
         self.inputs.new("NodeSocketBool", "active")
         BGFlowSocket.create(self.inputs, name="setLocked")
@@ -1495,7 +1489,6 @@ class BGNode_physics_setRigidBodyActive(BGNetworked, BGNode, Node):
         super().init(context)
         entity = self.inputs.new("BGHubsEntitySocket", "entity")
         entity.poll_components = "rigidbody"
-        from .sockets import BGFlowSocket
         BGFlowSocket.create(self.inputs, name="setActive")
         BGFlowSocket.create(self.outputs)
 
@@ -1540,7 +1533,6 @@ class BGNode_animation_play(BGNetworked, BGActionNode, BGNode, Node):
 
     def init(self, context):
         super().init(context)
-        from .sockets import BGFlowSocket
         self.inputs.new("BGHubsAnimationActionSocket", "action")
         self.inputs.new("NodeSocketBool", "reset")
         BGFlowSocket.create(self.outputs, name="finished")
