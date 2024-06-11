@@ -17,21 +17,13 @@ You can read an intro to Behavior graphs here: [Behavior Graphs Intro](docs/intr
 # Installation and Basic Usage
 This add-on is only compatible with **Blender 3.6** and it's not yet compatible with versions above that.
 
-This add-on requires the [Mozilla Hubs Blender Exporter Addon](https://github.com/MozillaReality/hubs-blender-exporter). You'll need both installed and the Hubs Blender Exporter add-on needs to be loaded before the Behavior Graphs add-on is.
+This add-on requires the [Hubs Blender Exporter Addon](https://github.com/MozillaReality/hubs-blender-exporter). You'll need both installed and the Hubs Blender Exporter add-on needs to be loaded before the Behavior Graphs add-on is.
 
 Behavior graphs is still in alpha state and not part of the main Hubs client branch. That means it will not work on regular hubs instances or on the official hubs demo server. 
 
 There are three ways you can test Behavior Graphs:
-- The public testing instance
 - Your own local instance using [Hubs Compose](https://github.com/mozilla/hubs-compose/)
 - Your own Hubs instance
-
-## Testing instance
-For testing, you can use the [public testing instance](https://testing.dev.myhubs.net/). This instance will be regularly updated with the development branch so you can expect it to have the latest code running anytime.
-
-To use the testing instance you'll need to add the instance home URL to your server list.
-
-![Testing instance](docs/img/intro-testing-instance.png)
 
 ## Hubs compose
 Alternatively, you can use [hubs-compose](https://github.com/mozilla/hubs-compose/) to run the whole stack locally. 
