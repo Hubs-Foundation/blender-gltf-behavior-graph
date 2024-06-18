@@ -147,14 +147,18 @@ def add_component_to_node(gltf2_object, dep, value, export_settings):
     except ImportError:
         # A version of the io_hubs_addon below 1.5 is being used
         from io_hubs_addon.io.gltf_exporter import hubs_config as HUBS_CONFIG
-    hubs_ext = get_hubs_ext(export_settings)
+
     hubs_ext_name = HUBS_CONFIG["gltfExtensionName"]
     if type(gltf2_object) is tuple:
         extensions = gltf2_object[0].extensions
     else:
         extensions = gltf2_object.extensions
+
+    existed = True
     if extensions is None:
+        existed = False
         extensions = {}
+
     if hubs_ext_name not in extensions:
         extensions[hubs_ext_name] = {dep.get_name(): value}
     else:
@@ -168,6 +172,12 @@ def add_component_to_node(gltf2_object, dep, value, export_settings):
                 extensions[hubs_ext_name].update({dep.get_name(): value})
             else:
                 extensions[hubs_ext_name][dep.get_name()].update(value)
+
+    if not existed:
+        if type(gltf2_object) is tuple:
+            gltf2_object[0].extensions = extensions
+        else:
+            gltf2_object.extensions = extensions
 
 
 def update_gltf_network_dependencies(node, export_settings, blender_object, dep, value={"networked": "true"}):
