@@ -133,14 +133,6 @@ def gather_object_property(export_settings, blender_object):
         return None
 
 
-def get_hubs_ext(export_settings):
-    exts = export_settings["gltf_user_extensions"]
-    import io_hubs_addon
-    for ext in exts:
-        if type(ext) is io_hubs_addon.io.gltf_exporter.glTF2ExportUserExtension:
-            return ext
-
-
 def add_component_to_node(gltf2_object, dep, value, export_settings):
     try:
         from io_hubs_addon.io.utils import HUBS_CONFIG
@@ -154,13 +146,15 @@ def add_component_to_node(gltf2_object, dep, value, export_settings):
     else:
         extensions = gltf2_object.extensions
 
-    existed = True
     if extensions is None:
-        existed = False
         extensions = {}
 
     if hubs_ext_name not in extensions:
         extensions[hubs_ext_name] = {dep.get_name(): value}
+        if type(gltf2_object) is tuple:
+            gltf2_object[0].extensions = extensions
+        else:
+            gltf2_object.extensions = extensions
     else:
         if hasattr(extensions[hubs_ext_name], "extension"):
             if not dep.get_name() in extensions[hubs_ext_name].extension:
@@ -172,12 +166,6 @@ def add_component_to_node(gltf2_object, dep, value, export_settings):
                 extensions[hubs_ext_name].update({dep.get_name(): value})
             else:
                 extensions[hubs_ext_name][dep.get_name()].update(value)
-
-    if not existed:
-        if type(gltf2_object) is tuple:
-            gltf2_object[0].extensions = extensions
-        else:
-            gltf2_object.extensions = extensions
 
 
 def update_gltf_network_dependencies(node, export_settings, blender_object, dep, value={"networked": "true"}):
