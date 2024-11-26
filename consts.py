@@ -1,8 +1,8 @@
 # Nodes that are deprecated and are replaced with hardcoded nodes but we still load the nodes
 # from the JSON as we want the to work for backwards compatibility but we don't want them to show in
 # the categories
-from .components import networked_animation, networked_behavior
-from io_hubs_addon.components.definitions import text, video, audio, media_frame, visible, rigid_body, physics_shape, networked_transform
+from .components import networked_animation, networked_behavior, networked_transform, rigid_body, physics_shape
+from io_hubs_addon.components.definitions import text, video, audio, media_frame, visible
 DEPRECATED_NODES = [
     "BGNode_hubs_material_set",
     "BGNode_hubs_material_getColor",
