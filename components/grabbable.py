@@ -40,7 +40,8 @@ class Grabbable(HubsComponent):
             if "networked-object-properties" in host.hubs_component_list.items:
                 remove_component(host, "networked-object-properties")
 
-            add_component(host, NetworkedTransform.get_name())
+            if NetworkedTransform.get_name() not in host.hubs_component_list.items:
+                add_component(host, NetworkedTransform.get_name())
 
         return migration_occurred
 
