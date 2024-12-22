@@ -1,10 +1,17 @@
+import bpy
+
 from io_hubs_addon.components.components_registry import register_component, unregister_component, __components_registry
-from io_scene_gltf2.io.com.gltf2_io_constants import TextureFilter, TextureWrap
+if bpy.app.version < (4, 3, 0):
+    from io_scene_gltf2.io.com.gltf2_io_constants import TextureFilter, Texture
+    from io_scene_gltf2.io.com.gltf2_io_constants import TextureFilter, TextureWrap
+else:
+    from io_scene_gltf2.io.com.constants import TextureFilter #, Texture is not in constants anymore, but apparently we're not even using it
+    from io_scene_gltf2.io.com.constants import TextureWrap
+
 from io_scene_gltf2.io.com import gltf2_io
 from io_hubs_addon.io.utils import gather_property, gather_image, gather_vec_property, gather_color_property
 from io_hubs_addon.components.utils import has_component
 from bpy.types import NodeSocket
-import bpy
 
 
 def redraw_area(context, area_id):
@@ -69,9 +76,11 @@ def __gather_wrap(blender_shader_node, export_settings):
 
     return wrap_s, wrap_t
 
-
-if bpy.app.version >= (3, 6, 0):
+if bpy.app.version >= (4, 3, 0):
+    from io_scene_gltf2.blender.exp import gather as gltf2_blender_gather_materials
+elif bpy.app.version >= (3, 6, 0):
     from io_scene_gltf2.blender.exp.material import gltf2_blender_gather_materials
+
 else:
     from io_scene_gltf2.blender.exp import gltf2_blender_gather_materials
 
