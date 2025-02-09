@@ -10,7 +10,7 @@ bl_info = {
     "blender": (3, 2, 0),
     "category": "Node",
     "author": "netpro2k, keianhzo",
-    "version": (0, 0, 2),
+    "version": (0, 0, 3),
     "location": "Node Editor > Sidebar > Behavior Graph",
     "description": "Create and export GLTF KHR_behavior graphs using Blender's node group editor"
 }

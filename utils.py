@@ -1,10 +1,32 @@
-from io_hubs_addon.components.components_registry import register_component, unregister_component, __components_registry
-from io_scene_gltf2.io.com.gltf2_io_constants import TextureFilter, TextureWrap
-from io_scene_gltf2.io.com import gltf2_io
-from io_hubs_addon.io.utils import gather_property, gather_image, gather_vec_property, gather_color_property
-from io_hubs_addon.components.utils import has_component
-from bpy.types import NodeSocket
 import bpy
+from bpy.types import NodeSocket
+from io_hubs_addon.components.components_registry import (
+    __components_registry,
+    register_component,
+    unregister_component
+)
+from io_hubs_addon.components.utils import has_component
+from io_hubs_addon.io.utils import (
+    gather_color_property,
+    gather_image,
+    gather_property,
+    gather_vec_property
+)
+from io_scene_gltf2.io.com import gltf2_io
+
+if bpy.app.version >= (4, 3, 0):
+    from io_scene_gltf2.blender.exp import nodes as gltf2_blender_gather_nodes
+    from io_scene_gltf2.blender.exp.material import materials as gltf2_blender_gather_materials
+    from io_scene_gltf2.io.com.constants import TextureFilter, TextureWrap
+
+elif bpy.app.version >= (3, 6, 0):
+    from io_scene_gltf2.blender.exp import gltf2_blender_gather_nodes
+    from io_scene_gltf2.blender.exp.material import gltf2_blender_gather_materials
+    from io_scene_gltf2.io.com.gltf2_io_constants import TextureFilter, TextureWrap
+else:
+    from io_scene_gltf2.blender.exp import gltf2_blender_gather_nodes
+    from io_scene_gltf2.blender.exp import gltf2_blender_gather_materials
+    from io_scene_gltf2.io.com.gltf2_io_constants import TextureFilter, TextureWrap
 
 
 def redraw_area(context, area_id):
@@ -68,12 +90,6 @@ def __gather_wrap(blender_shader_node, export_settings):
         wrap_s, wrap_t = None, None
 
     return wrap_s, wrap_t
-
-
-if bpy.app.version >= (3, 6, 0):
-    from io_scene_gltf2.blender.exp.material import gltf2_blender_gather_materials
-else:
-    from io_scene_gltf2.blender.exp import gltf2_blender_gather_materials
 
 
 def gather_texture_property(export_settings, blender_object, target, property_name):
