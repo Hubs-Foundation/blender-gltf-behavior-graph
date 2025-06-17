@@ -46,9 +46,10 @@ def draw_header(self, context):
         # Snap
         row = layout.row(align=True)
         row.prop(tool_settings, "use_snap_node", text="")
-        row.prop(tool_settings, "snap_node_element", icon_only=True)
-        if tool_settings.snap_node_element != 'GRID':
-            row.prop(tool_settings, "snap_target", text="")
+        if bpy.app.version < (4, 4, 0):
+            row.prop(tool_settings, "snap_node_element", icon_only=True)
+            if tool_settings.snap_node_element != 'GRID':
+                row.prop(tool_settings, "snap_target", text="")
 
         # Overlay toggle & popover
         row = layout.row(align=True)
