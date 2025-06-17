@@ -15,7 +15,7 @@ This add-on is in early Alpha state and continuously evolving so backwards compa
 You can read an intro to Behavior graphs here: [Behavior Graphs Intro](docs/intro-behavior-graphs.md).
 
 # Installation and Basic Usage
-This add-on is only compatible with **Blender 3.6** and it's not yet compatible with versions above that.
+This add-on is compatible from **Blender 3.6** to **Blender 4.4**.
 
 This add-on requires the [Hubs Blender Exporter Addon](https://github.com/Hubs-Foundation/hubs-blender-exporter). You'll need both installed and the Hubs Blender Exporter add-on needs to be loaded before the Behavior Graphs add-on is.
 
