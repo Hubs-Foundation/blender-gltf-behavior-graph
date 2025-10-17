@@ -101,7 +101,7 @@ _Several **Event Nodes**. **Event** nodes start the flow of logic and, thus, usu
 
 For Hubs, there are some pre-defined events such as when a video starts playing that can be accessed through their own special nodes.
 
-A full list of **Events** can be found on the **Events list document placeholder link**
+A full list of **Events** can be found on the [Events list](./nodes-event.md).
 
 ### Variable Set / Variable Get
 
