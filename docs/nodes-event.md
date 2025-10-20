@@ -1,5 +1,10 @@
 > **NOTE:** _As of this documentation being created, Behavior Graphs are undergoing rapid development. This has the effect of making it challenging to update this documentation quickly enough to make sure it has parity with the current state of the tech behind it. Thank you for your patience and please consider contributing edits to this documentation as needed._
 
+- [Intro to Behavior Graphs](./intro-behavior-graphs.md)
+- [List of Flow Nodes](./nodes-flow.md)
+- List of Event Nodes
+
+---
 # Event Nodes
 
 Event nodes are the starting point for a Behavior Graph because events are what starts the flow of information. For example clicking on an object could change the material or make it rotate. Event nodes do not have an Event input themselves but they can have other inputs that help set parameters for the node's execution.

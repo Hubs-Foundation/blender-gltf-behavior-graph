@@ -1,5 +1,10 @@
 > **NOTE:** _As of this documentation being created, Behavior Graphs are undergoing rapid development. This has the effect of making it challenging to update this documentation quickly enough to make sure it has parity with the current state of the tech behind it. Thank you for your patience and please consider contributing edits to this documentation as needed._
 
+- [Intro to Behavior Graphs](./intro-behavior-graphs.md)
+- List of Flow Nodes
+- [List of Event Nodes](./nodes-event.md)
+
+---
 # Flow Nodes
 
 Flow Nodes are changing the Flow of information or events. Clicking twice on an entity can thus trigger something different than a single click. You can also create toggles via **Flip-Flop** and more complex forms of interaction and information flow.
