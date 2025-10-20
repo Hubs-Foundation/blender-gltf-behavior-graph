@@ -89,7 +89,7 @@ _The `Branch` flow node checks for some **condition** and diverts the flow depen
 ![Some Flow node examples](img/BG-FlowNodeExamples.png)\
 _Some examples of **Flow Nodes**. These tend to have several inputs and outputs and are often used together as the main way to control logic._
 
-A full list of _Flow Nodes_ can be found on the **nodes list document placeholder link**
+A full list of _Flow Nodes_ can be found on the [Flow nodes list](./nodes-flow.md).
 
 ### Events
 
@@ -101,7 +101,7 @@ _Several **Event Nodes**. **Event** nodes start the flow of logic and, thus, usu
 
 For Hubs, there are some pre-defined events such as when a video starts playing that can be accessed through their own special nodes.
 
-A full list of **Events** can be found on the [Events list](./nodes-event.md).
+A full list of **Events** can be found on the [Event nodes list](./nodes-event.md).
 
 ### Variable Set / Variable Get
 
