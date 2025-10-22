@@ -3,6 +3,7 @@
 - Intro to Behavior Graphs
 - [List of Flow Nodes](./nodes-flow.md)
 - [List of Event Nodes](./nodes-event.md)
+- [Variable Types](./variable-types.md)
 
 ---
 
@@ -140,8 +141,9 @@ The following are supported **Variable Types** and their associated **Input**/**
 - ![Entity Green](img/BG-VarTypes_Entity.png) Entity
 - ![Color Yellow](img/BG-VarTypes_Color.png) Color
 - ![Material Pale Red](img/BG-VarTypes_Material.png) Material
+- ![Player Light Yellow](img/BG-VarTypes_Player.png) Player
 
-Details about specific variable types can be found on the **Variable Types document placeholder link**
+Details about specific variable types can be found on the [Variable types list](./variable-types.md).
 
 Each **Variable Type** has a color associated with its **Inputs** and **Outputs**
 
