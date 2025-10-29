@@ -188,6 +188,13 @@ _An `On Trigger` event node using our 'SomebodyWon' **Custom Event** and its **P
 
 In the image above, you can see how the **Parameters** show up as _outputs_ on the `On Trigger` node. In the example, the _'TextColor'_ is used to set the color of a Text component while _'PlayerName'_ is used to set the Text component's _'Text'_ property.
 
+### Animations
+
+Animations are stored in **Actions** which need to be initialized before they can be accessed using the node `Create AnimationAction`. From there the Action can be accessed and triggered by a `Play Animation` node.
+
+![Animation Example](img/BG-AnimationExample.png)\
+_A simple example on how to use animations in **Behavior Graphs**. The **Action** with the name **CubeAction** gets initialized `On Start` by the `Create AnimationAction` node. The resulting Action is connected with a `Play Animation` node which gets triggered by an `On Interact` node._
+
 ---
 
 ## Working with Behavior Graphs
