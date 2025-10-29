@@ -45,7 +45,7 @@ If you are connecting to a room where Behavior Graph is enabled, there are a few
   + **ecsDebug**: Show the ECS debug panel. Good for debugging your entities while in the room.
   + **vr_entry_type**: Skip the entry dialog and go straight to the room. Good for saving time.
   + **entity_state_api**: Enable pinning.
-  + **debugLocalScene**: Use this query parameter while testing a local scene. Important: Make sure you are logged in the room (##Room open in browser?) otherwise it will just load the GLD (##GLB?) as a media.
+  + **debugLocalScene**: Use this query parameter while testing a local scene. Important: Make sure you are logged in the room otherwise it will just load the GLB as a media.
 
 You can use any of these query parameters by adding them to your Hubs URL:
 ```
