@@ -72,7 +72,6 @@ _The node **On Collision Exit** will get triggered when another object moves out
 
 **On Collision Exit** gets triggered when another object that has been inside the entity leaves it. For that to work both objects needs to have a _RigidBody_ component. By default the node is set to **Self** but it can be set to a **Target** object by selecting **Other** in the dropdown.
 
----
 ## Player Events
 
 **Player Events** are events that get triggered by a player. An example would be entering or exiting the room or when the player collides with a trigger object.
