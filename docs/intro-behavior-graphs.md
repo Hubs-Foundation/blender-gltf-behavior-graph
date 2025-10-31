@@ -3,6 +3,7 @@
 - Intro to Behavior Graphs
 - [List of Flow Nodes](./nodes-flow.md)
 - [List of Event Nodes](./nodes-event.md)
+- [List of Animation Nodes](./nodes-animation.md)
 - [Variable Types](./variable-types.md)
 
 ---
@@ -194,6 +195,8 @@ Animations are stored in **Actions** which need to be initialized before they ca
 
 ![Animation Example](img/BG-AnimationExample.png)\
 _A simple example on how to use animations in **Behavior Graphs**. The **Action** with the name **CubeAction** gets initialized `On Start` by the `Create AnimationAction` node. The resulting Action is connected with a `Play Animation` node which gets triggered by an `On Interact` node._
+
+A full list of **Animation Nodes** can be found on the [Animation nodes list](./nodes-animation.md).
 
 ---
 

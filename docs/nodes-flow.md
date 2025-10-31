@@ -3,6 +3,7 @@
 - [Intro to Behavior Graphs](./intro-behavior-graphs.md)
 - List of Flow Nodes
 - [List of Event Nodes](./nodes-event.md)
+- [List of Animation Nodes](./nodes-animation.md)
 - [Variable Types](./variable-types.md)
 
 ---
