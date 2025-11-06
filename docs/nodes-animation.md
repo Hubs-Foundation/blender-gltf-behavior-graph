@@ -1,4 +1,4 @@
-> **NOTE:** _As of this documentation being created, Behavior Graphs are undergoing rapid development. This has the effect of making it challenging to update this documentation quickly enough to make sure it has parity with the current state of the tech behind it. Thank you for your patience and please consider contributing edits to this documentation as needed._
+> **NOTE:** _As of this documentation being created, Behavior Graphs are undergoing rapid development. This makes it challenging to update this documentation quickly enough to make sure it has parity with the current state of the tech behind it. Thank you for your patience and please consider contributing edits to this documentation as needed._
 
 - [Intro to Behavior Graphs](./intro-behavior-graphs.md)
 - [List of Flow Nodes](./nodes-flow.md)
@@ -9,8 +9,9 @@
 ---
 # Animation Nodes
 
-Not to be confused with the popular Animation Nodes addon for Blender, the **Animation Nodes** in **Behavior Graphs** are used to initialize and control all kinds of animation.
+The **Animation Nodes** in **Behavior Graphs** are used to initialize and control all kinds of animation.
 
+_Note_: They are not to be confused with the popular Animation Nodes addon for Blender
 ## Create AnimationAction
 
 ![Create AnimationAction](img/BG_Node_Create_AnimationAction.png)\
@@ -37,7 +38,7 @@ _The node **Stop Animation** will stop the playback of an **action**._
 ## Crossfade To Animation
 
 ![Crossfade To Animation](img/BG_Node_Crossfade_To_Animation.png)\
-_The node **Set timeScale** sets the speed an **action** is running at._
+_The node **Crossfade To Animation** will fade from **action** to **toAction** in **duration** seconds._
 
 **Crossfade To Animation** interpolates from **action** to **toAction** in **duration** seconds. When **networked** is checked, the animation will stop for every avatar in the room.
 Use this node when you want a smooth transition from one animation to another.
@@ -45,10 +46,10 @@ Use this node when you want a smooth transition from one animation to another.
 ## Set timeScale
 
 ![Set timeScale](img/BG_Node_Set_timeScale.png)\
-_The node **Crossfade To Animation** will fade from **action** to **toAction** in **duration** seconds._
+_The node **Set timeScale** sets the speed an **action** is running at._
 
 **Set timeScale** changes the speed of an **action**. The **timeScale** also takes negative values which means you can use the node to reverse the direction of an animation. When **networked** is checked, the animation will stop for every avatar in the room.
-This node comes in handy when animation things like doors because instead of two seperate animations for open and closing the door, the door can be closed by setting the timeScale of the opening animation to a negative value.
+This node comes in handy when animating things like doors because instead of two seperate animations for open and closing the door, the door can be closed by setting the timeScale of the opening animation to a negative value.
 
 ## Is Animation Running
 
