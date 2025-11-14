@@ -50,7 +50,8 @@ Use this node when you want a smooth transition from one animation to another.
 _The node **Set timeScale** sets the speed an **action** is running at._
 
 **Set timeScale** changes the speed of an **action**. The **timeScale** also takes negative values which means you can use the node to reverse the direction of an animation. When **networked** is checked, the animation will stop for every avatar in the room.
-This node comes in handy when animating things like doors because instead of two seperate animations for open and closing the door, the door can be closed by setting the timeScale of the opening animation to a negative value.
+This node comes in handy when animating things like doors because instead of two separate animations for open and closing the door, the door can be closed by setting the timeScale of the opening animation to a negative value.
+
 
 ## Is Animation Running
 
