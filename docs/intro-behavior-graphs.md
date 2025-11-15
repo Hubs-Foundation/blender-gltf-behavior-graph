@@ -1,5 +1,15 @@
 > **NOTE:** _As of this documentation being created, Behavior Graphs are undergoing rapid development. This has the effect of making it challenging to update this documentation quickly enough to make sure it has parity with the current state of the tech behind it. Thank you for your patience and please consider contributing edits to this documentation as needed._
 
+- Intro to Behavior Graphs
+- [List of Flow Nodes](./nodes-flow.md)
+- [List of Event Nodes](./nodes-event.md)
+- [List of Animation Nodes](./nodes-animation.md)
+- [Variable Types](./variable-types.md)
+
+---
+
+# Behavior Graphs
+
 If 3d models represent the visual and aesthetic side of an experience in Hubs, Behavior Graphs represent the design of the affordances (interactive possibilities) and any sequence(s) of events that might occur within that experience.
 
 Behavior graphs allow for control over many aspects of a Hubs experience by exposing Hubs-specific features normally only accessible via altering the Hubs code base. Things like teleporting, audio zones, video playback, or in-world events like when a person joins or leaves a room can all be accessed through a graphical system of connected nodes or blocks (like a flowchart) from within Blender.
@@ -89,7 +99,7 @@ _The `Branch` flow node checks for some **condition** and diverts the flow depen
 ![Some Flow node examples](img/BG-FlowNodeExamples.png)\
 _Some examples of **Flow Nodes**. These tend to have several inputs and outputs and are often used together as the main way to control logic._
 
-A full list of _Flow Nodes_ can be found on the **nodes list document placeholder link**
+A full list of _Flow Nodes_ can be found on the [Flow nodes list](./nodes-flow.md).
 
 ### Events
 
@@ -101,7 +111,7 @@ _Several **Event Nodes**. **Event** nodes start the flow of logic and, thus, usu
 
 For Hubs, there are some pre-defined events such as when a video starts playing that can be accessed through their own special nodes.
 
-A full list of **Events** can be found on the **Events list document placeholder link**
+A full list of **Events** can be found on the [Event nodes list](./nodes-event.md).
 
 ### Variable Set / Variable Get
 
@@ -132,8 +142,9 @@ The following are supported **Variable Types** and their associated **Input**/**
 - ![Entity Green](img/BG-VarTypes_Entity.png) Entity
 - ![Color Yellow](img/BG-VarTypes_Color.png) Color
 - ![Material Pale Red](img/BG-VarTypes_Material.png) Material
+- ![Player Light Yellow](img/BG-VarTypes_Player.png) Player
 
-Details about specific variable types can be found on the **Variable Types document placeholder link**
+Details about specific variable types can be found on the [Variable types list](./variable-types.md).
 
 Each **Variable Type** has a color associated with its **Inputs** and **Outputs**
 
@@ -177,6 +188,15 @@ Elsewhere, you can use an `On Trigger` event to initiate some new flow of logic 
 _An `On Trigger` event node using our 'SomebodyWon' **Custom Event** and its **Parameters** to set the **Color** and **Text** properties of a Text component. (A **Concat** node is used to append ' is the winner!' to the user's PlayerName before it gets displayed at text.)_
 
 In the image above, you can see how the **Parameters** show up as _outputs_ on the `On Trigger` node. In the example, the _'TextColor'_ is used to set the color of a Text component while _'PlayerName'_ is used to set the Text component's _'Text'_ property.
+
+### Animations
+
+Animations are stored in **Actions** which need to be initialized before they can be accessed using the node `Create AnimationAction`. From there the Action can be accessed and triggered by a `Play Animation` node.
+
+![Animation Example](img/BG-AnimationExample.png)\
+_A simple example on how to use animations in **Behavior Graphs**. The **Action** with the name **CubeAction** gets initialized `On Start` by the `Create AnimationAction` node. The resulting Action is connected with a `Play Animation` node which gets triggered by an `On Interact` node._
+
+A full list of **Animation Nodes** can be found on the [Animation nodes list](./nodes-animation.md).
 
 ---
 
