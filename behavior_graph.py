@@ -10,6 +10,7 @@ from io_hubs_addon.io.utils import gather_property
 from .utils import gather_socket_value, type_to_socket, resolve_input_link, resolve_output_link, gather_variable_value, get_prefs
 from .consts import CUSTOM_CATEGORY_NODES, DEPRECATED_NODES, CATEGORY_COLORS, FILTERED_CATEGORIES
 from .sockets import *
+from .ui import node_add_menu_add_node
 
 auto_casts = {
     ("BGHubsEntitySocket", "NodeSocketString"): "BGNode_hubs_entity_toString",
@@ -111,9 +112,8 @@ class NODE_MT_behavior_graphs_subcategory_Media(bpy.types.Menu):
 
     def draw(self, context):
         layout = self.layout
-        from bl_ui import node_add_menu
-        node_add_menu.add_node_type(layout, "BGNode_media_mediaPlayback")
-        node_add_menu.add_node_type(layout, "BGNode_media_onMediaEvent")
+        node_add_menu_add_node(layout, "BGNode_media_mediaPlayback")
+        node_add_menu_add_node(layout, "BGNode_media_onMediaEvent")
 
 
 class NODE_MT_behavior_graphs_subcategory_Text(bpy.types.Menu):
@@ -122,8 +122,7 @@ class NODE_MT_behavior_graphs_subcategory_Text(bpy.types.Menu):
 
     def draw(self, context):
         layout = self.layout
-        from bl_ui import node_add_menu
-        node_add_menu.add_node_type(layout, "BGNode_text_setTextProperties")
+        node_add_menu_add_node(layout, "BGNode_text_setTextProperties")
 
 
 class NODE_MT_behavior_graphs_subcategory_Custom_Tags(bpy.types.Menu):
@@ -132,10 +131,9 @@ class NODE_MT_behavior_graphs_subcategory_Custom_Tags(bpy.types.Menu):
 
     def draw(self, context):
         layout = self.layout
-        from bl_ui import node_add_menu
-        node_add_menu.add_node_type(layout, "BGNode_hubs_entity_components_custom_tags_addTag")
-        node_add_menu.add_node_type(layout, "BGNode_hubs_entity_components_custom_tags_removeTag")
-        node_add_menu.add_node_type(layout, "BGNode_hubs_entity_components_custom_tags_hasTag")
+        node_add_menu_add_node(layout, "BGNode_hubs_entity_components_custom_tags_addTag")
+        node_add_menu_add_node(layout, "BGNode_hubs_entity_components_custom_tags_removeTag")
+        node_add_menu_add_node(layout, "BGNode_hubs_entity_components_custom_tags_hasTag")
 
 
 class NODE_MT_behavior_graphs_subcategory_String_Math(bpy.types.Menu):
@@ -144,10 +142,9 @@ class NODE_MT_behavior_graphs_subcategory_String_Math(bpy.types.Menu):
 
     def draw(self, context):
         layout = self.layout
-        from bl_ui import node_add_menu
         values = next(values for key, values in behavior_graph_node_categories.items() if key == self.bl_label)
         for value in values:
-            node_add_menu.add_node_type(layout, value.nodetype)
+            node_add_menu_add_node(layout, value.nodetype)
 
 
 class NODE_MT_behavior_graphs_subcategory_Bool_Math(bpy.types.Menu):
@@ -156,10 +153,9 @@ class NODE_MT_behavior_graphs_subcategory_Bool_Math(bpy.types.Menu):
 
     def draw(self, context):
         layout = self.layout
-        from bl_ui import node_add_menu
         values = next(values for key, values in behavior_graph_node_categories.items() if key == self.bl_label)
         for value in values:
-            node_add_menu.add_node_type(layout, value.nodetype)
+            node_add_menu_add_node(layout, value.nodetype)
 
 
 class NODE_MT_behavior_graphs_subcategory_Int_Math(bpy.types.Menu):
@@ -168,10 +164,9 @@ class NODE_MT_behavior_graphs_subcategory_Int_Math(bpy.types.Menu):
 
     def draw(self, context):
         layout = self.layout
-        from bl_ui import node_add_menu
         values = next(values for key, values in behavior_graph_node_categories.items() if key == self.bl_label)
         for value in values:
-            node_add_menu.add_node_type(layout, value.nodetype)
+            node_add_menu_add_node(layout, value.nodetype)
 
 
 class NODE_MT_behavior_graphs_subcategory_Float_Math(bpy.types.Menu):
@@ -180,10 +175,9 @@ class NODE_MT_behavior_graphs_subcategory_Float_Math(bpy.types.Menu):
 
     def draw(self, context):
         layout = self.layout
-        from bl_ui import node_add_menu
         values = next(values for key, values in behavior_graph_node_categories.items() if key == self.bl_label)
         for value in values:
-            node_add_menu.add_node_type(layout, value.nodetype)
+            node_add_menu_add_node(layout, value.nodetype)
 
 
 class NODE_MT_behavior_graphs_subcategory_Vec3_Math(bpy.types.Menu):
@@ -192,10 +186,9 @@ class NODE_MT_behavior_graphs_subcategory_Vec3_Math(bpy.types.Menu):
 
     def draw(self, context):
         layout = self.layout
-        from bl_ui import node_add_menu
         values = next(values for key, values in behavior_graph_node_categories.items() if key == self.bl_label)
         for value in values:
-            node_add_menu.add_node_type(layout, value.nodetype)
+            node_add_menu_add_node(layout, value.nodetype)
 
 
 class NODE_MT_behavior_graphs_subcategory_Euler_Math(bpy.types.Menu):
@@ -204,10 +197,9 @@ class NODE_MT_behavior_graphs_subcategory_Euler_Math(bpy.types.Menu):
 
     def draw(self, context):
         layout = self.layout
-        from bl_ui import node_add_menu
         values = next(values for key, values in behavior_graph_node_categories.items() if key == self.bl_label)
         for value in values:
-            node_add_menu.add_node_type(layout, value.nodetype)
+            node_add_menu_add_node(layout, value.nodetype)
 
 
 class NODE_MT_behavior_graphs_subcategory_Entity_Events(bpy.types.Menu):
@@ -216,11 +208,10 @@ class NODE_MT_behavior_graphs_subcategory_Entity_Events(bpy.types.Menu):
 
     def draw(self, context):
         layout = self.layout
-        from bl_ui import node_add_menu
-        node_add_menu.add_node_type(layout, "BGNode_hubs_onInteract")
-        node_add_menu.add_node_type(layout, "BGNode_hubs_onCollisionEnter")
-        node_add_menu.add_node_type(layout, "BGNode_hubs_onCollisionStay")
-        node_add_menu.add_node_type(layout, "BGNode_hubs_onCollisionExit")
+        node_add_menu_add_node(layout, "BGNode_hubs_onInteract")
+        node_add_menu_add_node(layout, "BGNode_hubs_onCollisionEnter")
+        node_add_menu_add_node(layout, "BGNode_hubs_onCollisionStay")
+        node_add_menu_add_node(layout, "BGNode_hubs_onCollisionExit")
 
 
 class NODE_MT_behavior_graphs_subcategory_Player_Events(bpy.types.Menu):
@@ -229,12 +220,11 @@ class NODE_MT_behavior_graphs_subcategory_Player_Events(bpy.types.Menu):
 
     def draw(self, context):
         layout = self.layout
-        from bl_ui import node_add_menu
-        node_add_menu.add_node_type(layout, "BGNode_hubs_onPlayerCollisionEnter")
-        node_add_menu.add_node_type(layout, "BGNode_hubs_onPlayerCollisionStay")
-        node_add_menu.add_node_type(layout, "BGNode_hubs_onPlayerCollisionExit")
-        node_add_menu.add_node_type(layout, "BGNode_hubs_onPlayerJoined")
-        node_add_menu.add_node_type(layout, "BGNode_hubs_onPlayerLeft")
+        node_add_menu_add_node(layout, "BGNode_hubs_onPlayerCollisionEnter")
+        node_add_menu_add_node(layout, "BGNode_hubs_onPlayerCollisionStay")
+        node_add_menu_add_node(layout, "BGNode_hubs_onPlayerCollisionExit")
+        node_add_menu_add_node(layout, "BGNode_hubs_onPlayerJoined")
+        node_add_menu_add_node(layout, "BGNode_hubs_onPlayerLeft")
 
 
 class NODE_MT_behavior_graphs_subcategory_Lifecycle_Events(bpy.types.Menu):
@@ -243,10 +233,9 @@ class NODE_MT_behavior_graphs_subcategory_Lifecycle_Events(bpy.types.Menu):
 
     def draw(self, context):
         layout = self.layout
-        from bl_ui import node_add_menu
-        node_add_menu.add_node_type(layout, "BGNode_lifecycle_onStart")
-        node_add_menu.add_node_type(layout, "BGNode_lifecycle_onEnd")
-        node_add_menu.add_node_type(layout, "BGNode_lifecycle_onTick")
+        node_add_menu_add_node(layout, "BGNode_lifecycle_onStart")
+        node_add_menu_add_node(layout, "BGNode_lifecycle_onEnd")
+        node_add_menu_add_node(layout, "BGNode_lifecycle_onTick")
 
 
 class NODE_MT_behavior_graphs_subcategory_Media_Frame(bpy.types.Menu):
@@ -255,8 +244,7 @@ class NODE_MT_behavior_graphs_subcategory_Media_Frame(bpy.types.Menu):
 
     def draw(self, context):
         layout = self.layout
-        from bl_ui import node_add_menu
-        node_add_menu.add_node_type(layout, "BGNode_media_frame_setMediaFrameProperty")
+        node_add_menu_add_node(layout, "BGNode_media_frame_setMediaFrameProperty")
 
 
 class NODE_MT_behavior_graphs_subcategory_Rigid_Body(bpy.types.Menu):
@@ -265,8 +253,7 @@ class NODE_MT_behavior_graphs_subcategory_Rigid_Body(bpy.types.Menu):
 
     def draw(self, context):
         layout = self.layout
-        from bl_ui import node_add_menu
-        node_add_menu.add_node_type(layout, "BGNode_physics_setRigidBodyActive")
+        node_add_menu_add_node(layout, "BGNode_physics_setRigidBodyActive")
 
 
 class BGSubcategory(NodeItem):

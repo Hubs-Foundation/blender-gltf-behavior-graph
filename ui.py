@@ -71,6 +71,14 @@ def draw_header(self, context):
         original_NODE_HT_header_draw(self, context)
 
 
+def node_add_menu_add_node(layout, node_type):
+    from bl_ui import node_add_menu
+    if bpy.app.version >= (5, 0, 0):
+        node_add_menu.AddNodeMenu.node_operator(layout, node_type)
+    else:
+        node_add_menu.add_node_type(layout, node_type)
+
+
 class BGNew(bpy.types.Operator):
     bl_idname = "ui.bg_new"
     bl_label = "New Behavior Graph"
